@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../features/dashboard/presentation/dashboard_screen.dart';
-import '../features/landing/presentation/landing_screen.dart';
+import 'package:vitalo/features/landing/presentation/landing_screen.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -12,13 +11,24 @@ final GoRouter router = GoRouter(
   routes: <RouteBase>[
     GoRoute(
       path: '/',
-      name: 'landing',
+      name: 'home',
       builder: (context, state) => const LandingScreen(),
     ),
     GoRoute(
-      path: '/dashboard',
-      name: 'dashboard',
-      builder: (context, state) => const DashboardScreen(),
+      path: '/auth/signup',
+      name: 'signup',
+      builder: (context, state) => const _PlaceholderScreen(title: 'Sign Up'),
+    ),
+    GoRoute(
+      path: '/auth/login',
+      name: 'signin',
+      builder: (context, state) => const _PlaceholderScreen(title: 'Sign In'),
+    ),
+    GoRoute(
+      path: '/product-overview',
+      name: 'productOverview',
+      builder: (context, state) =>
+          const _PlaceholderScreen(title: 'Product Overview'),
     ),
     // TODO: Add `/auth/login` route when Supabase auth integration is ready.
   ],
@@ -27,3 +37,23 @@ final GoRouter router = GoRouter(
     return null;
   },
 );
+
+class _PlaceholderScreen extends StatelessWidget {
+  const _PlaceholderScreen({required this.title});
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text(title)),
+      body: Center(
+        child: Text(
+          '$title screen coming soon.',
+          style: Theme.of(context).textTheme.titleLarge,
+          textAlign: TextAlign.center,
+        ),
+      ),
+    );
+  }
+}

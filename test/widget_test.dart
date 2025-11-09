@@ -11,20 +11,20 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:vitalo/main.dart';
 
 void main() {
-  testWidgets('Landing screen shows primary actions', (tester) async {
+  testWidgets('Landing screen presents premium onboarding', (tester) async {
     await tester.pumpWidget(const ProviderScope(child: VitaloApp()));
 
+    await tester.pump();
+
     expect(find.text('Vitalo'), findsOneWidget);
-    expect(
-      find.text('Your AI-Powered Health & Wellness Companion'),
-      findsOneWidget,
-    );
-    expect(find.text('Get Started'), findsOneWidget);
-    expect(find.text('Sign In'), findsOneWidget);
+    expect(find.text('Daily rituals for enduring vitality.'), findsOneWidget);
+    expect(find.text('Initiate My Vital Plan'), findsOneWidget);
+    expect(find.text('I Already Have Momentum'), findsOneWidget);
 
-    await tester.tap(find.text('Get Started'));
-    await tester.pumpAndSettle();
+    await tester.tap(find.text('Initiate My Vital Plan'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
 
-    expect(find.text('Dashboard'), findsOneWidget);
+    expect(find.text('Sign Up'), findsOneWidget);
   });
 }
