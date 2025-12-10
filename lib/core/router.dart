@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:vitalo/features/landing/presentation/landing_screen.dart';
 import 'package:vitalo/features/auth/presentation/signup_screen.dart';
 import 'package:vitalo/features/auth/presentation/login_screen.dart';
+import 'package:vitalo/features/dashboard/presentation/dashboard_screen.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -30,7 +32,11 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: '/auth/login',
       name: 'signin',
-      builder: (context, state) => const LoginScreen(),
+      builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>?;
+        final email = extra?['email'] as String?;
+        return LoginScreen(prefilledEmail: email);
+      },
     ),
     GoRoute(
       path: '/product-overview',
@@ -38,11 +44,31 @@ final GoRouter router = GoRouter(
       builder: (context, state) =>
           const _PlaceholderScreen(title: 'Product Overview'),
     ),
-    // TODO: Add dashboard and other protected routes when Supabase authentication is integrated.
+    GoRoute(
+      path: '/dashboard',
+      name: 'dashboard',
+      builder: (context, state) => const DashboardScreen(),
+    ),
   ],
   redirect: (context, state) {
-    // TODO: Wire up Supabase session-based redirects.
-    return null;
+    final user = Supabase.instance.client.auth.currentUser;
+    final isAuthenticated = user != null;
+
+    final isAuthRoute = state.matchedLocation.startsWith('/auth');
+    final isDashboard = state.matchedLocation == '/dashboard';
+    final isLanding = state.matchedLocation == '/';
+
+    // If user is authenticated and trying to access landing or auth pages, redirect to dashboard
+    if (isAuthenticated && (isAuthRoute || isLanding)) {
+      return '/dashboard';
+    }
+
+    // If user is not authenticated and trying to access dashboard, redirect to landing
+    if (!isAuthenticated && isDashboard) {
+      return '/';
+    }
+
+    return null; // No redirect needed
   },
 );
 

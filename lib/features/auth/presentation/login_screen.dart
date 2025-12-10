@@ -1,15 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/vitalo_button.dart';
 import '../../../core/widgets/vitalo_text_field.dart';
 import '../../../core/widgets/vitalo_checkbox.dart';
 import '../../../core/widgets/social_auth_buttons.dart';
+import '../../../core/widgets/vitalo_snackbar.dart';
+import '../../../core/services/auth_service.dart';
 
 /// Login screen for existing users
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  const LoginScreen({super.key, this.prefilledEmail});
+
+  final String? prefilledEmail;
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -19,6 +24,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _authService = AuthService();
 
   bool _isLoading = false;
   bool _obscurePassword = true;
@@ -27,7 +33,12 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
-    _loadSavedCredentials();
+    // Set prefilled email from email verification if provided
+    if (widget.prefilledEmail != null) {
+      _emailController.text = widget.prefilledEmail!;
+    } else {
+      _loadSavedCredentials();
+    }
   }
 
   @override
@@ -38,24 +49,69 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _loadSavedCredentials() async {
-    // TODO: Load saved email from SharedPreferences if "Remember Me" was checked
-    // NOTE: Never save passwords in SharedPreferences - only email/username
-    // Password should always be entered fresh for security
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final savedEmail = prefs.getString('saved_email');
+      final rememberMe = prefs.getBool('remember_me') ?? false;
+
+      if (savedEmail != null && rememberMe) {
+        setState(() {
+          _emailController.text = savedEmail;
+          _rememberMe = true;
+        });
+      }
+    } catch (e) {
+      // Silently fail - not critical for app functionality
+      debugPrint('Failed to load saved credentials: $e');
+    }
   }
 
   Future<void> _savePreferences() async {
-    // TODO: Save email to SharedPreferences if "Remember Me" is checked
-    // Implementation will use shared_preferences package
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      if (_rememberMe) {
+        await prefs.setString('saved_email', _emailController.text.trim());
+        await prefs.setBool('remember_me', true);
+      } else {
+        await prefs.remove('saved_email');
+        await prefs.setBool('remember_me', false);
+      }
+    } catch (e) {
+      // Silently fail - not critical for app functionality
+      debugPrint('Failed to save preferences: $e');
+    }
   }
 
   Future<void> _handleAppleSignIn() async {
-    // TODO: Integrate with Apple Sign In
-    _showMessage('Apple Sign In - Coming soon');
+    setState(() => _isLoading = true);
+
+    final error = await _authService.signInWithApple();
+
+    if (!mounted) return;
+
+    setState(() => _isLoading = false);
+
+    if (error != null) {
+      VitaloSnackBar.showError(context, error);
+    } else {
+      context.go('/dashboard');
+    }
   }
 
   Future<void> _handleGoogleSignIn() async {
-    // TODO: Integrate with Google Sign In
-    _showMessage('Google Sign In - Coming soon');
+    setState(() => _isLoading = true);
+
+    final error = await _authService.signInWithGoogle();
+
+    if (!mounted) return;
+
+    setState(() => _isLoading = false);
+
+    if (error != null) {
+      VitaloSnackBar.showError(context, error);
+    } else {
+      context.go('/dashboard');
+    }
   }
 
   Future<void> _handleEmailLogin() async {
@@ -63,26 +119,23 @@ class _LoginScreenState extends State<LoginScreen> {
 
     setState(() => _isLoading = true);
 
-    try {
+    final error = await _authService.signIn(
+      email: _emailController.text.trim(),
+      password: _passwordController.text,
+    );
+
+    if (!mounted) return;
+
+    setState(() => _isLoading = false);
+
+    if (error != null) {
+      VitaloSnackBar.showError(context, error);
+    } else {
       // Save preferences if remember me is checked
       if (_rememberMe) {
         await _savePreferences();
       }
-
-      // TODO: Integrate with Supabase authentication
-      // When Supabase is integrated, it will handle session management
-      // and redirect to dashboard automatically
-      await Future.delayed(const Duration(seconds: 2));
-
-      if (!mounted) return;
-
-      setState(() => _isLoading = false);
-
-      // Show success message (will be replaced with actual navigation after Supabase integration)
-      _showMessage('Login successful! Supabase integration pending.');
-    } catch (e) {
-      setState(() => _isLoading = false);
-      _showMessage('Login failed. Please try again.');
+      context.go('/dashboard');
     }
   }
 
@@ -90,23 +143,28 @@ class _LoginScreenState extends State<LoginScreen> {
     final email = _emailController.text.trim();
 
     if (email.isEmpty) {
-      _showMessage('Please enter your email address');
+      VitaloSnackBar.showWarning(context, 'Please enter your email address');
       return;
     }
 
     if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email)) {
-      _showMessage('Please enter a valid email address');
+      VitaloSnackBar.showWarning(context, 'Please enter a valid email address');
       return;
     }
 
-    // TODO: Implement password reset flow
-    _showMessage('Password reset link sent to $email');
-  }
+    setState(() => _isLoading = true);
 
-  void _showMessage(String message) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+    final error = await _authService.resetPassword(email: email);
+
+    if (!mounted) return;
+
+    setState(() => _isLoading = false);
+
+    if (error != null) {
+      VitaloSnackBar.showError(context, error);
+    } else {
+      VitaloSnackBar.showSuccess(context, 'Password reset link sent to $email');
+    }
   }
 
   @override
@@ -243,10 +301,11 @@ class _LoginScreenState extends State<LoginScreen> {
                                 value: _rememberMe,
                                 onChanged: _isLoading
                                     ? null
-                                    : (value) {
+                                    : (value) async {
                                         setState(() {
                                           _rememberMe = value;
                                         });
+                                        await _savePreferences();
                                       },
                                 enabled: !_isLoading,
                                 label: Text(

@@ -7,6 +7,8 @@ import '../../../core/widgets/vitalo_button.dart';
 import '../../../core/widgets/vitalo_text_field.dart';
 import '../../../core/widgets/vitalo_checkbox.dart';
 import '../../../core/widgets/social_auth_buttons.dart';
+import '../../../core/widgets/vitalo_snackbar.dart';
+import '../../../core/services/auth_service.dart';
 import 'privacy_policy_screen.dart';
 import 'terms_of_service_screen.dart';
 
@@ -22,6 +24,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _authService = AuthService();
 
   bool _isLoading = false;
   bool _obscurePassword = true;
@@ -107,27 +110,51 @@ class _SignUpScreenState extends State<SignUpScreen> {
   }
 
   Future<void> _handleAppleSignIn() async {
+    if (!_agreeToTerms) {
+      VitaloSnackBar.showWarning(
+        context,
+        'Please agree to Terms & Privacy Policy',
+      );
+      return;
+    }
+
     setState(() => _isLoading = true);
 
-    // TODO: Implement Sign in with Apple
-    await Future.delayed(const Duration(seconds: 2));
+    final error = await _authService.signInWithApple();
 
     if (!mounted) return;
 
     setState(() => _isLoading = false);
-    _showMessage('Apple Sign In - Coming soon');
+
+    if (error != null) {
+      VitaloSnackBar.showError(context, error);
+    } else {
+      context.go('/dashboard');
+    }
   }
 
   Future<void> _handleGoogleSignIn() async {
+    if (!_agreeToTerms) {
+      VitaloSnackBar.showWarning(
+        context,
+        'Please agree to Terms & Privacy Policy',
+      );
+      return;
+    }
+
     setState(() => _isLoading = true);
 
-    // TODO: Implement Sign in with Google
-    await Future.delayed(const Duration(seconds: 2));
+    final error = await _authService.signInWithGoogle();
 
     if (!mounted) return;
 
     setState(() => _isLoading = false);
-    _showMessage('Google Sign In - Coming soon');
+
+    if (error != null) {
+      VitaloSnackBar.showError(context, error);
+    } else {
+      context.go('/dashboard');
+    }
   }
 
   Future<void> _handleEmailSignUp() async {
@@ -136,29 +163,114 @@ class _SignUpScreenState extends State<SignUpScreen> {
     }
 
     if (!_agreeToTerms) {
-      _showMessage('Please agree to Terms & Privacy Policy');
+      VitaloSnackBar.showWarning(
+        context,
+        'Please agree to Terms & Privacy Policy',
+      );
       return;
     }
 
     setState(() => _isLoading = true);
 
-    // TODO: Integrate with Supabase authentication
-    await Future.delayed(const Duration(seconds: 2));
+    final error = await _authService.signUp(
+      email: _emailController.text.trim(),
+      password: _passwordController.text,
+    );
 
     if (!mounted) return;
 
     setState(() => _isLoading = false);
 
-    // Navigate to onboarding (collect name there)
-    if (mounted) {
-      context.go('/auth/onboarding');
+    if (error != null) {
+      VitaloSnackBar.showError(context, error);
+    } else {
+      _showVerificationDialog();
     }
   }
 
-  void _showMessage(String message) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+  void _showVerificationDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Success Icon
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.mark_email_read_outlined,
+                size: 64,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // Title
+            Text(
+              'Verify Your Email',
+              style: Theme.of(
+                context,
+              ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+
+            // Message
+            Text(
+              'We\'ve sent a verification link to',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+
+            // Email
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                _emailController.text.trim(),
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Instructions
+            Text(
+              'Please check your inbox and click the verification link to activate your account.',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              context.go('/auth/login');
+            },
+            child: const Text('Got it'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
