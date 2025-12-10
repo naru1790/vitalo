@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/vitalo_button.dart';
 import '../../../core/widgets/vitalo_text_field.dart';
+import '../../../core/widgets/vitalo_checkbox.dart';
 import '../../../core/widgets/social_auth_buttons.dart';
 import 'privacy_policy_screen.dart';
 import 'terms_of_service_screen.dart';
@@ -220,10 +221,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         // Show Apple button on iOS, or show both for testing
                         AppleSignInButton(
                           onPressed: _isLoading ? () {} : _handleAppleSignIn,
+                          label: 'Sign up with Apple',
                         ),
                         const SizedBox(height: AppSpacing.md),
                         GoogleSignInButton(
                           onPressed: _isLoading ? () {} : _handleGoogleSignIn,
+                          label: 'Sign up with Google',
                         ),
                         const SizedBox(height: AppSpacing.xl),
 
@@ -374,105 +377,69 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         ),
                         const SizedBox(height: AppSpacing.xl),
 
-                        // Terms & Privacy checkbox (streamlined, tappable row)
-                        InkWell(
-                          onTap: () {
+                        // Terms & Privacy checkbox
+                        VitaloCheckbox(
+                          value: _agreeToTerms,
+                          onChanged: (value) {
                             setState(() {
-                              _agreeToTerms = !_agreeToTerms;
+                              _agreeToTerms = value;
                             });
                           },
-                          borderRadius: BorderRadius.circular(8),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              vertical: AppSpacing.xs,
-                            ),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                          label: Text.rich(
+                            TextSpan(
+                              text: 'I agree to the ',
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: colorScheme.onSurface.withOpacity(0.7),
+                              ),
                               children: [
-                                SizedBox(
-                                  height: 24,
-                                  width: 24,
-                                  child: Checkbox(
-                                    value: _agreeToTerms,
-                                    onChanged: (value) {
-                                      setState(() {
-                                        _agreeToTerms = value ?? false;
-                                      });
-                                    },
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(4),
+                                TextSpan(
+                                  text: 'Terms of Service',
+                                  style: TextStyle(
+                                    color: colorScheme.primary,
+                                    fontWeight: FontWeight.w600,
+                                    decoration: TextDecoration.underline,
+                                    decorationColor: colorScheme.primary
+                                        .withOpacity(0.5),
+                                  ),
+                                  recognizer: TapGestureRecognizer()
+                                    ..onTap = _showTermsOfService,
+                                ),
+                                WidgetSpan(
+                                  alignment: PlaceholderAlignment.middle,
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(left: 2),
+                                    child: Icon(
+                                      Icons.open_in_new,
+                                      size: 12,
+                                      color: colorScheme.primary.withOpacity(
+                                        0.7,
+                                      ),
                                     ),
                                   ),
                                 ),
-                                const SizedBox(width: AppSpacing.sm),
-                                Expanded(
-                                  child: Text.rich(
-                                    TextSpan(
-                                      text: 'I agree to the ',
-                                      style: theme.textTheme.bodyMedium
-                                          ?.copyWith(
-                                            color: colorScheme.onSurface
-                                                .withOpacity(0.7),
-                                          ),
-                                      children: [
-                                        TextSpan(
-                                          text: 'Terms of Service',
-                                          style: TextStyle(
-                                            color: colorScheme.primary,
-                                            fontWeight: FontWeight.w600,
-                                            decoration:
-                                                TextDecoration.underline,
-                                            decorationColor: colorScheme.primary
-                                                .withOpacity(0.5),
-                                          ),
-                                          recognizer: TapGestureRecognizer()
-                                            ..onTap = _showTermsOfService,
-                                        ),
-                                        WidgetSpan(
-                                          alignment:
-                                              PlaceholderAlignment.middle,
-                                          child: Padding(
-                                            padding: const EdgeInsets.only(
-                                              left: 2,
-                                            ),
-                                            child: Icon(
-                                              Icons.open_in_new,
-                                              size: 12,
-                                              color: colorScheme.primary
-                                                  .withOpacity(0.7),
-                                            ),
-                                          ),
-                                        ),
-                                        const TextSpan(text: ' and '),
-                                        TextSpan(
-                                          text: 'Privacy Policy',
-                                          style: TextStyle(
-                                            color: colorScheme.primary,
-                                            fontWeight: FontWeight.w600,
-                                            decoration:
-                                                TextDecoration.underline,
-                                            decorationColor: colorScheme.primary
-                                                .withOpacity(0.5),
-                                          ),
-                                          recognizer: TapGestureRecognizer()
-                                            ..onTap = _showPrivacyPolicy,
-                                        ),
-                                        WidgetSpan(
-                                          alignment:
-                                              PlaceholderAlignment.middle,
-                                          child: Padding(
-                                            padding: const EdgeInsets.only(
-                                              left: 2,
-                                            ),
-                                            child: Icon(
-                                              Icons.open_in_new,
-                                              size: 12,
-                                              color: colorScheme.primary
-                                                  .withOpacity(0.7),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
+                                const TextSpan(text: ' and '),
+                                TextSpan(
+                                  text: 'Privacy Policy',
+                                  style: TextStyle(
+                                    color: colorScheme.primary,
+                                    fontWeight: FontWeight.w600,
+                                    decoration: TextDecoration.underline,
+                                    decorationColor: colorScheme.primary
+                                        .withOpacity(0.5),
+                                  ),
+                                  recognizer: TapGestureRecognizer()
+                                    ..onTap = _showPrivacyPolicy,
+                                ),
+                                WidgetSpan(
+                                  alignment: PlaceholderAlignment.middle,
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(left: 2),
+                                    child: Icon(
+                                      Icons.open_in_new,
+                                      size: 12,
+                                      color: colorScheme.primary.withOpacity(
+                                        0.7,
+                                      ),
                                     ),
                                   ),
                                 ),

@@ -5,9 +5,14 @@ import '../theme/app_spacing.dart';
 
 /// Social sign-in button for Apple
 class AppleSignInButton extends StatelessWidget {
-  const AppleSignInButton({super.key, required this.onPressed});
+  const AppleSignInButton({
+    super.key,
+    required this.onPressed,
+    this.label = 'Sign in with Apple',
+  });
 
   final VoidCallback onPressed;
+  final String label;
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +41,7 @@ class AppleSignInButton extends StatelessWidget {
             ),
             const SizedBox(width: 12),
             Text(
-              'Sign in with Apple',
+              label,
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -52,9 +57,14 @@ class AppleSignInButton extends StatelessWidget {
 
 /// Social sign-in button for Google
 class GoogleSignInButton extends StatelessWidget {
-  const GoogleSignInButton({super.key, required this.onPressed});
+  const GoogleSignInButton({
+    super.key,
+    required this.onPressed,
+    this.label = 'Sign in with Google',
+  });
 
   final VoidCallback onPressed;
+  final String label;
 
   @override
   Widget build(BuildContext context) {
@@ -101,7 +111,7 @@ class GoogleSignInButton extends StatelessWidget {
             ),
             const SizedBox(width: 12),
             Text(
-              'Sign in with Google',
+              label,
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
