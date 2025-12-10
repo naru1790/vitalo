@@ -16,12 +16,12 @@ void main() {
 
     await tester.pump();
 
-    expect(find.text('Vitalo'), findsOneWidget);
-    expect(find.text('Daily rituals for enduring vitality.'), findsOneWidget);
-    expect(find.text('Initiate My Vital Plan'), findsOneWidget);
-    expect(find.text('I Already Have Momentum'), findsOneWidget);
+    expect(find.text('Vitalo.'), findsOneWidget);
+    expect(find.text('Your vitality, layered and living.'), findsOneWidget);
+    expect(find.text('Begin Journey'), findsOneWidget);
+    expect(find.text('Log In'), findsOneWidget);
 
-    await tester.tap(find.text('Initiate My Vital Plan'));
+    await tester.tap(find.text('Begin Journey'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 400));
 

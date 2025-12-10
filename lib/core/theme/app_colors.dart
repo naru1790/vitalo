@@ -4,50 +4,50 @@ class AppColors {
   // ───── Brand Seeds ─────
   // Use the light/dark primary as seeds for Material color generation.
   static const primarySeedLight = Color(0xFF00B894); // Vitalo Mint (light seed)
-  static const primarySeedDark  = Color(0xFF00D8A0); // Brighter Mint (dark seed)
+  static const primarySeedDark = Color(0xFF00D8A0); // Brighter Mint (dark seed)
 
-  // ───── LIGHT THEME — Vitalo (Calm & Fresh) ─────
-  static const primary            = Color(0xFF00B894); // Vitalo Mint
-  static const onPrimary          = Color(0xFFFFFFFF);
-  static const primaryContainer   = Color(0xFFBDF3E6); // Mint tint container
-  static const onPrimaryContainer = Color(0xFF00382D);
+  // ───── LIGHT THEME — Solar Mode (Warm Stone) ─────
+  static const primary = Color(0xFFF97316); // Solar Orange
+  static const onPrimary = Color(0xFFFFFFFF);
+  static const primaryContainer = Color(0xFFFED7AA); // Orange tint
+  static const onPrimaryContainer = Color(0xFF7C2D12);
 
-  static const secondary            = Color(0xFF006D77); // Deep Teal
-  static const onSecondary          = Color(0xFFFFFFFF);
-  static const secondaryContainer   = Color(0xFFB2EBF2); // Teal tint container
-  static const onSecondaryContainer = Color(0xFF002C30);
+  static const secondary = Color(0xFFF59E0B); // Gold
+  static const onSecondary = Color(0xFFFFFFFF);
+  static const secondaryContainer = Color(0xFFFDE68A);
+  static const onSecondaryContainer = Color(0xFF78350F);
 
-  static const background   = Color(0xFFF6F5F2); // Porcelain Mist (eye-soothing)
-  static const onBackground = Color(0xFF212121); // Graphite
-  static const surface      = Color(0xFFFFFFFF);
-  static const onSurface    = Color(0xFF2B2B2B);
-  static const surfaceVariant   = Color(0xFFE0E0E0); // Misty Gray
-  static const onSurfaceVariant = Color(0xFF616161);
+  static const background = Color(0xFFF5F5F4); // Stone 100
+  static const onBackground = Color(0xFF1C1917); // Stone 900
+  static const surface = Color(0xFFFFFFFF); // Card White
+  static const onSurface = Color(0xFF1C1917); // Stone 900
+  static const surfaceVariant = Color(0xFFE7E5E4); // Stone 200
+  static const onSurfaceVariant = Color(0xFF78716C); // Stone 500
 
-  static const outline  = Color(0xFFDADADA);
-  static const disabled = Color(0xFFEDEDED);
-  static const shadow   = Color(0x3300B894); // mint shadow (alpha)
-  static const highlight= Color(0xFFFFD166); // Vitalo Gold (reward/shine)
+  static const outline = Color(0xFFD6D3D1); // Stone 300
+  static const disabled = Color(0xFFF5F5F4);
+  static const shadow = Color(0x33F97316); // orange shadow (alpha)
+  static const highlight = Color(0xFFF59E0B); // Gold accent
 
   // ───── Semantic / Status ─────
-  static const success = Color(0xFF48C78E); // Seafoam Green
-  static const warning = Color(0xFFFF8C42); // Solar Peach (muted orange)
-  static const error   = Color(0xFFFF6B6B); // Coral Red
-  static const info    = Color(0xFF5A8CFF); // Info Blue
+  static const success = Color(0xFF10B981); // Emerald
+  static const warning = Color(0xFFF59E0B); // Gold
+  static const error = Color(0xFFE11D48); // Rose
+  static const info = Color(0xFF4F46E5); // Indigo
 
-  // ───── DARK THEME — Vitalo (Calm & Focused) ─────
-  static const darkBackground      = Color(0xFF121212); // Deep Charcoal
-  static const darkSurface         = Color(0xFF1E1E1E);
-  static const darkSurfaceVariant  = Color(0xFF2A2A2A);
+  // ───── DARK THEME — Lunar Mode (Deep Slate) ─────
+  static const darkBackground = Color(0xFF0F172A); // Slate 900
+  static const darkSurface = Color(0xFF1E293B); // Slate 800
+  static const darkSurfaceVariant = Color(0xFF334155); // Slate 700
 
-  static const darkPrimary     = Color(0xFF00D8A0); // Brighter Mint for dark
-  static const darkOnPrimary   = Color(0xFF00221B);
-  static const darkSecondary   = Color(0xFFFF9E57); // Warm accent on dark
+  static const darkPrimary = Color(0xFF818CF8); // Indigo 400
+  static const darkOnPrimary = Color(0xFF1E1B4B);
+  static const darkSecondary = Color(0xFFA78BFA); // Violet 400
 
-  static const darkTextPrimary   = Color(0xFFEDEDED);
-  static const darkTextSecondary = Color(0xFFB0B0B0);
-  static const darkOutline       = Color(0xFF3A3A3A);
-  static const darkShadow        = Color(0x3300D8A0); // mint aura (alpha)
+  static const darkTextPrimary = Color(0xFFF8FAFC); // Slate 50
+  static const darkTextSecondary = Color(0xFF94A3B8); // Slate 400
+  static const darkOutline = Color(0xFF475569); // Slate 600
+  static const darkShadow = Color(0x33818CF8); // indigo aura (alpha)
 }
 
 /// Brand gradients & backgrounds shared across the app.
@@ -98,10 +98,7 @@ class AppGradients {
   ];
 
   // Glass overlay for cards/images.
-  static const auroraGlass = [
-    Color(0xCCFFFFFF),
-    Color(0x66FFFFFF),
-  ];
+  static const auroraGlass = [Color(0xCCFFFFFF), Color(0x66FFFFFF)];
 
   // Legacy-friendly gradients refreshed for the new palette.
   static const vitalAura = [

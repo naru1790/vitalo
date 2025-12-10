@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:vitalo/features/landing/presentation/landing_screen.dart';
+import 'package:vitalo/features/auth/presentation/signup_screen.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -17,7 +18,13 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: '/auth/signup',
       name: 'signup',
-      builder: (context, state) => const _PlaceholderScreen(title: 'Sign Up'),
+      builder: (context, state) => const SignUpScreen(),
+    ),
+    GoRoute(
+      path: '/auth/onboarding',
+      name: 'onboarding',
+      builder: (context, state) =>
+          const _PlaceholderScreen(title: 'Health Assessment'),
     ),
     GoRoute(
       path: '/auth/login',
@@ -30,7 +37,7 @@ final GoRouter router = GoRouter(
       builder: (context, state) =>
           const _PlaceholderScreen(title: 'Product Overview'),
     ),
-    // TODO: Add `/auth/login` route when Supabase auth integration is ready.
+    // TODO: Add more auth routes when Supabase integration is ready.
   ],
   redirect: (context, state) {
     // TODO: Wire up Supabase session-based redirects.
