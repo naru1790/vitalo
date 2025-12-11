@@ -82,6 +82,24 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  Future<void> _handleBackButton() async {
+    try {
+      // Set skip_redirect flag so landing page won't redirect this session
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('skip_redirect', true);
+
+      if (mounted) {
+        context.go('/');
+      }
+    } catch (e) {
+      debugPrint('Failed to set skip redirect flag: $e');
+      // Still navigate back even if flag set fails
+      if (mounted) {
+        context.go('/');
+      }
+    }
+  }
+
   Future<void> _handleAppleSignIn() async {
     setState(() => _isLoading = true);
 
@@ -135,7 +153,19 @@ class _LoginScreenState extends State<LoginScreen> {
       if (_rememberMe) {
         await _savePreferences();
       }
+      // Mark that user has successfully logged in before
+      await _markUserAsReturning();
       context.go('/dashboard');
+    }
+  }
+
+  Future<void> _markUserAsReturning() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('has_logged_in', true);
+    } catch (e) {
+      // Silently fail - not critical
+      debugPrint('Failed to mark user as returning: $e');
     }
   }
 
@@ -195,7 +225,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         Align(
                           alignment: Alignment.centerLeft,
                           child: IconButton(
-                            onPressed: () => context.go('/'),
+                            onPressed: _handleBackButton,
                             icon: Icon(
                               Icons.arrow_back,
                               color: colorScheme.onSurface,
@@ -204,12 +234,24 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         const SizedBox(height: AppSpacing.xl),
 
+                        // Brand name
+                        Text(
+                          'Vitalo',
+                          style: theme.textTheme.displayLarge?.copyWith(
+                            color: colorScheme.primary,
+                            fontSize: 48,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: AppSpacing.lg),
+
                         // Header
                         Text(
                           'Welcome Back',
                           style: theme.textTheme.displayMedium?.copyWith(
-                            color: colorScheme.primary,
-                            fontSize: 36,
+                            color: colorScheme.onSurface,
+                            fontSize: 28,
                           ),
                           textAlign: TextAlign.center,
                         ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/theme/app_colors.dart';
@@ -130,12 +131,23 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
       }
       _otpFocusNodes[0].requestFocus();
     } else {
-      // Success - navigate to dashboard
+      // Success - mark user as returning and navigate to dashboard
+      await _markUserAsReturning();
       if (widget.onSuccess != null) {
         widget.onSuccess!();
       } else {
         context.go('/dashboard');
       }
+    }
+  }
+
+  Future<void> _markUserAsReturning() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('has_logged_in', true);
+    } catch (e) {
+      // Silently fail - not critical
+      debugPrint('Failed to mark user as returning: $e');
     }
   }
 
@@ -156,10 +168,6 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
 
     VitaloSnackBar.showSuccess(context, 'Verification code sent!');
     _startCountdown(); // Restart countdown
-  }
-
-  void _handleLogin() {
-    context.go('/auth/login', extra: {'email': widget.email});
   }
 
   void _handleResetPassword() {
