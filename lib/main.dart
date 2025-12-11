@@ -4,7 +4,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/router.dart';
 import 'core/theme/app_theme.dart';
-import 'core/services/deep_link_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,11 +23,6 @@ class VitaloApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Initialize deep link service with context
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      DeepLinkService.initialize(context);
-    });
-
     return MaterialApp.router(
       title: 'Vitalo',
       debugShowCheckedModeBanner: false,

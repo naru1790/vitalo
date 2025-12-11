@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:vitalo/features/landing/presentation/landing_screen.dart';
 import 'package:vitalo/features/auth/presentation/signup_screen.dart';
 import 'package:vitalo/features/auth/presentation/login_screen.dart';
+import 'package:vitalo/features/auth/presentation/otp_verification_screen.dart';
 import 'package:vitalo/features/dashboard/presentation/dashboard_screen.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -22,6 +23,21 @@ final GoRouter router = GoRouter(
       path: '/auth/signup',
       name: 'signup',
       builder: (context, state) => const SignUpScreen(),
+    ),
+    GoRoute(
+      path: '/auth/otp-verification',
+      name: 'otpVerification',
+      builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>?;
+        final email = extra?['email'] as String? ?? '';
+        final password = extra?['password'] as String? ?? '';
+        final otpType = extra?['otpType'] as OtpType? ?? OtpType.email;
+        return OtpVerificationScreen(
+          email: email,
+          password: password,
+          otpType: otpType,
+        );
+      },
     ),
     GoRoute(
       path: '/auth/onboarding',

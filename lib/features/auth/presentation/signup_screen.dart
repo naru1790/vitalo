@@ -1,6 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/vitalo_button.dart';
@@ -172,7 +173,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
     setState(() => _isLoading = true);
 
-    final error = await _authService.signUp(
+    // Call signUp (always succeeds to prevent user enumeration)
+    await _authService.signUp(
       email: _emailController.text.trim(),
       password: _passwordController.text,
     );
@@ -181,97 +183,19 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
     setState(() => _isLoading = false);
 
-    if (error != null) {
-      VitaloSnackBar.showError(context, error);
-    } else {
-      _showVerificationDialog();
-    }
-  }
-
-  void _showVerificationDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Success Icon
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.mark_email_read_outlined,
-                size: 64,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            // Title
-            Text(
-              'Verify Your Email',
-              style: Theme.of(
-                context,
-              ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16),
-
-            // Message
-            Text(
-              'We\'ve sent a verification link to',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-
-            // Email
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                _emailController.text.trim(),
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Instructions
-            Text(
-              'Please check your inbox and click the verification link to activate your account.',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              context.go('/auth/login');
-            },
-            child: const Text('Got it'),
-          ),
-        ],
-      ),
+    // Always navigate to OTP screen - assume success
+    // If user already exists, they won't get OTP but we don't reveal this
+    context.push(
+      '/auth/otp-verification',
+      extra: {
+        'email': _emailController.text.trim(),
+        'password': _passwordController.text,
+        'otpType': OtpType.email,
+      },
     );
   }
+
+  // Removed _showVerificationDialog - now using OTP flow
 
   @override
   Widget build(BuildContext context) {
