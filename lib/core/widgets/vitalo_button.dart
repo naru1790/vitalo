@@ -29,7 +29,7 @@ class VitaloPrimaryButton extends StatelessWidget {
         elevation: 0,
         disabledBackgroundColor: Theme.of(
           context,
-        ).colorScheme.primary.withOpacity(0.5),
+        ).colorScheme.primary.withValues(alpha: 0.5),
       ),
       child: isLoading
           ? const SizedBox(
@@ -88,7 +88,7 @@ class VitaloSecondaryButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
         ),
         side: BorderSide(
-          color: colorScheme.outline.withOpacity(0.3),
+          color: colorScheme.outline.withValues(alpha: 0.3),
           width: 1.5,
         ),
       ),
@@ -107,7 +107,7 @@ class VitaloSecondaryButton extends StatelessWidget {
               fontSize: 18,
               fontWeight: FontWeight.w600,
               letterSpacing: 0.2,
-              color: colorScheme.onSurface.withOpacity(0.9),
+              color: colorScheme.onSurface.withValues(alpha: 0.9),
             ),
           ),
         ],

@@ -76,26 +76,26 @@ class _VitaloTextFieldState extends State<VitaloTextField> {
           fontFamily: 'Inter',
           fontSize: 14,
           fontWeight: FontWeight.w500,
-          color: colorScheme.onSurface.withOpacity(0.7),
+          color: colorScheme.onSurface.withValues(alpha: 0.7),
         ),
         hintText: widget.hintText,
         hintStyle: TextStyle(
           fontFamily: 'Inter',
           fontSize: 16,
           fontWeight: FontWeight.w400,
-          color: colorScheme.onSurface.withOpacity(0.4),
+          color: colorScheme.onSurface.withValues(alpha: 0.4),
         ),
         helperText: widget.helperText,
         helperStyle: TextStyle(
           fontFamily: 'Inter',
           fontSize: 12,
-          color: colorScheme.onSurface.withOpacity(0.6),
+          color: colorScheme.onSurface.withValues(alpha: 0.6),
         ),
         prefixIcon: widget.prefixIcon != null
             ? Icon(
                 widget.prefixIcon,
                 size: AppSpacing.iconSize,
-                color: colorScheme.onSurface.withOpacity(0.6),
+                color: colorScheme.onSurface.withValues(alpha: 0.6),
               )
             : null,
         suffixIcon: widget.suffixIcon,
@@ -108,14 +108,14 @@ class _VitaloTextFieldState extends State<VitaloTextField> {
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppSpacing.buttonRadiusSmall),
           borderSide: BorderSide(
-            color: colorScheme.outline.withOpacity(0.3),
+            color: colorScheme.outline.withValues(alpha: 0.3),
             width: 1.5,
           ),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppSpacing.buttonRadiusSmall),
           borderSide: BorderSide(
-            color: colorScheme.outline.withOpacity(0.3),
+            color: colorScheme.outline.withValues(alpha: 0.3),
             width: 1.5,
           ),
         ),
@@ -134,7 +134,7 @@ class _VitaloTextFieldState extends State<VitaloTextField> {
         disabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppSpacing.buttonRadiusSmall),
           borderSide: BorderSide(
-            color: colorScheme.outline.withOpacity(0.1),
+            color: colorScheme.outline.withValues(alpha: 0.1),
             width: 1.5,
           ),
         ),

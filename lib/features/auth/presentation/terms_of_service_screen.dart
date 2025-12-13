@@ -29,7 +29,7 @@ class TermsOfServiceScreen extends StatelessWidget {
             Text(
               'Last updated: December 10, 2025',
               style: theme.textTheme.bodySmall?.copyWith(
-                color: colorScheme.onSurface.withOpacity(0.6),
+                color: colorScheme.onSurface.withValues(alpha: 0.6),
               ),
             ),
             const SizedBox(height: AppSpacing.xxxl),
@@ -128,7 +128,7 @@ class TermsOfServiceScreen extends StatelessWidget {
             content,
             style: theme.textTheme.bodyMedium?.copyWith(
               height: 1.6,
-              color: colorScheme.onSurface.withOpacity(0.8),
+              color: colorScheme.onSurface.withValues(alpha: 0.8),
             ),
           ),
         ],

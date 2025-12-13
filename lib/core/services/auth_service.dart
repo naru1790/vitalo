@@ -1,5 +1,4 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:flutter/foundation.dart';
 import 'dart:io';
 
 /// Central authentication service for Vitalo
@@ -15,94 +14,6 @@ class AuthService {
 
   /// Get auth state changes stream
   Stream<AuthState> get authStateChanges => _supabase.auth.onAuthStateChange;
-
-  /// Sign up with email and password - sends OTP for email verification
-  /// User account is created but not confirmed until OTP is verified
-  /// NOTE: With Email Enumeration Protection ON, this always "succeeds" even if user exists
-  /// Existing users won't receive OTP - they should use Login or Reset Password
-  Future<void> signUp({
-    required String email,
-    required String password,
-    String? fullName,
-  }) async {
-    try {
-      // Create user account with password - Supabase will send OTP email
-      await _supabase.auth.signUp(
-        email: email,
-        password: password,
-        data: fullName != null ? {'full_name': fullName} : null,
-        emailRedirectTo: null, // We use OTP, not magic link
-      );
-      // Always return success to prevent user enumeration
-      // Existing users won't get OTP but we don't reveal this
-    } catch (e) {
-      // Log to crash reporting service in production
-      debugPrint('SignUp error: ${e.toString()}');
-      // Still return success to prevent enumeration
-    }
-  }
-
-  /// Verify OTP code for email confirmation during signup
-  /// This confirms the user's email and logs them in
-  /// Returns error message as String if fails, null if successful
-  Future<String?> verifyOtp({
-    required String email,
-    required String token,
-    required OtpType type,
-  }) async {
-    try {
-      final response = await _supabase.auth.verifyOTP(
-        email: email,
-        token: token,
-        type: type,
-      );
-
-      if (response.session == null) {
-        return 'Invalid OTP. Please check the code and try again.';
-      }
-
-      // Success - email confirmed and user logged in
-      return null;
-    } on SocketException catch (_) {
-      return 'Network error. Please check your internet connection.';
-    } on AuthException catch (e) {
-      // Handle specific OTP errors
-      if (e.message.toLowerCase().contains('invalid') ||
-          e.message.toLowerCase().contains('expired')) {
-        return 'Invalid or expired OTP. Please try again.';
-      }
-      return _getReadableError(e.message);
-    } catch (e) {
-      debugPrint('OTP verification error: ${e.toString()}');
-      return 'Invalid OTP. Please try again.';
-    }
-  }
-
-  /// Sign in with email and password
-  /// Returns error message as String if fails, null if successful
-  Future<String?> signIn({
-    required String email,
-    required String password,
-  }) async {
-    try {
-      final response = await _supabase.auth.signInWithPassword(
-        email: email,
-        password: password,
-      );
-
-      if (response.user == null) {
-        return 'Sign in failed. Please check your credentials.';
-      }
-
-      return null; // Success
-    } on SocketException catch (_) {
-      return 'Network error. Please check your internet connection.';
-    } on AuthException catch (e) {
-      return _getReadableError(e.message);
-    } catch (e) {
-      return 'An unexpected error occurred: ${e.toString()}';
-    }
-  }
 
   /// Sign in with Apple (OAuth)
   /// Returns error message as String if fails, null if successful

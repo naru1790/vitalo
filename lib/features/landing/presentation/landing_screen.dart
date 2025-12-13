@@ -1,50 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/flux_mascot.dart';
 import '../../../core/widgets/vitalo_button.dart';
 
 /// Minimal premium landing experience for first-time visitors.
-class LandingScreen extends StatefulWidget {
+class LandingScreen extends StatelessWidget {
   const LandingScreen({super.key});
-
-  @override
-  State<LandingScreen> createState() => _LandingScreenState();
-}
-
-class _LandingScreenState extends State<LandingScreen> {
-  @override
-  void initState() {
-    super.initState();
-    _checkReturningUser();
-  }
-
-  Future<void> _checkReturningUser() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final hasLoggedIn = prefs.getBool('has_logged_in') ?? false;
-      final skipRedirect = prefs.getBool('skip_redirect') ?? false;
-
-      // Clear skip_redirect flag after checking it
-      if (skipRedirect) {
-        await prefs.remove('skip_redirect');
-      }
-
-      // If user has previously logged in and hasn't manually navigated back, redirect to login page
-      if (hasLoggedIn && !skipRedirect && mounted) {
-        // Small delay to prevent jarring transition
-        await Future.delayed(const Duration(milliseconds: 300));
-        if (mounted) {
-          context.go('/auth/login');
-        }
-      }
-    } catch (e) {
-      // Silently fail - not critical
-      debugPrint('Failed to check returning user: $e');
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -102,7 +64,7 @@ class _LandingScreenState extends State<LandingScreen> {
                         Text(
                           'Vitalo learns and grows with you — mind, body, and beyond.',
                           style: theme.textTheme.bodyLarge?.copyWith(
-                            color: colorScheme.onSurface.withOpacity(0.7),
+                            color: colorScheme.onSurface.withValues(alpha: 0.7),
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -133,13 +95,10 @@ class _PrimaryActions extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         VitaloPrimaryButton(
-          onPressed: () => context.go('/auth/signup'),
-          label: 'Initiate My Vital Plan',
-        ),
-        const SizedBox(height: AppSpacing.md),
-        VitaloSecondaryButton(
-          onPressed: () => context.go('/auth/login'),
-          label: 'I Already Have Momentum',
+          onPressed: () {
+            // TODO: Navigate to new Social + Guest auth flow
+          },
+          label: 'Get Started',
         ),
       ],
     );

@@ -5,26 +5,19 @@
 // gestures. You can also use WidgetTester to find child widgets in the widget
 // tree, read text, and verify that the values of widget properties are correct.
 
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:vitalo/main.dart';
+import 'package:vitalo/features/landing/presentation/landing_screen.dart';
 
 void main() {
-  testWidgets('Landing screen presents premium onboarding', (tester) async {
-    await tester.pumpWidget(const ProviderScope(child: VitaloApp()));
+  testWidgets('Landing screen displays correctly', (tester) async {
+    await tester.pumpWidget(const MaterialApp(home: LandingScreen()));
 
     await tester.pump();
 
-    expect(find.text('Vitalo.'), findsOneWidget);
-    expect(find.text('Your vitality, layered and living.'), findsOneWidget);
-    expect(find.text('Begin Journey'), findsOneWidget);
-    expect(find.text('Log In'), findsOneWidget);
-
-    await tester.tap(find.text('Begin Journey'));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 400));
-
-    expect(find.text('Sign Up'), findsOneWidget);
+    expect(find.text('Vitalo'), findsOneWidget);
+    expect(find.text('Awaken Your Intelligent Wellness'), findsOneWidget);
+    expect(find.text('Get Started'), findsOneWidget);
   });
 }

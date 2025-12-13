@@ -8,7 +8,7 @@ class VitaloSnackBar {
       SnackBar(
         content: Row(
           children: [
-            Icon(Icons.check_circle_outline, color: Colors.white),
+            const Icon(Icons.check_circle_outline, color: Colors.white),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
@@ -37,7 +37,7 @@ class VitaloSnackBar {
       SnackBar(
         content: Row(
           children: [
-            Icon(Icons.error_outline, color: Colors.white),
+            const Icon(Icons.error_outline, color: Colors.white),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
@@ -66,7 +66,7 @@ class VitaloSnackBar {
       SnackBar(
         content: Row(
           children: [
-            Icon(Icons.info_outline, color: Colors.white),
+            const Icon(Icons.info_outline, color: Colors.white),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
@@ -95,7 +95,7 @@ class VitaloSnackBar {
       SnackBar(
         content: Row(
           children: [
-            Icon(Icons.warning_amber_outlined, color: Colors.white),
+            const Icon(Icons.warning_amber_outlined, color: Colors.white),
             const SizedBox(width: 12),
             Expanded(
               child: Text(

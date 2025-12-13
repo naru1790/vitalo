@@ -137,7 +137,7 @@ class OrDivider extends StatelessWidget {
       children: [
         Expanded(
           child: Divider(
-            color: colorScheme.outline.withOpacity(0.3),
+            color: colorScheme.outline.withValues(alpha: 0.3),
             thickness: 1,
           ),
         ),
@@ -149,13 +149,13 @@ class OrDivider extends StatelessWidget {
               fontFamily: 'Inter',
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: colorScheme.onSurface.withOpacity(0.5),
+              color: colorScheme.onSurface.withValues(alpha: 0.5),
             ),
           ),
         ),
         Expanded(
           child: Divider(
-            color: colorScheme.outline.withOpacity(0.3),
+            color: colorScheme.outline.withValues(alpha: 0.3),
             thickness: 1,
           ),
         ),
