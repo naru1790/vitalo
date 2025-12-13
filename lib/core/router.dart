@@ -2,69 +2,45 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import 'package:vitalo/features/landing/presentation/landing_screen.dart';
-import 'package:vitalo/features/dashboard/presentation/dashboard_screen.dart';
+import '../features/auth/presentation/email_signin_screen.dart';
+import '../features/dashboard/presentation/dashboard_screen.dart';
+import '../features/landing/presentation/landing_screen.dart';
 
-final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
+abstract class AppRoutes {
+  static const home = '/';
+  static const emailSignin = '/email-signin';
+  static const dashboard = '/dashboard';
+}
 
-final GoRouter router = GoRouter(
+final _rootNavigatorKey = GlobalKey<NavigatorState>();
+
+final router = GoRouter(
   navigatorKey: _rootNavigatorKey,
-  initialLocation: '/',
-  routes: <RouteBase>[
+  initialLocation: AppRoutes.home,
+  routes: [
     GoRoute(
-      path: '/',
+      path: AppRoutes.home,
       name: 'home',
-      builder: (context, state) => const LandingScreen(),
+      builder: (_, __) => const LandingScreen(),
     ),
     GoRoute(
-      path: '/auth/onboarding',
-      name: 'onboarding',
-      builder: (context, state) =>
-          const _PlaceholderScreen(title: 'Health Assessment'),
+      path: AppRoutes.emailSignin,
+      name: 'emailSignin',
+      builder: (_, __) => const EmailSignInScreen(),
     ),
     GoRoute(
-      path: '/product-overview',
-      name: 'productOverview',
-      builder: (context, state) =>
-          const _PlaceholderScreen(title: 'Product Overview'),
-    ),
-    GoRoute(
-      path: '/dashboard',
+      path: AppRoutes.dashboard,
       name: 'dashboard',
-      builder: (context, state) => const DashboardScreen(),
+      builder: (_, __) => const DashboardScreen(),
     ),
   ],
   redirect: (context, state) {
-    final user = Supabase.instance.client.auth.currentUser;
-    final isAuthenticated = user != null;
+    final isAuthenticated = Supabase.instance.client.auth.currentUser != null;
+    final isProtectedRoute = state.matchedLocation == AppRoutes.dashboard;
 
-    final isDashboard = state.matchedLocation == '/dashboard';
-
-    // If user is not authenticated and trying to access dashboard, redirect to landing
-    if (!isAuthenticated && isDashboard) {
-      return '/';
+    if (!isAuthenticated && isProtectedRoute) {
+      return AppRoutes.home;
     }
-
-    return null; // No redirect needed
+    return null;
   },
 );
-
-class _PlaceholderScreen extends StatelessWidget {
-  const _PlaceholderScreen({required this.title});
-
-  final String title;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(title)),
-      body: Center(
-        child: Text(
-          '$title screen coming soon.',
-          style: Theme.of(context).textTheme.titleLarge,
-          textAlign: TextAlign.center,
-        ),
-      ),
-    );
-  }
-}

@@ -12,14 +12,14 @@ class VitaloTypography {
 
   // Brand Text Styles - Light Theme
   static TextTheme lightTextTheme = _buildTextTheme(
-    primaryColor: AppColors.onBackground,
+    primaryColor: AppColors.onSurface,
     secondaryColor: AppColors.onSurfaceVariant,
   );
 
   // Brand Text Styles - Dark Theme
   static TextTheme darkTextTheme = _buildTextTheme(
-    primaryColor: AppColors.darkTextPrimary,
-    secondaryColor: AppColors.darkTextSecondary,
+    primaryColor: AppColors.darkOnSurface,
+    secondaryColor: AppColors.darkOnSurfaceVariant,
   );
 
   static TextTheme _buildTextTheme({

@@ -5,44 +5,44 @@ import 'package:flutter/material.dart';
 import 'app_colors.dart';
 import 'app_typography.dart';
 
-// LIGHT COLOR SCHEME — Vitalo (Calm & Fresh)
+// LIGHT COLOR SCHEME — Vitalo Solar Mode
 const ColorScheme lightColorScheme = ColorScheme(
   brightness: Brightness.light,
-  primary: AppColors.primary, // #00B894
-  onPrimary: AppColors.onPrimary, // #FFFFFF
-  primaryContainer: AppColors.primaryContainer, // #BDF3E6
-  onPrimaryContainer: AppColors.onPrimaryContainer, // #00382D
+  primary: AppColors.primary,
+  onPrimary: AppColors.onPrimary,
+  primaryContainer: AppColors.primaryContainer,
+  onPrimaryContainer: AppColors.onPrimaryContainer,
 
-  secondary: AppColors.secondary, // #006D77
-  onSecondary: AppColors.onSecondary, // #FFFFFF
-  secondaryContainer: AppColors.secondaryContainer, // #B2EBF2
-  onSecondaryContainer: AppColors.onSecondaryContainer, // #002C30
+  secondary: AppColors.secondary,
+  onSecondary: AppColors.onSecondary,
+  secondaryContainer: AppColors.secondaryContainer,
+  onSecondaryContainer: AppColors.onSecondaryContainer,
 
   tertiary: AppColors.info,
   onTertiary: Colors.white,
   tertiaryContainer: Color(0xFFE3EEFF),
   onTertiaryContainer: Color(0xFF0E2347),
 
-  error: AppColors.error, // #FF6B6B
+  error: AppColors.error,
   onError: Colors.white,
   errorContainer: Color(0xFFFFE7E7),
   onErrorContainer: Color(0xFF5A1A1A),
 
-  background: AppColors.background, // #F6F5F2 (Porcelain)
-  onBackground: AppColors.onBackground, // #212121
-  surface: AppColors.surface, // #FFFFFF
-  onSurface: AppColors.onSurface, // #2B2B2B
-  surfaceVariant: AppColors.surfaceVariant, // #E0E0E0
-  onSurfaceVariant: AppColors.onSurfaceVariant, // #616161
+  background: AppColors.background,
+  onBackground: AppColors.onBackground,
+  surface: AppColors.surface,
+  onSurface: AppColors.onSurface,
+  surfaceVariant: AppColors.surfaceVariant,
+  onSurfaceVariant: AppColors.onSurfaceVariant,
 
-  outline: AppColors.outline, // #DADADA
-  outlineVariant: Color(0xFFBDBDBD),
-  shadow: AppColors.shadow, // mint-tinted shadow (alpha)
+  outline: AppColors.outline,
+  outlineVariant: Color(0xFFC7C7C7),
+  shadow: AppColors.shadow,
   scrim: Colors.black54,
 
-  inverseSurface: Color(0xFF10151C),
-  onInverseSurface: Color(0xFFE6E9EF),
-  inversePrimary: AppColors.primary, // mint
+  inverseSurface: Color(0xFF1C1917),
+  onInverseSurface: Color(0xFFF5F5F4),
+  inversePrimary: AppColors.darkPrimary,
   surfaceTint: AppColors.primary,
 );
 
@@ -85,44 +85,44 @@ final ThemeData lightTheme = ThemeData(
   ),
 );
 
-// DARK COLOR SCHEME — Vitalo (Calm & Focused)
+// DARK COLOR SCHEME — Vitalo Solar Night
 const ColorScheme darkColorScheme = ColorScheme(
   brightness: Brightness.dark,
-  primary: AppColors.darkPrimary, // #00D8A0
-  onPrimary: AppColors.darkOnPrimary, // #00221B
-  primaryContainer: Color(0xFF103D36), // deep mint container
-  onPrimaryContainer: Colors.white,
+  primary: AppColors.darkPrimary,
+  onPrimary: AppColors.darkOnPrimary,
+  primaryContainer: AppColors.darkPrimaryContainer,
+  onPrimaryContainer: AppColors.darkOnPrimaryContainer,
 
-  secondary: AppColors.darkSecondary, // #FF9E57 (warm accent)
-  onSecondary: Colors.white,
-  secondaryContainer: Color(0xFF2B2552),
-  onSecondaryContainer: Colors.white,
+  secondary: AppColors.darkSecondary,
+  onSecondary: AppColors.darkOnSecondary,
+  secondaryContainer: AppColors.darkSecondaryContainer,
+  onSecondaryContainer: AppColors.darkOnSecondaryContainer,
 
-  tertiary: AppColors.info, // info blue
+  tertiary: AppColors.info,
   onTertiary: Colors.white,
   tertiaryContainer: Color(0xFF0D2B4A),
   onTertiaryContainer: Color(0xFFE3EEFF),
 
-  error: AppColors.error,
-  onError: Colors.white,
+  error: AppColors.darkError,
+  onError: Color(0xFF5A1A1A),
   errorContainer: Color(0xFF4B1515),
   onErrorContainer: Color(0xFFFFE7E7),
 
-  background: AppColors.darkBackground, // #121212
-  onBackground: AppColors.darkTextPrimary, // #EDEDED
-  surface: AppColors.darkSurface, // #1E1E1E
-  onSurface: AppColors.darkTextPrimary, // #EDEDED
-  surfaceVariant: AppColors.darkSurfaceVariant, // #2A2A2A
-  onSurfaceVariant: AppColors.darkTextSecondary, // #B0B0B0
+  background: AppColors.darkBackground,
+  onBackground: AppColors.darkOnSurface,
+  surface: AppColors.darkSurface,
+  onSurface: AppColors.darkOnSurface,
+  surfaceVariant: AppColors.darkSurfaceVariant,
+  onSurfaceVariant: AppColors.darkOnSurfaceVariant,
 
-  outline: AppColors.darkOutline, // #3A3A3A
-  outlineVariant: Color(0xFF2F2F2F),
-  shadow: AppColors.darkShadow, // mint aura (alpha)
+  outline: AppColors.darkOutline,
+  outlineVariant: Color(0xFF3C3836),
+  shadow: AppColors.darkShadow,
   scrim: Colors.black54,
 
-  inverseSurface: Color(0xFFEFF3FA),
-  onInverseSurface: Color(0xFF12151B),
-  inversePrimary: AppColors.darkPrimary,
+  inverseSurface: Color(0xFFF5F5F4),
+  onInverseSurface: Color(0xFF1C1917),
+  inversePrimary: AppColors.primary,
   surfaceTint: AppColors.darkPrimary,
 );
 

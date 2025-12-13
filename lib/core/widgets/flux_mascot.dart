@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../theme/app_colors.dart';
+
 /// FluxMascot - 3-layer animated vitality indicator
 /// Represents Physical (outer), Nutritional (middle), Mental (core) health dimensions
 class FluxMascot extends StatefulWidget {
@@ -54,21 +56,12 @@ class _FluxMascotState extends State<FluxMascot> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    final isSolar = widget.themeMode == Brightness.light;
+    final isLight = widget.themeMode == Brightness.light;
 
-    // Solar (Light) - Warm, energetic sunset colors
-    const solarBack = Color(0xFFFDBA74); // Orange-300
-    const solarMid = Color(0xFFF97316); // Orange-500
-    const solarFront = Color(0xFFEA580C); // Orange-600
-
-    // Lunar (Dark) - Cool, calm deep space colors
-    const lunarBack = Color(0xFF818CF8); // Indigo-400
-    const lunarMid = Color(0xFF6366F1); // Indigo-500
-    const lunarFront = Color(0xFF4338CA); // Indigo-700
-
-    final back = isSolar ? solarBack : lunarBack;
-    final mid = isSolar ? solarMid : lunarMid;
-    final front = isSolar ? solarFront : lunarFront;
+    // Use Solar theme colors from AppColors
+    final back = isLight ? AppColors.primaryContainer : AppColors.darkPrimary;
+    final mid = isLight ? AppColors.primary : AppColors.darkPrimary;
+    final front = isLight ? AppColors.secondary : AppColors.darkSecondary;
 
     return SizedBox(
       width: widget.size,

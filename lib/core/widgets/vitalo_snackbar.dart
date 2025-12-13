@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/app_colors.dart';
 
 /// Vitalo-branded snackbar utilities for consistent messaging
 class VitaloSnackBar {
@@ -16,12 +17,13 @@ class VitaloSnackBar {
                 style: const TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w500,
+                  color: Colors.white,
                 ),
               ),
             ),
           ],
         ),
-        backgroundColor: Colors.green.shade600,
+        backgroundColor: AppColors.success,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         margin: const EdgeInsets.all(16),
@@ -33,24 +35,30 @@ class VitaloSnackBar {
 
   /// Show an error message with Vitalo branding
   static void showError(BuildContext context, String message) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
           children: [
-            const Icon(Icons.error_outline, color: Colors.white),
+            Icon(
+              Icons.error_outline,
+              color: isDark ? AppColors.darkBackground : Colors.white,
+            ),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
                 message,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w500,
+                  color: isDark ? AppColors.darkBackground : Colors.white,
                 ),
               ),
             ),
           ],
         ),
-        backgroundColor: Colors.red.shade600,
+        backgroundColor: isDark ? AppColors.darkError : AppColors.error,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         margin: const EdgeInsets.all(16),
@@ -74,12 +82,13 @@ class VitaloSnackBar {
                 style: const TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w500,
+                  color: Colors.white,
                 ),
               ),
             ),
           ],
         ),
-        backgroundColor: Theme.of(context).colorScheme.primary,
+        backgroundColor: AppColors.info,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         margin: const EdgeInsets.all(16),
@@ -103,12 +112,13 @@ class VitaloSnackBar {
                 style: const TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w500,
+                  color: Colors.white,
                 ),
               ),
             ),
           ],
         ),
-        backgroundColor: Colors.orange.shade600,
+        backgroundColor: AppColors.warning,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         margin: const EdgeInsets.all(16),
