@@ -2,16 +2,14 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:cloudflare_turnstile/cloudflare_turnstile.dart';
 
 import '../../../main.dart';
-import '../../../core/config.dart';
+import '../../../core/router.dart';
 import '../../../core/services/auth_service.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/loading_button.dart';
 import '../../../core/widgets/otp_input.dart';
 import '../../../core/widgets/vitalo_snackbar.dart';
-import '../../../core/widgets/vitalo_captcha.dart';
 
 class OtpVerificationScreen extends StatefulWidget {
   const OtpVerificationScreen({super.key, required this.email, this.onSuccess});
@@ -27,7 +25,6 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
   final _authService = AuthService();
   final _otpController = TextEditingController();
   final _focusNode = FocusNode();
-  final GlobalKey<VitaloCaptchaState> _captchaKey = GlobalKey();
 
   Timer? _countdownTimer;
   bool _isLoading = false;
@@ -112,7 +109,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                 widget.onSuccess!();
               } else {
                 talker.info('Navigating to dashboard');
-                context.go('/dashboard');
+                context.go(AppRoutes.dashboard);
               }
             }
           } else {
@@ -160,24 +157,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
       _errorMessage = null;
     });
 
-    // Get fresh captcha token to prevent abuse
-    final captchaToken = await _captchaKey.currentState?.verify();
-
-    if (captchaToken == null) {
-      talker.warning('Captcha verification failed, blocking OTP resend');
-      if (!mounted) return;
-      setState(() => _isLoading = false);
-      VitaloSnackBar.showError(
-        context,
-        'Verification failed. Please try again.',
-      );
-      return;
-    }
-
-    final result = await _authService.sendOtpToEmail(
-      widget.email,
-      captchaToken: captchaToken,
-    );
+    final result = await _authService.sendOtpToEmail(widget.email);
 
     if (!mounted) return;
     setState(() => _isLoading = false);
@@ -292,21 +272,6 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                   ),
                 ),
               ),
-            ),
-          ),
-
-          // Pre-initialized Captcha for resend protection
-          Offstage(
-            offstage: true,
-            child: VitaloCaptcha(
-              key: _captchaKey,
-              siteKey: AppConfig.turnstileSiteKey,
-              baseUrl: AppConfig.turnstileBaseUrl,
-              options: TurnstileOptions(mode: TurnstileMode.invisible),
-              onTokenReceived: (_) {},
-              onError: (error) {
-                VitaloSnackBar.showWarning(context, error);
-              },
             ),
           ),
         ],

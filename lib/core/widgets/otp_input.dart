@@ -51,7 +51,7 @@ class OtpInput extends StatelessWidget {
 
     final submittedPinTheme = defaultPinTheme.copyWith(
       decoration: BoxDecoration(
-        color: colorScheme.primaryContainer.withOpacity(0.1),
+        color: colorScheme.primaryContainer.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: colorScheme.primary, width: 1.5),
       ),

@@ -1,20 +1,16 @@
-import 'dart:async';
 import 'dart:io' show Platform;
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:sign_in_button/sign_in_button.dart';
-import 'package:cloudflare_turnstile/cloudflare_turnstile.dart';
 
 import '../../../main.dart';
-import '../../../core/config.dart';
-import '../../../core/theme/app_colors.dart';
+import '../../../core/router.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/flux_mascot.dart';
 import '../../../core/services/auth_service.dart';
 import '../../../core/widgets/vitalo_snackbar.dart';
-import '../../../core/widgets/vitalo_captcha.dart';
 
 /// Landing Page - "Soft Gateway" for Vitalo
 /// Top 60%: Brand Hook (logo, mascot, slogan)
@@ -96,21 +92,17 @@ class _ActionsSection extends StatefulWidget {
   State<_ActionsSection> createState() => _ActionsSectionState();
 }
 
-enum _LoadingState { none, apple, google, guest }
+enum _LoadingState { none, apple, google }
 
 class _ActionsSectionState extends State<_ActionsSection> {
   final _authService = AuthService();
   _LoadingState _loadingState = _LoadingState.none;
   bool get _isLoading => _loadingState != _LoadingState.none;
 
-  // Pre-initialize captcha when screen loads for instant verification
-  final GlobalKey<VitaloCaptchaState> _captchaKey = GlobalKey();
-
   @override
   void initState() {
     super.initState();
     talker.info('Landing screen actions section initialized');
-    // Captcha now mounts immediately and initializes in background
   }
 
   @override
@@ -127,7 +119,6 @@ class _ActionsSectionState extends State<_ActionsSection> {
     talker.info('$provider OAuth sign-in initiated');
     setState(() => _loadingState = loadingState);
 
-    // Note: Captcha not supported for OAuth in current Supabase version
     final error = await authMethod();
 
     if (!mounted) return;
@@ -138,7 +129,7 @@ class _ActionsSectionState extends State<_ActionsSection> {
       VitaloSnackBar.showError(context, error);
     } else {
       talker.info('$provider OAuth successful, navigating to dashboard');
-      context.go('/dashboard');
+      context.go(AppRoutes.dashboard);
     }
   }
 
@@ -151,50 +142,10 @@ class _ActionsSectionState extends State<_ActionsSection> {
     'Google',
   );
 
-  Future<void> _handleGuestLogin() async {
-    setState(() => _loadingState = _LoadingState.guest);
-
-    talker.info('Guest login flow initiated');
-
-    // Get fresh captcha token to prevent bot abuse and database bloat
-    talker.debug('Requesting captcha token for guest login');
-    final captchaToken = await _captchaKey.currentState?.verify();
-
-    // SECURITY: Block login if captcha fails - prevents bot abuse
-    if (captchaToken == null) {
-      talker.warning('Captcha verification failed, blocking guest login');
-      if (!mounted) return;
-      setState(() => _loadingState = _LoadingState.none);
-      VitaloSnackBar.showError(
-        context,
-        'Verification failed. Please try again.',
-      );
-      return;
-    }
-
-    talker.debug('Captcha token received, proceeding with anonymous sign-in');
-    final error = await _authService.signInAnonymously(
-      captchaToken: captchaToken,
-    );
-
-    if (!mounted) return;
-    setState(() => _loadingState = _LoadingState.none);
-
-    if (error != null) {
-      // Network failure or other error - show retry option
-      talker.warning('Guest login failed: $error');
-      VitaloSnackBar.showError(context, error);
-    } else {
-      // Seamless transition to dashboard
-      talker.info('Guest login successful, navigating to dashboard');
-      context.go('/dashboard');
-    }
-  }
-
   void _handleEmailFlow() {
     if (_isLoading) return;
     talker.info('Email sign-in flow initiated from landing screen');
-    context.push('/email-signin');
+    context.push(AppRoutes.emailSignin);
   }
 
   @override
@@ -209,120 +160,153 @@ class _ActionsSectionState extends State<_ActionsSection> {
         horizontal: AppSpacing.pageHorizontalPadding,
         vertical: AppSpacing.lg,
       ),
-      child: Stack(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Column(
-            mainAxisAlignment: MainAxisAlignment.end,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Smart Auth: Show Apple button only on iOS
-              if (isIOS) ...[
-                SizedBox(
-                  width: double.infinity,
-                  height: 54,
-                  child: SignInWithAppleButton(
-                    onPressed: _isLoading ? () {} : _handleAppleSignIn,
-                    style: SignInWithAppleButtonStyle.black,
-                    text: _loadingState == _LoadingState.apple
-                        ? 'Signing in...'
-                        : 'Continue with Apple',
-                  ),
-                ),
-                const SizedBox(height: 12),
-              ],
+          // Smart Auth: Show Apple button only on iOS
+          if (isIOS) ...[
+            SizedBox(
+              width: double.infinity,
+              height: 54,
+              child: SignInWithAppleButton(
+                onPressed: _isLoading ? () {} : _handleAppleSignIn,
+                style: SignInWithAppleButtonStyle.black,
+                text: _loadingState == _LoadingState.apple
+                    ? 'Signing in...'
+                    : 'Continue with Apple',
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
 
-              SizedBox(
-                width: double.infinity,
-                height: 54,
-                child: SignInButton(
-                  Buttons.google,
-                  text: 'Continue with Google',
-                  onPressed: _isLoading ? () {} : _handleGoogleSignIn,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    side: BorderSide(color: colorScheme.outline),
-                  ),
-                  elevation: 0,
-                  padding: const EdgeInsets.all(1),
+          // Google Sign-In button
+          SizedBox(
+            width: double.infinity,
+            height: 54,
+            child: SignInButton(
+              Buttons.google,
+              text: 'Continue with Google',
+              onPressed: _isLoading ? () {} : _handleGoogleSignIn,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+                side: BorderSide(color: colorScheme.outline),
+              ),
+              elevation: 0,
+              padding: const EdgeInsets.all(1),
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          // Email sign-in option
+          SizedBox(
+            width: double.infinity,
+            height: 54,
+            child: OutlinedButton.icon(
+              onPressed: _isLoading ? null : _handleEmailFlow,
+              icon: Icon(
+                Icons.email_outlined,
+                size: 18,
+                color: colorScheme.onSurface,
+              ),
+              label: Text(
+                'Sign in with Email',
+                style: TextStyle(
+                  color: colorScheme.onSurface,
+                  fontWeight: FontWeight.w500,
+                  fontSize: 15,
                 ),
               ),
-              const SizedBox(height: 16),
+              style: OutlinedButton.styleFrom(
+                side: BorderSide(color: colorScheme.outline),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
+          ),
 
-              // Guest login - Outlined button with accent border
-              SizedBox(
-                width: double.infinity,
-                height: 48,
-                child: OutlinedButton(
-                  onPressed: _isLoading ? null : _handleGuestLogin,
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: colorScheme.primary,
-                    side: BorderSide(
-                      color: colorScheme.primary.withValues(alpha: 0.5),
-                      width: 1.5,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child: _loadingState == _LoadingState.guest
-                      ? SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
+          const Spacer(),
+
+          const SizedBox(height: AppSpacing.md),
+
+          // Footer with links
+          Center(
+            child: Text.rich(
+              TextSpan(
+                text: 'By continuing, you agree to our ',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurface.withValues(alpha: 0.7),
+                ),
+                children: [
+                  WidgetSpan(
+                    child: GestureDetector(
+                      onTap: () {
+                        talker.info('Terms of Service link tapped');
+                        context.push(AppRoutes.terms);
+                      },
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'Terms',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: colorScheme.primary,
+                              decoration: TextDecoration.underline,
+                              decorationColor: colorScheme.primary,
+                            ),
+                          ),
+                          const SizedBox(width: 2),
+                          Icon(
+                            Icons.open_in_new,
+                            size: 12,
                             color: colorScheme.primary,
                           ),
-                        )
-                      : Text(
-                          'Continue as Guest',
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                ),
-              ),
-
-              const Spacer(),
-
-              // Email login footer - Premium two-tone design
-              Center(
-                child: GestureDetector(
-                  onTap: _isLoading ? null : _handleEmailFlow,
-                  child: RichText(
-                    text: TextSpan(
-                      text: 'Already have an account? ',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                        fontWeight: FontWeight.normal,
+                        ],
                       ),
-                      children: [
-                        TextSpan(
-                          text: 'Log in',
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: colorScheme.primary,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
                     ),
                   ),
-                ),
+                  TextSpan(
+                    text: ' & ',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onSurface.withValues(alpha: 0.7),
+                    ),
+                  ),
+                  WidgetSpan(
+                    child: GestureDetector(
+                      onTap: () {
+                        talker.info('Privacy Policy link tapped');
+                        context.push(AppRoutes.privacy);
+                      },
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'Privacy Policy',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: colorScheme.primary,
+                              decoration: TextDecoration.underline,
+                              decorationColor: colorScheme.primary,
+                            ),
+                          ),
+                          const SizedBox(width: 2),
+                          Icon(
+                            Icons.open_in_new,
+                            size: 12,
+                            color: colorScheme.primary,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: AppSpacing.sm),
-            ],
+              textAlign: TextAlign.center,
+            ),
           ),
 
-          // Pre-initialized Captcha - invisible mode, always mounted for instant verification
-          VitaloCaptcha(
-            key: _captchaKey,
-            siteKey: AppConfig.turnstileSiteKey,
-            baseUrl: AppConfig.turnstileBaseUrl,
-            options: TurnstileOptions(mode: TurnstileMode.invisible),
-            onTokenReceived: (_) {},
-            onError: (error) {
-              VitaloSnackBar.showWarning(context, error);
-            },
-          ),
+          const SizedBox(height: AppSpacing.sm),
         ],
       ),
     );

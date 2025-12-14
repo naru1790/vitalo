@@ -19,20 +19,6 @@ class AppConfig {
   );
 
   // ──────────────────────────────────────────────────────────────────────────
-  // Cloudflare Turnstile (Captcha)
-  // ──────────────────────────────────────────────────────────────────────────
-
-  static const turnstileSiteKey = String.fromEnvironment(
-    'TURNSTILE_SITE_KEY',
-    defaultValue: '0x4AAAAAACGksNbU_nDQoBBz',
-  );
-
-  static const turnstileBaseUrl = String.fromEnvironment(
-    'TURNSTILE_BASE_URL',
-    defaultValue: 'https://cricalgo.com',
-  );
-
-  // ──────────────────────────────────────────────────────────────────────────
   // Google Sign-In
   // ──────────────────────────────────────────────────────────────────────────
 

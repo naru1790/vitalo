@@ -6,11 +6,15 @@ import '../main.dart';
 import '../features/auth/presentation/email_signin_screen.dart';
 import '../features/dashboard/presentation/dashboard_screen.dart';
 import '../features/landing/presentation/landing_screen.dart';
+import '../features/legal/presentation/privacy_policy_screen.dart';
+import '../features/legal/presentation/terms_of_service_screen.dart';
 
 abstract class AppRoutes {
   static const home = '/';
   static const emailSignin = '/email-signin';
   static const dashboard = '/dashboard';
+  static const privacy = '/privacy';
+  static const terms = '/terms';
 }
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -86,6 +90,24 @@ final router = GoRouter(
         context: context,
         state: state,
         child: const DashboardScreen(),
+      ),
+    ),
+    GoRoute(
+      path: AppRoutes.privacy,
+      name: 'privacy',
+      pageBuilder: (context, state) => _buildSmoothTransition(
+        context: context,
+        state: state,
+        child: const PrivacyPolicyScreen(),
+      ),
+    ),
+    GoRoute(
+      path: AppRoutes.terms,
+      name: 'terms',
+      pageBuilder: (context, state) => _buildSmoothTransition(
+        context: context,
+        state: state,
+        child: const TermsOfServiceScreen(),
       ),
     ),
   ],

@@ -2,16 +2,14 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:cloudflare_turnstile/cloudflare_turnstile.dart';
 
 import '../../../main.dart';
-import '../../../core/config.dart';
+import '../../../core/router.dart';
 import '../../../core/services/auth_service.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/loading_button.dart';
 import '../../../core/widgets/otp_input.dart';
 import '../../../core/widgets/vitalo_snackbar.dart';
-import '../../../core/widgets/vitalo_captcha.dart';
 
 /// Email Sign-In Screen with Password-less OTP Flow
 /// Step 1: Email Entry
@@ -34,9 +32,6 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
   bool _isStep2 = false;
   int _resendCountdown = 0;
   Timer? _resendTimer;
-
-  // Captcha state
-  final GlobalKey<VitaloCaptchaState> _captchaKey = GlobalKey();
 
   @override
   void initState() {
@@ -81,24 +76,8 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
 
     setState(() => _isLoading = true);
 
-    // Get fresh captcha token to prevent email spam abuse
-    final captchaToken = await _captchaKey.currentState?.verify();
-
-    // SECURITY: Block if captcha fails - prevents email spam
-    if (captchaToken == null) {
-      talker.warning('Captcha verification failed, blocking OTP send');
-      if (!mounted) return;
-      setState(() => _isLoading = false);
-      VitaloSnackBar.showError(
-        context,
-        'Verification failed. Please try again.',
-      );
-      return;
-    }
-
     final result = await _authService.sendOtpToEmail(
       _emailController.text.trim(),
-      captchaToken: captchaToken,
     );
 
     if (!mounted) return;
@@ -132,24 +111,8 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
     talker.info('Resend OTP code requested');
     setState(() => _isLoading = true);
 
-    // Get fresh captcha token for resend
-    final captchaToken = await _captchaKey.currentState?.verify();
-
-    // SECURITY: Block if captcha fails
-    if (captchaToken == null) {
-      talker.warning('Captcha verification failed, blocking OTP resend');
-      if (!mounted) return;
-      setState(() => _isLoading = false);
-      VitaloSnackBar.showError(
-        context,
-        'Verification failed. Please try again.',
-      );
-      return;
-    }
-
     final result = await _authService.sendOtpToEmail(
       _emailController.text.trim(),
-      captchaToken: captchaToken,
     );
 
     if (!mounted) return;
@@ -206,7 +169,7 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
         case AuthSuccess(:final data):
           if (data != null && mounted) {
             talker.info('OTP verification successful, navigating to dashboard');
-            context.go('/dashboard');
+            context.go(AppRoutes.dashboard);
           } else {
             talker.error('OTP verification returned null user data');
             setState(() => _isLoading = false);
@@ -271,22 +234,6 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
                   _buildEmailStep(theme, colorScheme),
                   _buildOtpStep(theme, colorScheme),
                 ],
-              ),
-            ),
-
-            // Pre-initialized Captcha - Invisible, mounts on screen load for instant verification
-            // Using Offstage instead of Positioned to avoid clipping issues
-            Offstage(
-              offstage: true,
-              child: VitaloCaptcha(
-                key: _captchaKey,
-                siteKey: AppConfig.turnstileSiteKey,
-                baseUrl: AppConfig.turnstileBaseUrl,
-                options: TurnstileOptions(mode: TurnstileMode.invisible),
-                onTokenReceived: (_) {},
-                onError: (error) {
-                  VitaloSnackBar.showWarning(context, error);
-                },
               ),
             ),
           ],

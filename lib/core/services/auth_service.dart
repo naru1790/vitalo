@@ -29,53 +29,11 @@ class AuthService {
 
   User? get currentUser => _supabase.auth.currentUser;
 
-  /// Check if current user is anonymous (guest mode)
-  /// TODO: Update Postgres RLS policies to restrict anonymous users from writing to public tables
-  bool get isAnonymous {
-    final user = currentUser;
-    if (user == null) return false;
-    return user.isAnonymous;
-  }
-
-  // ──────────────────────────────────────────────────────────────────────────
-  // Anonymous Auth
-  // ──────────────────────────────────────────────────────────────────────────
-
-  /// Sign in anonymously (Guest Mode)
-  /// Session persists until sign-out or app data deletion
-  /// Uses captcha token to prevent bot abuse and database bloat
-  Future<String?> signInAnonymously({String? captchaToken}) async {
-    talker.info('Anonymous sign-in started');
-    try {
-      final response = await _supabase.auth.signInAnonymously(
-        captchaToken: captchaToken,
-      );
-
-      if (response.user == null) {
-        talker.warning('Anonymous sign-in failed: no user returned');
-        return 'Failed to create guest session. Please try again.';
-      }
-
-      talker.info('Anonymous sign-in successful');
-      return null;
-    } on SocketException catch (e, stack) {
-      talker.warning('Network error during anonymous sign-in', e, stack);
-      return 'Network error. Guest mode requires internet connection.';
-    } on AuthException catch (e, stack) {
-      talker.error('Anonymous sign-in failed', e, stack);
-      return _mapError(e.message);
-    } catch (e, stack) {
-      talker.error('Anonymous sign-in unexpected error', e, stack);
-      return 'Guest login failed: ${e.toString()}';
-    }
-  }
-
   // ──────────────────────────────────────────────────────────────────────────
   // OAuth Methods
   // ──────────────────────────────────────────────────────────────────────────
 
   /// Sign in with Apple (OAuth)
-  /// Note: Captcha protection not available for OAuth in current Supabase version
   Future<String?> signInWithApple() async {
     talker.info('Apple OAuth sign-in started');
     try {
@@ -162,11 +120,7 @@ class AuthService {
   // ──────────────────────────────────────────────────────────────────────────
 
   /// Send OTP code to email
-  /// [captchaToken] - Optional Cloudflare Turnstile token for bot protection
-  Future<AuthResult<void>> sendOtpToEmail(
-    String email, {
-    String? captchaToken,
-  }) async {
+  Future<AuthResult<void>> sendOtpToEmail(String email) async {
     talker.info('OTP send started');
     try {
       final cleanEmail = email.trim().toLowerCase();
@@ -181,7 +135,6 @@ class AuthService {
         emailRedirectTo: null,
         shouldCreateUser: true,
         data: {'type': 'email'},
-        captchaToken: captchaToken,
       );
 
       talker.info('OTP sent successfully');
@@ -201,12 +154,7 @@ class AuthService {
   }
 
   /// Verify OTP code for email
-  /// [captchaToken] - Optional Cloudflare Turnstile token for bot protection
-  Future<AuthResult<User>> verifyOtp(
-    String email,
-    String token, {
-    String? captchaToken,
-  }) async {
+  Future<AuthResult<User>> verifyOtp(String email, String token) async {
     talker.debug('AuthService.verifyOtp called');
     try {
       final cleanEmail = email.trim().toLowerCase();
@@ -221,7 +169,6 @@ class AuthService {
         email: cleanEmail,
         token: cleanToken,
         type: OtpType.email,
-        captchaToken: captchaToken,
       );
 
       if (response.user == null) {
