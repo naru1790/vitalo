@@ -179,7 +179,7 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
           icon: const Icon(Icons.arrow_back),
           onPressed: _goBack,
         ),
-        backgroundColor: Colors.transparent,
+        backgroundColor: colorScheme.surface,
         elevation: 0,
       ),
       body: GestureDetector(
@@ -237,11 +237,11 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
                 ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide(color: Colors.grey.shade300),
+                  borderSide: BorderSide(color: colorScheme.outline),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide(color: Colors.grey.shade300),
+                  borderSide: BorderSide(color: colorScheme.outline),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),

@@ -128,7 +128,7 @@ class _FluxMascotState extends State<FluxMascot> with TickerProviderStateMixin {
                           width: widget.size * 0.12,
                           height: widget.size * 0.06,
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.3),
+                            color: AppColors.shimmer.withOpacity(0.3),
                             borderRadius: BorderRadius.circular(100),
                           ),
                         ),

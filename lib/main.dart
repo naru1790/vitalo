@@ -1,19 +1,46 @@
+import 'dart:ui';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:talker_flutter/talker_flutter.dart';
 
+import 'core/config.dart';
 import 'core/router.dart';
 import 'core/theme/app_theme.dart';
+
+/// Global Talker instance for observability
+final talker = Talker(
+  settings: TalkerSettings(
+    enabled: true,
+    useHistory: true,
+    maxHistoryItems: 1000,
+    useConsoleLogs: kDebugMode,
+  ),
+);
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // TODO: Move to environment variables for production
-  // Use flutter_dotenv or similar package
+  // Catch Flutter framework errors
+  FlutterError.onError = (details) {
+    talker.handle(details.exception, details.stack, 'FlutterError');
+  };
+
+  // Catch async errors
+  PlatformDispatcher.instance.onError = (error, stack) {
+    talker.handle(error, stack, 'PlatformError');
+    return true;
+  };
+
+  // Initialize Supabase with environment variables
   await Supabase.initialize(
-    url: 'https://gttouytwcvjcolvbgyhc.supabase.co',
-    anonKey: 'sb_publishable_VZ0nZU5r0oDCtF8PoCKhqA_-g2NQHNf',
+    url: AppConfig.supabaseUrl,
+    anonKey: AppConfig.supabaseAnonKey,
   );
+
+  talker.info('App initialized successfully');
 
   runApp(const ProviderScope(child: VitaloApp()));
 }

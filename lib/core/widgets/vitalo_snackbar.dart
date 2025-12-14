@@ -9,7 +9,7 @@ class VitaloSnackBar {
       SnackBar(
         content: Row(
           children: [
-            const Icon(Icons.check_circle_outline, color: Colors.white),
+            const Icon(Icons.check_circle_outline, color: AppColors.onSuccess),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
@@ -17,7 +17,7 @@ class VitaloSnackBar {
                 style: const TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w500,
-                  color: Colors.white,
+                  color: AppColors.onSuccess,
                 ),
               ),
             ),
@@ -43,7 +43,7 @@ class VitaloSnackBar {
           children: [
             Icon(
               Icons.error_outline,
-              color: isDark ? AppColors.darkBackground : Colors.white,
+              color: isDark ? AppColors.darkBackground : AppColors.onError,
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -52,7 +52,7 @@ class VitaloSnackBar {
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w500,
-                  color: isDark ? AppColors.darkBackground : Colors.white,
+                  color: isDark ? AppColors.darkBackground : AppColors.onError,
                 ),
               ),
             ),
@@ -74,7 +74,7 @@ class VitaloSnackBar {
       SnackBar(
         content: Row(
           children: [
-            const Icon(Icons.info_outline, color: Colors.white),
+            const Icon(Icons.info_outline, color: AppColors.onInfo),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
@@ -82,7 +82,7 @@ class VitaloSnackBar {
                 style: const TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w500,
-                  color: Colors.white,
+                  color: AppColors.onInfo,
                 ),
               ),
             ),
@@ -104,7 +104,10 @@ class VitaloSnackBar {
       SnackBar(
         content: Row(
           children: [
-            const Icon(Icons.warning_amber_outlined, color: Colors.white),
+            const Icon(
+              Icons.warning_amber_outlined,
+              color: AppColors.onWarning,
+            ),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
@@ -112,7 +115,7 @@ class VitaloSnackBar {
                 style: const TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w500,
-                  color: Colors.white,
+                  color: AppColors.onWarning,
                 ),
               ),
             ),

@@ -50,4 +50,13 @@ class AppColors {
   static const error = Color(0xFFE11D48);
   static const darkError = Color(0xFFFDA4AF);
   static const info = Color(0xFF4F46E5);
+
+  // ───── Snackbar / Overlay Text ─────
+  static const onSuccess = Color(0xFFFFFFFF);
+  static const onWarning = Color(0xFFFFFFFF);
+  static const onError = Color(0xFFFFFFFF);
+  static const onInfo = Color(0xFFFFFFFF);
+
+  // ───── Decorative / Effects ─────
+  static const shimmer = Color(0xFFFFFFFF);
 }

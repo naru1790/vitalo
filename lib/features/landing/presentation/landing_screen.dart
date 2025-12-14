@@ -189,7 +189,7 @@ class _ActionsSectionState extends State<_ActionsSection> {
                     onPressed: _isLoading ? () {} : _handleGoogleSignIn,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
-                      side: BorderSide(color: Colors.grey.shade300),
+                      side: BorderSide(color: colorScheme.outline),
                     ),
                     elevation: 0,
                     padding: const EdgeInsets.all(1),
@@ -199,7 +199,7 @@ class _ActionsSectionState extends State<_ActionsSection> {
                   Positioned.fill(
                     child: Container(
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.8),
+                        color: colorScheme.surface.withOpacity(0.8),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Center(
@@ -225,7 +225,7 @@ class _ActionsSectionState extends State<_ActionsSection> {
             child: OutlinedButton(
               onPressed: _isLoading ? null : _handleGuestLogin,
               style: OutlinedButton.styleFrom(
-                side: BorderSide(color: Colors.grey.shade400, width: 1.5),
+                side: BorderSide(color: colorScheme.outline, width: 1.5),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -236,13 +236,13 @@ class _ActionsSectionState extends State<_ActionsSection> {
                       height: 18,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: Colors.grey.shade700,
+                        color: colorScheme.onSurfaceVariant,
                       ),
                     )
                   : Text(
                       'Continue as Guest',
                       style: theme.textTheme.bodyMedium?.copyWith(
-                        color: Colors.grey.shade700,
+                        color: colorScheme.onSurfaceVariant,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -259,7 +259,7 @@ class _ActionsSectionState extends State<_ActionsSection> {
                 text: TextSpan(
                   text: 'Already have an account? ',
                   style: theme.textTheme.bodySmall?.copyWith(
-                    color: Colors.grey[600],
+                    color: colorScheme.onSurfaceVariant,
                     fontWeight: FontWeight.normal,
                   ),
                   children: [

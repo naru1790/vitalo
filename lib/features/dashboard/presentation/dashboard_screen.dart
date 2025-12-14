@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/services/auth_service.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/vitalo_snackbar.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -21,9 +22,7 @@ class DashboardScreen extends StatelessWidget {
             onPressed: () async {
               final error = await authService.signOut();
               if (error != null && context.mounted) {
-                ScaffoldMessenger.of(
-                  context,
-                ).showSnackBar(SnackBar(content: Text(error)));
+                VitaloSnackBar.showError(context, error);
               } else if (context.mounted) {
                 context.go('/');
               }
