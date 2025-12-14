@@ -6,11 +6,7 @@
       "request": "launch",
       "type": "dart",
       "program": "lib/main.dart",
-      "args": [
-        "--dart-define=SUPABASE_URL=https://gttouytwcvjcolvbgyhc.supabase.co",
-        "--dart-define=SUPABASE_ANON_KEY=sb_publishable_VZ0nZU5r0oDCtF8PoCKhqA_-g2NQHNf",
-        "--dart-define=ENVIRONMENT=dev"
-      ]
+      "args": ["--dart-define=ENVIRONMENT=dev"]
     },
     {
       "name": "Vitalo (Profile)",
@@ -18,11 +14,7 @@
       "type": "dart",
       "program": "lib/main.dart",
       "flutterMode": "profile",
-      "args": [
-        "--dart-define=SUPABASE_URL=https://gttouytwcvjcolvbgyhc.supabase.co",
-        "--dart-define=SUPABASE_ANON_KEY=sb_publishable_VZ0nZU5r0oDCtF8PoCKhqA_-g2NQHNf",
-        "--dart-define=ENVIRONMENT=staging"
-      ]
+      "args": ["--dart-define=ENVIRONMENT=staging"]
     },
     {
       "name": "Vitalo (Release)",
@@ -30,11 +22,7 @@
       "type": "dart",
       "program": "lib/main.dart",
       "flutterMode": "release",
-      "args": [
-        "--dart-define=SUPABASE_URL=https://gttouytwcvjcolvbgyhc.supabase.co",
-        "--dart-define=SUPABASE_ANON_KEY=sb_publishable_VZ0nZU5r0oDCtF8PoCKhqA_-g2NQHNf",
-        "--dart-define=ENVIRONMENT=prod"
-      ]
+      "args": ["--dart-define=ENVIRONMENT=prod"]
     }
   ]
 }

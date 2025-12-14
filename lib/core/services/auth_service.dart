@@ -41,10 +41,13 @@ class AuthService {
 
   /// Sign in anonymously (Guest Mode)
   /// Session persists until sign-out or app data deletion
-  Future<String?> signInAnonymously() async {
+  /// Uses captcha token to prevent bot abuse and database bloat
+  Future<String?> signInAnonymously({String? captchaToken}) async {
     talker.info('Anonymous sign-in started');
     try {
-      final response = await _supabase.auth.signInAnonymously();
+      final response = await _supabase.auth.signInAnonymously(
+        captchaToken: captchaToken,
+      );
 
       if (response.user == null) {
         talker.warning('Anonymous sign-in failed: no user returned');
@@ -70,6 +73,7 @@ class AuthService {
   // ──────────────────────────────────────────────────────────────────────────
 
   /// Sign in with Apple (OAuth)
+  /// Note: Captcha protection not available for OAuth in current Supabase version
   Future<String?> signInWithApple() async {
     talker.info('Apple OAuth sign-in started');
     try {
@@ -92,6 +96,7 @@ class AuthService {
   }
 
   /// Sign in with Google (OAuth)
+  /// Note: Captcha protection not available for OAuth in current Supabase version
   Future<String?> signInWithGoogle() async {
     talker.info('Google OAuth sign-in started');
     try {
@@ -118,7 +123,11 @@ class AuthService {
   // ──────────────────────────────────────────────────────────────────────────
 
   /// Send OTP code to email
-  Future<AuthResult<void>> sendOtpToEmail(String email) async {
+  /// [captchaToken] - Optional Cloudflare Turnstile token for bot protection
+  Future<AuthResult<void>> sendOtpToEmail(
+    String email, {
+    String? captchaToken,
+  }) async {
     talker.info('OTP send started');
     try {
       final cleanEmail = email.trim().toLowerCase();
@@ -133,6 +142,7 @@ class AuthService {
         emailRedirectTo: null,
         shouldCreateUser: true,
         data: {'type': 'email'},
+        captchaToken: captchaToken,
       );
 
       talker.info('OTP sent successfully');
@@ -152,8 +162,13 @@ class AuthService {
   }
 
   /// Verify OTP code for email
-  Future<AuthResult<User>> verifyOtp(String email, String token) async {
-    talker.info('OTP verification started');
+  /// [captchaToken] - Optional Cloudflare Turnstile token for bot protection
+  Future<AuthResult<User>> verifyOtp(
+    String email,
+    String token, {
+    String? captchaToken,
+  }) async {
+    talker.debug('AuthService.verifyOtp called');
     try {
       final cleanEmail = email.trim().toLowerCase();
       final cleanToken = token.trim();
@@ -167,6 +182,7 @@ class AuthService {
         email: cleanEmail,
         token: cleanToken,
         type: OtpType.email,
+        captchaToken: captchaToken,
       );
 
       if (response.user == null) {

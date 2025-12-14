@@ -1,10 +1,28 @@
 import 'package:flutter/material.dart';
 
+import '../../../main.dart';
 import '../../../core/theme/app_spacing.dart';
 
 /// Terms of Service screen
-class TermsOfServiceScreen extends StatelessWidget {
+class TermsOfServiceScreen extends StatefulWidget {
   const TermsOfServiceScreen({super.key});
+
+  @override
+  State<TermsOfServiceScreen> createState() => _TermsOfServiceScreenState();
+}
+
+class _TermsOfServiceScreenState extends State<TermsOfServiceScreen> {
+  @override
+  void initState() {
+    super.initState();
+    talker.info('Terms of Service screen opened');
+  }
+
+  @override
+  void dispose() {
+    talker.debug('Terms of Service screen disposed');
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {

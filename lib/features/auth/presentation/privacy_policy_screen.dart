@@ -1,10 +1,28 @@
 import 'package:flutter/material.dart';
 
+import '../../../main.dart';
 import '../../../core/theme/app_spacing.dart';
 
 /// Privacy Policy screen
-class PrivacyPolicyScreen extends StatelessWidget {
+class PrivacyPolicyScreen extends StatefulWidget {
   const PrivacyPolicyScreen({super.key});
+
+  @override
+  State<PrivacyPolicyScreen> createState() => _PrivacyPolicyScreenState();
+}
+
+class _PrivacyPolicyScreenState extends State<PrivacyPolicyScreen> {
+  @override
+  void initState() {
+    super.initState();
+    talker.info('Privacy Policy screen opened');
+  }
+
+  @override
+  void dispose() {
+    talker.debug('Privacy Policy screen disposed');
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {

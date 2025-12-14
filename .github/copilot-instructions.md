@@ -590,17 +590,65 @@ import 'package:vitalo/core/theme/app_colors.dart';
 import 'package:vitalo/features/auth/domain/auth_repository.dart';
 ```
 
-### Comments — Explain WHY, not WHAT
+### Comments — Avoid Unnecessary Comments, Use Self-Documenting Code
+
+**Philosophy:** Code should be self-explanatory through proper naming. Comments should explain WHY, not WHAT.
 
 ```dart
-// ❌ WRONG
+// ❌ WRONG — Obvious comment
 // Check if user is null
 if (user == null) return;
 
-// ✅ CORRECT
-// Guest users don't have profile data yet
+// ❌ WRONG — Comment instead of proper naming
+// Get the data
+final d = await repo.fetch();
+
+// ✅ CORRECT — Self-documenting with proper names
+final userData = await userRepository.fetchProfile();
+if (userData == null) return;
+
+// ✅ CORRECT — Comment explains WHY when necessary
+// Guest users don't have profile data yet, skip personalization
 if (user == null) return;
 ```
+
+**When to Use Comments:**
+
+- Explain business logic rationale
+- Document workarounds for known issues
+- Clarify non-obvious algorithm choices
+- Add TODO/FIXME with ticket references
+- Explain regex patterns or complex calculations
+
+**When NOT to Use Comments:**
+
+- Describing what code does (use better names instead)
+- Repeating variable/function names
+- Obvious flow control logic
+- Type information (Dart has strong typing)
+
+### Naming Conventions — Be Descriptive and Precise
+
+```dart
+// ❌ BAD — Vague, requires comments
+final data = await service.get();
+final temp = calculate(data);
+final result = temp * 2;
+
+// ✅ GOOD — Self-documenting
+final healthMetrics = await healthService.fetchDailyMetrics();
+final averageHeartRate = calculateMean(healthMetrics.heartRates);
+final maxAllowedHeartRate = averageHeartRate * 2;
+```
+
+**Naming Guidelines:**
+
+- **Variables:** Descriptive nouns (`userProfile`, `authToken`, not `data`, `temp`)
+- **Functions:** Verb phrases (`calculateBMI`, `validateEmail`, not `process`, `handle`)
+- **Booleans:** Question format (`isLoading`, `hasError`, `canSubmit`)
+- **Private members:** Prefix with `_` (`_controller`, `_handleSubmit`)
+- **Constants:** Descriptive ALL_CAPS only for primitives (`const maxRetries = 3`)
+- **Classes:** Clear, singular nouns (`AuthService`, `UserRepository`, not `Helper`, `Manager`)
 
 ### Key Conventions
 
@@ -646,3 +694,5 @@ if (user == null) return;
 | Side effects in `build()`         | Use `ref.listen`, `initState`, callbacks |
 | Mutable state objects             | Use `freezed` or immutable classes       |
 | `await` without `mounted` check   | `if (!mounted) return;` after await      |
+| Unnecessary comments              | Use self-documenting names               |
+| Vague names (`data`, `temp`)      | Descriptive names (`userProfile`, `avg`) |

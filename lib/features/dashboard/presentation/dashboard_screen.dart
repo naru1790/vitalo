@@ -1,11 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../../main.dart';
 import '../../../core/services/auth_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/vitalo_snackbar.dart';
 
-class DashboardScreen extends StatelessWidget {
+class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
+
+  @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+  @override
+  void initState() {
+    super.initState();
+    final authService = AuthService();
+    final isGuest = authService.isAnonymous;
+    talker.info(
+      'Dashboard screen opened - User type: ${isGuest ? "Guest" : "Authenticated"}',
+    );
+  }
+
+  @override
+  void dispose() {
+    talker.debug('Dashboard screen disposed');
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -20,10 +42,13 @@ class DashboardScreen extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () async {
+              talker.info('Sign out initiated from dashboard');
               final error = await authService.signOut();
               if (error != null && context.mounted) {
+                talker.warning('Sign out failed: $error');
                 VitaloSnackBar.showError(context, error);
               } else if (context.mounted) {
+                talker.info('Sign out successful, navigating to landing');
                 context.go('/');
               }
             },

@@ -2,12 +2,16 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:cloudflare_turnstile/cloudflare_turnstile.dart';
 
+import '../../../main.dart';
+import '../../../core/config.dart';
 import '../../../core/services/auth_service.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/loading_button.dart';
 import '../../../core/widgets/otp_input.dart';
 import '../../../core/widgets/vitalo_snackbar.dart';
+import '../../../core/widgets/vitalo_captcha.dart';
 
 /// Email Sign-In Screen with Password-less OTP Flow
 /// Step 1: Email Entry
@@ -31,8 +35,18 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
   int _resendCountdown = 0;
   Timer? _resendTimer;
 
+  // Captcha state
+  final GlobalKey<VitaloCaptchaState> _captchaKey = GlobalKey();
+
+  @override
+  void initState() {
+    super.initState();
+    talker.info('Email sign-in screen opened');
+  }
+
   @override
   void dispose() {
+    talker.debug('Email sign-in screen disposed');
     _pageController.dispose();
     _emailController.dispose();
     _otpController.dispose();
@@ -53,15 +67,38 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
   }
 
   Future<void> _sendCode() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate()) {
+      talker.debug('Email validation failed');
+      return;
+    }
+
+    talker.info(
+      'Send OTP code requested for email: ${_emailController.text.trim()}',
+    );
 
     // Dismiss keyboard
     FocusScope.of(context).unfocus();
 
     setState(() => _isLoading = true);
 
+    // Get fresh captcha token to prevent email spam abuse
+    final captchaToken = await _captchaKey.currentState?.verify();
+
+    // SECURITY: Block if captcha fails - prevents email spam
+    if (captchaToken == null) {
+      talker.warning('Captcha verification failed, blocking OTP send');
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      VitaloSnackBar.showError(
+        context,
+        'Verification failed. Please try again.',
+      );
+      return;
+    }
+
     final result = await _authService.sendOtpToEmail(
       _emailController.text.trim(),
+      captchaToken: captchaToken,
     );
 
     if (!mounted) return;
@@ -70,8 +107,10 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
 
     switch (result) {
       case AuthFailure(:final message):
+        talker.warning('OTP send failed: $message');
         VitaloSnackBar.showError(context, message);
       case AuthSuccess():
+        talker.info('OTP sent successfully, moving to verification step');
         setState(() => _isStep2 = true);
         _pageController.animateToPage(
           1,
@@ -83,12 +122,34 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
   }
 
   Future<void> _resendCode() async {
-    if (_resendCountdown > 0) return;
+    if (_resendCountdown > 0) {
+      talker.debug(
+        'Resend blocked by countdown: ${_resendCountdown}s remaining',
+      );
+      return;
+    }
 
+    talker.info('Resend OTP code requested');
     setState(() => _isLoading = true);
+
+    // Get fresh captcha token for resend
+    final captchaToken = await _captchaKey.currentState?.verify();
+
+    // SECURITY: Block if captcha fails
+    if (captchaToken == null) {
+      talker.warning('Captcha verification failed, blocking OTP resend');
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      VitaloSnackBar.showError(
+        context,
+        'Verification failed. Please try again.',
+      );
+      return;
+    }
 
     final result = await _authService.sendOtpToEmail(
       _emailController.text.trim(),
+      captchaToken: captchaToken,
     );
 
     if (!mounted) return;
@@ -97,20 +158,28 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
 
     switch (result) {
       case AuthFailure(:final message):
+        talker.warning('OTP resend failed: $message');
         VitaloSnackBar.showError(context, message);
       case AuthSuccess():
+        talker.info('OTP resent successfully');
         _startResendCountdown();
         VitaloSnackBar.showSuccess(context, 'Code sent!');
     }
   }
 
   Future<void> _verifyOtp() async {
-    if (_otpController.text.length != 6 || _isLoading) {
-      if (_otpController.text.length != 6) {
-        VitaloSnackBar.showError(context, 'Please enter the complete code');
-      }
+    // Early exit if already loading or incomplete code
+    if (_isLoading) return;
+
+    if (_otpController.text.length != 6) {
+      talker.debug(
+        'OTP verification blocked: incomplete code (${_otpController.text.length}/6)',
+      );
+      VitaloSnackBar.showError(context, 'Please enter the complete code');
       return;
     }
+
+    talker.info('OTP verification started');
 
     // Dismiss keyboard
     FocusScope.of(context).unfocus();
@@ -118,6 +187,9 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
     setState(() => _isLoading = true);
 
     try {
+      // NOTE: Captcha not needed for OTP verification
+      // Standard practice: captcha protects email sending (abuse prevention),
+      // not verification (user already has valid OTP token)
       final result = await _authService.verifyOtp(
         _emailController.text.trim(),
         _otpController.text,
@@ -127,13 +199,16 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
 
       switch (result) {
         case AuthFailure(:final message):
+          talker.warning('OTP verification failed: $message');
           setState(() => _isLoading = false);
           VitaloSnackBar.showError(context, message);
           _otpController.clear();
         case AuthSuccess(:final data):
           if (data != null && mounted) {
+            talker.info('OTP verification successful, navigating to dashboard');
             context.go('/dashboard');
           } else {
+            talker.error('OTP verification returned null user data');
             setState(() => _isLoading = false);
             VitaloSnackBar.showError(
               context,
@@ -142,7 +217,8 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
             _otpController.clear();
           }
       }
-    } catch (e) {
+    } catch (e, stack) {
+      talker.error('OTP verification exception', e, stack);
       if (mounted) {
         setState(() => _isLoading = false);
         VitaloSnackBar.showError(
@@ -156,6 +232,7 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
 
   void _goBack() {
     if (_isStep2) {
+      talker.debug('User navigated back from OTP verification to email entry');
       setState(() => _isStep2 = false);
       _pageController.animateToPage(
         0,
@@ -184,15 +261,35 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
       ),
       body: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
-        child: SafeArea(
-          child: PageView(
-            controller: _pageController,
-            physics: const NeverScrollableScrollPhysics(),
-            children: [
-              _buildEmailStep(theme, colorScheme),
-              _buildOtpStep(theme, colorScheme),
-            ],
-          ),
+        child: Stack(
+          children: [
+            SafeArea(
+              child: PageView(
+                controller: _pageController,
+                physics: const NeverScrollableScrollPhysics(),
+                children: [
+                  _buildEmailStep(theme, colorScheme),
+                  _buildOtpStep(theme, colorScheme),
+                ],
+              ),
+            ),
+
+            // Pre-initialized Captcha - Invisible, mounts on screen load for instant verification
+            // Using Offstage instead of Positioned to avoid clipping issues
+            Offstage(
+              offstage: true,
+              child: VitaloCaptcha(
+                key: _captchaKey,
+                siteKey: AppConfig.turnstileSiteKey,
+                baseUrl: AppConfig.turnstileBaseUrl,
+                options: TurnstileOptions(mode: TurnstileMode.invisible),
+                onTokenReceived: (_) {},
+                onError: (error) {
+                  VitaloSnackBar.showWarning(context, error);
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );

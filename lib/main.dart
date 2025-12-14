@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -34,11 +32,25 @@ Future<void> main() async {
     return true;
   };
 
+  // Validate configuration
+  if (AppConfig.supabaseUrl.isEmpty || AppConfig.supabaseAnonKey.isEmpty) {
+    talker.critical(
+      'Missing Supabase configuration. Please set SUPABASE_URL and SUPABASE_ANON_KEY',
+    );
+    throw Exception('Missing Supabase configuration');
+  }
+
   // Initialize Supabase with environment variables
-  await Supabase.initialize(
-    url: AppConfig.supabaseUrl,
-    anonKey: AppConfig.supabaseAnonKey,
-  );
+  try {
+    await Supabase.initialize(
+      url: AppConfig.supabaseUrl,
+      anonKey: AppConfig.supabaseAnonKey,
+    );
+    talker.info('Supabase initialized successfully');
+  } catch (e, stack) {
+    talker.error('Failed to initialize Supabase', e, stack);
+    rethrow;
+  }
 
   talker.info('App initialized successfully');
 
