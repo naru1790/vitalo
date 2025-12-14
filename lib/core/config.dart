@@ -33,6 +33,26 @@ class AppConfig {
   );
 
   // ──────────────────────────────────────────────────────────────────────────
+  // Google Sign-In
+  // ──────────────────────────────────────────────────────────────────────────
+
+  /// Web client ID - Used for serverClientId on both platforms
+  /// REQUIRED for Supabase token exchange
+  static const googleWebClientId = String.fromEnvironment(
+    'GOOGLE_WEB_CLIENT_ID',
+    defaultValue:
+        '602124410968-oovj226gimqlvnufce3g7n0l0t4e5d30.apps.googleusercontent.com',
+  );
+
+  /// iOS client ID - Used for iOS-specific OAuth
+  /// REQUIRED for iOS Info.plist CFBundleURLSchemes
+  static const googleIosClientId = String.fromEnvironment(
+    'GOOGLE_IOS_CLIENT_ID',
+    defaultValue:
+        '602124410968-j668liquqqt1ljlildl99g42akecsrtu.apps.googleusercontent.com',
+  );
+
+  // ──────────────────────────────────────────────────────────────────────────
   // Environment
   // ──────────────────────────────────────────────────────────────────────────
 

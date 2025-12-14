@@ -1,7 +1,9 @@
 import 'dart:io';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../main.dart' show talker;
+import '../config.dart';
 
 /// Result type for auth operations
 sealed class AuthResult<T> {
@@ -95,22 +97,59 @@ class AuthService {
     }
   }
 
-  /// Sign in with Google (OAuth)
-  /// Note: Captcha protection not available for OAuth in current Supabase version
+  /// Sign in with Google using native flow
+  /// Uses GoogleSignIn to get ID token, then exchanges it with Supabase
+  /// Returns null on success, error message on failure
   Future<String?> signInWithGoogle() async {
-    talker.info('Google OAuth sign-in started');
+    talker.info('Google native sign-in started');
     try {
-      await _supabase.auth.signInWithOAuth(
-        OAuthProvider.google,
-        redirectTo: 'io.vitalo.app://login-callback',
+      // Configure GoogleSignIn with web client ID for token exchange
+      final googleSignIn = GoogleSignIn(
+        serverClientId: AppConfig.googleWebClientId,
+        // iOS client ID is handled via Info.plist CFBundleURLSchemes
+        scopes: ['email', 'profile'],
       );
-      talker.info('Google OAuth sign-in initiated');
-      return null;
+
+      // Trigger native Google Sign-In flow
+      talker.debug('Launching Google Sign-In UI');
+      final googleUser = await googleSignIn.signIn();
+
+      if (googleUser == null) {
+        talker.info('Google sign-in cancelled by user');
+        return 'Google sign-in cancelled';
+      }
+
+      // Get authentication tokens
+      talker.debug('Getting Google authentication tokens');
+      final googleAuth = await googleUser.authentication;
+      final idToken = googleAuth.idToken;
+      final accessToken = googleAuth.accessToken;
+
+      if (idToken == null) {
+        talker.error('Google sign-in failed: No ID token received');
+        return 'Google sign-in failed: No authentication token received';
+      }
+
+      // Exchange Google tokens with Supabase
+      talker.info('Exchanging Google tokens with Supabase');
+      final response = await _supabase.auth.signInWithIdToken(
+        provider: OAuthProvider.google,
+        idToken: idToken,
+        accessToken: accessToken,
+      );
+
+      if (response.user == null) {
+        talker.error('Supabase token exchange failed: No user returned');
+        return 'Authentication failed. Please try again.';
+      }
+
+      talker.info('Google sign-in successful, user ID: ${response.user!.id}');
+      return null; // Success
     } on SocketException catch (e, stack) {
       talker.warning('Network error during Google sign-in', e, stack);
       return 'Network error. Please check your internet connection.';
     } on AuthException catch (e, stack) {
-      talker.error('Google sign-in failed', e, stack);
+      talker.error('Supabase auth error during Google sign-in', e, stack);
       return _mapError(e.message);
     } catch (e, stack) {
       talker.error('Google sign-in unexpected error', e, stack);

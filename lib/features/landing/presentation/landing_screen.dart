@@ -9,6 +9,7 @@ import 'package:cloudflare_turnstile/cloudflare_turnstile.dart';
 
 import '../../../main.dart';
 import '../../../core/config.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/widgets/flux_mascot.dart';
 import '../../../core/services/auth_service.dart';
@@ -233,42 +234,16 @@ class _ActionsSectionState extends State<_ActionsSection> {
               SizedBox(
                 width: double.infinity,
                 height: 54,
-                child: Stack(
-                  children: [
-                    SizedBox(
-                      width: double.infinity,
-                      child: SignInButton(
-                        Buttons.google,
-                        text: 'Continue with Google',
-                        onPressed: _isLoading ? () {} : _handleGoogleSignIn,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          side: BorderSide(color: colorScheme.outline),
-                        ),
-                        elevation: 0,
-                        padding: const EdgeInsets.all(1),
-                      ),
-                    ),
-                    if (_loadingState == _LoadingState.google)
-                      Positioned.fill(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: colorScheme.surface.withOpacity(0.8),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Center(
-                            child: SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: colorScheme.primary,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                  ],
+                child: SignInButton(
+                  Buttons.google,
+                  text: 'Continue with Google',
+                  onPressed: _isLoading ? () {} : _handleGoogleSignIn,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    side: BorderSide(color: colorScheme.outline),
+                  ),
+                  elevation: 0,
+                  padding: const EdgeInsets.all(1),
                 ),
               ),
               const SizedBox(height: 16),
@@ -337,20 +312,16 @@ class _ActionsSectionState extends State<_ActionsSection> {
             ],
           ),
 
-          // Pre-initialized Captcha - mounts on screen load for instant verification
-          // Using Offstage instead of Positioned to avoid clipping issues
-          Offstage(
-            offstage: true,
-            child: VitaloCaptcha(
-              key: _captchaKey,
-              siteKey: AppConfig.turnstileSiteKey,
-              baseUrl: AppConfig.turnstileBaseUrl,
-              options: TurnstileOptions(mode: TurnstileMode.invisible),
-              onTokenReceived: (_) {},
-              onError: (error) {
-                VitaloSnackBar.showWarning(context, error);
-              },
-            ),
+          // Pre-initialized Captcha - invisible mode, always mounted for instant verification
+          VitaloCaptcha(
+            key: _captchaKey,
+            siteKey: AppConfig.turnstileSiteKey,
+            baseUrl: AppConfig.turnstileBaseUrl,
+            options: TurnstileOptions(mode: TurnstileMode.invisible),
+            onTokenReceived: (_) {},
+            onError: (error) {
+              VitaloSnackBar.showWarning(context, error);
+            },
           ),
         ],
       ),
