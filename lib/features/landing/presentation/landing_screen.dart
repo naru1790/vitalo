@@ -124,9 +124,19 @@ class _ActionsSectionState extends State<_ActionsSection> {
 
   Future<void> _handleGuestLogin() async {
     setState(() => _loadingState = _LoadingState.guest);
-    await Future.delayed(const Duration(milliseconds: 300));
+
+    final error = await _authService.signInAnonymously();
+
     if (!mounted) return;
-    context.go('/dashboard');
+    setState(() => _loadingState = _LoadingState.none);
+
+    if (error != null) {
+      // Network failure or other error - show retry option
+      VitaloSnackBar.showError(context, error);
+    } else {
+      // Seamless transition to dashboard
+      context.go('/dashboard');
+    }
   }
 
   void _handleEmailFlow() {

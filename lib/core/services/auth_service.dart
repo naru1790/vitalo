@@ -17,15 +17,45 @@ final class AuthFailure<T> extends AuthResult<T> {
 }
 
 /// Central authentication service for Vitalo
-/// Handles all Supabase Auth operations (OAuth, OTP, sign-out)
 class AuthService {
   final SupabaseClient _supabase;
 
   AuthService({SupabaseClient? supabase})
     : _supabase = supabase ?? Supabase.instance.client;
 
-  /// Get current user session
   User? get currentUser => _supabase.auth.currentUser;
+
+  /// Check if current user is anonymous (guest mode)
+  /// TODO: Update Postgres RLS policies to restrict anonymous users from writing to public tables
+  bool get isAnonymous {
+    final user = currentUser;
+    if (user == null) return false;
+    return user.isAnonymous;
+  }
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // Anonymous Auth
+  // ──────────────────────────────────────────────────────────────────────────
+
+  /// Sign in anonymously (Guest Mode)
+  /// Session persists until sign-out or app data deletion
+  Future<String?> signInAnonymously() async {
+    try {
+      final response = await _supabase.auth.signInAnonymously();
+
+      if (response.user == null) {
+        return 'Failed to create guest session. Please try again.';
+      }
+
+      return null;
+    } on SocketException catch (_) {
+      return 'Network error. Guest mode requires internet connection.';
+    } on AuthException catch (e) {
+      return _mapError(e.message);
+    } catch (e) {
+      return 'Guest login failed: ${e.toString()}';
+    }
+  }
 
   // ──────────────────────────────────────────────────────────────────────────
   // OAuth Methods
