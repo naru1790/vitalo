@@ -114,8 +114,8 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
         setState(() => _isStep2 = true);
         _pageController.animateToPage(
           1,
-          duration: const Duration(milliseconds: 400),
-          curve: Curves.easeInOut,
+          duration: const Duration(milliseconds: 350),
+          curve: Curves.easeOutCubic,
         );
         _startResendCountdown();
     }
@@ -236,8 +236,8 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
       setState(() => _isStep2 = false);
       _pageController.animateToPage(
         0,
-        duration: const Duration(milliseconds: 400),
-        curve: Curves.easeInOut,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOutCubic,
       );
       _resendTimer?.cancel();
     } else {
