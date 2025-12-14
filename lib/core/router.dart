@@ -8,11 +8,13 @@ import '../features/dashboard/presentation/dashboard_screen.dart';
 import '../features/landing/presentation/landing_screen.dart';
 import '../features/legal/presentation/privacy_policy_screen.dart';
 import '../features/legal/presentation/terms_of_service_screen.dart';
+import '../features/profile/presentation/profile_screen.dart';
 
 abstract class AppRoutes {
   static const home = '/';
   static const emailSignin = '/email-signin';
   static const dashboard = '/dashboard';
+  static const profile = '/profile';
   static const privacy = '/privacy';
   static const terms = '/terms';
 }
@@ -90,6 +92,15 @@ final router = GoRouter(
         context: context,
         state: state,
         child: const DashboardScreen(),
+      ),
+    ),
+    GoRoute(
+      path: AppRoutes.profile,
+      name: 'profile',
+      pageBuilder: (context, state) => _buildSmoothTransition(
+        context: context,
+        state: state,
+        child: const ProfileScreen(),
       ),
     ),
     GoRoute(
