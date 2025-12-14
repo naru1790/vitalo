@@ -273,16 +273,17 @@ class _ActionsSectionState extends State<_ActionsSection> {
               ),
               const SizedBox(height: 16),
 
+              // Guest login - Outlined button with accent border
               SizedBox(
                 width: double.infinity,
                 height: 48,
                 child: OutlinedButton(
                   onPressed: _isLoading ? null : _handleGuestLogin,
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: colorScheme.onSurface,
+                    foregroundColor: colorScheme.primary,
                     side: BorderSide(
-                      color: colorScheme.onSurface.withValues(alpha: 0.3),
-                      width: 1,
+                      color: colorScheme.primary.withValues(alpha: 0.5),
+                      width: 1.5,
                     ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
@@ -294,13 +295,12 @@ class _ActionsSectionState extends State<_ActionsSection> {
                           height: 18,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            color: colorScheme.onSurface,
+                            color: colorScheme.primary,
                           ),
                         )
                       : Text(
                           'Continue as Guest',
                           style: theme.textTheme.bodyMedium?.copyWith(
-                            color: colorScheme.onSurface.withValues(alpha: 0.6),
                             fontWeight: FontWeight.w500,
                           ),
                         ),

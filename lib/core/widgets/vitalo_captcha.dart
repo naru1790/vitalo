@@ -67,11 +67,6 @@ class VitaloCaptchaState extends State<VitaloCaptcha> {
   final TurnstileController _controller = TurnstileController();
   bool _isLoading = false;
   Completer<String?>? _verificationCompleter;
-  String? _cachedToken; // Store token if received before verify() called
-  DateTime? _tokenTimestamp; // Track when token was generated for expiry
-
-  // Cloudflare tokens expire in ~300 seconds, use 240s (4 min) for safety margin
-  static const _tokenValidityDuration = Duration(seconds: 240);
 
   @override
   void dispose() {
@@ -79,16 +74,8 @@ class VitaloCaptchaState extends State<VitaloCaptcha> {
     super.dispose();
   }
 
-  /// Check if cached token is still valid (not expired)
-  bool get _isCachedTokenValid {
-    if (_cachedToken == null || _tokenTimestamp == null) return false;
-    final elapsed = DateTime.now().difference(_tokenTimestamp!);
-    return elapsed < _tokenValidityDuration;
-  }
-
   /// Manually trigger captcha verification (for invisible mode)
   /// Returns a Future that completes when token is received
-  /// Optimized for slow Indian mobile networks - no arbitrary delays
   Future<String?> verify() async {
     // If already in progress, wait for existing result
     if (_isLoading && _verificationCompleter != null) {
@@ -96,30 +83,15 @@ class VitaloCaptchaState extends State<VitaloCaptcha> {
       return _verificationCompleter!.future;
     }
 
-    // If we have a valid cached token (not expired), use it immediately
-    if (_isCachedTokenValid) {
-      talker.debug('Using cached captcha token (still valid)');
-      final token = _cachedToken;
-      _cachedToken = null; // Consume the token
-      _tokenTimestamp = null;
-      return token;
-    } else if (_cachedToken != null) {
-      // Token expired, clear it
-      talker.debug('Cached token expired, requesting fresh token');
-      _cachedToken = null;
-      _tokenTimestamp = null;
-    }
-
     if (mounted) setState(() => _isLoading = true);
     _verificationCompleter = Completer<String?>();
     talker.debug('Captcha verification triggered');
 
     try {
-      // Request new token - the widget handles its own initialization
+      // Request new token
       await _controller.refreshToken();
 
-      // Wait for token with generous timeout for Indian networks
-      // 2G/3G can have 5-10s latency, edge cases even more
+      // Wait for token with timeout
       final result = await _verificationCompleter!.future.timeout(
         const Duration(seconds: 30),
         onTimeout: () {
@@ -148,8 +120,6 @@ class VitaloCaptchaState extends State<VitaloCaptcha> {
   /// Reset captcha widget (for retry scenarios)
   void reset() {
     talker.debug('Captcha reset');
-    _cachedToken = null; // Clear cached token
-    _tokenTimestamp = null; // Clear expiry timestamp
     _controller.refreshToken();
   }
 
@@ -170,19 +140,13 @@ class VitaloCaptchaState extends State<VitaloCaptcha> {
     if (mounted) setState(() => _isLoading = false);
     widget.onTokenReceived(token);
 
-    // Complete the verification future with the token if waiting
+    // Complete the verification future with the token
     if (_verificationCompleter != null &&
         !_verificationCompleter!.isCompleted) {
       _verificationCompleter!.complete(token);
-    } else {
-      // No one waiting - cache for immediate use on next verify() call
-      _cachedToken = token;
-      _tokenTimestamp = DateTime.now(); // Track expiry
-      talker.debug('Token cached for next verification (expires in 4 min)');
     }
 
     if (widget.autoResetOnSuccess) {
-      // Use addPostFrameCallback instead of Future.delayed
       WidgetsBinding.instance.addPostFrameCallback((_) => reset());
     }
   }
