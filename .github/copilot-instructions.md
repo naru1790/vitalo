@@ -311,11 +311,19 @@ Future<AuthResult<User>> verifyOtp(String email, String token) async {
 // ❌ WRONG
 talker.info('Token: $authToken');
 talker.debug('Password: $password');
+talker.info('User login: email=${user.email}'); // Exposes PII!
 
 // ✅ CORRECT — Log actions, not data
 talker.info('User authenticated successfully');
 talker.debug('Token refreshed, expires: ${token.expiresAt}');
+talker.info('User login: userid=${user.id}'); // Only log user ID, never email/name/phone
 ```
+
+**⚠️ CRITICAL: User Identifier Logging**
+
+- **NEVER log** emails, names, phone numbers, or any PII
+- **ONLY log** user IDs when user identification is needed
+- Use generic references: `'User tapped profile'` instead of `'${user.name} tapped profile'`
 
 ### Production Observability (Future)
 
@@ -653,12 +661,13 @@ final maxAllowedHeartRate = averageHeartRate * 2;
 ### Key Conventions
 
 1. **Delete unused code** — Verify no imports before removing files
-2. **Dark mode support** — Check `Theme.of(context).brightness` when using AppColors
-3. **Navigation** — Use `context.go('/path')` for replacement, `context.push('/path')` for stack
-4. **Loading states** — Use enum pattern or AsyncValue
-5. **Async in UI** — Always check `if (!mounted) return;` after await
-6. **Form validation** — Use `GlobalKey<FormState>` with validators
-7. **Trailing commas** — Always use for multi-line parameters
+2. **Clean up after refactoring** — ALWAYS remove unused imports, files, and dependencies after refactoring. Run `flutter analyze` to verify.
+3. **Dark mode support** — Check `Theme.of(context).brightness` when using AppColors
+4. **Navigation** — Use `context.go('/path')` for replacement, `context.push('/path')` for stack
+5. **Loading states** — Use enum pattern or AsyncValue
+6. **Async in UI** — Always check `if (!mounted) return;` after await
+7. **Form validation** — Use `GlobalKey<FormState>` with validators
+8. **Trailing commas** — Always use for multi-line parameters
 
 ---
 
@@ -696,3 +705,5 @@ final maxAllowedHeartRate = averageHeartRate * 2;
 | `await` without `mounted` check   | `if (!mounted) return;` after await      |
 | Unnecessary comments              | Use self-documenting names               |
 | Vague names (`data`, `temp`)      | Descriptive names (`userProfile`, `avg`) |
+| Log user email/name/phone         | Only log `userid=${user.id}`             |
+| Leave unused code after refactor  | Clean up imports, files, run `analyze`   |
