@@ -2,8 +2,8 @@ import 'dart:io' show Platform;
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:sign_in_with_apple/sign_in_with_apple.dart';
-import 'package:sign_in_button/sign_in_button.dart';
+
+import '../../../core/widgets/social_sign_in_button.dart';
 
 import '../../../main.dart';
 import '../../../core/router.dart';
@@ -164,37 +164,20 @@ class _ActionsSectionState extends State<_ActionsSection> {
         mainAxisAlignment: MainAxisAlignment.end,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Smart Auth: Show Apple button only on iOS
-          if (isIOS) ...[
-            SizedBox(
-              width: double.infinity,
-              height: 54,
-              child: SignInWithAppleButton(
-                onPressed: _isLoading ? () {} : _handleAppleSignIn,
-                style: SignInWithAppleButtonStyle.black,
-                text: _loadingState == _LoadingState.apple
-                    ? 'Signing in...'
-                    : 'Continue with Apple',
-              ),
-            ),
-            const SizedBox(height: 12),
-          ],
+          // Smart Auth: Show Apple button only on iOS (temporarily shown on all platforms for testing)
+          // TODO: Restore `if (isIOS)` check before production
+          SocialSignInButton(
+            provider: SocialProvider.apple,
+            onPressed: _isLoading ? null : _handleAppleSignIn,
+            isLoading: _loadingState == _LoadingState.apple,
+          ),
+          const SizedBox(height: 12),
 
           // Google Sign-In button
-          SizedBox(
-            width: double.infinity,
-            height: 54,
-            child: SignInButton(
-              Buttons.google,
-              text: 'Continue with Google',
-              onPressed: _isLoading ? () {} : _handleGoogleSignIn,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-                side: BorderSide(color: colorScheme.outline),
-              ),
-              elevation: 0,
-              padding: const EdgeInsets.all(1),
-            ),
+          SocialSignInButton(
+            provider: SocialProvider.google,
+            onPressed: _isLoading ? null : _handleGoogleSignIn,
+            isLoading: _loadingState == _LoadingState.google,
           ),
 
           const SizedBox(height: 12),

@@ -123,15 +123,38 @@ final router = GoRouter(
     ),
   ],
   redirect: (context, state) {
-    final isAuthenticated = Supabase.instance.client.auth.currentUser != null;
-    final isProtectedRoute = state.matchedLocation == AppRoutes.dashboard;
+    final session = Supabase.instance.client.auth.currentSession;
+    final user = Supabase.instance.client.auth.currentUser;
+    final isAuthenticated = session != null;
 
+    talker.debug(
+      'Router redirect check: path=${state.matchedLocation}, '
+      'session=${session != null}, user=${user?.email ?? "null"}',
+    );
+
+    final isOnLandingOrAuth =
+        state.matchedLocation == AppRoutes.home ||
+        state.matchedLocation == AppRoutes.emailSignin;
+    final isProtectedRoute =
+        state.matchedLocation == AppRoutes.dashboard ||
+        state.matchedLocation == AppRoutes.profile;
+
+    // If authenticated and on landing/auth pages, redirect to dashboard
+    if (isAuthenticated && isOnLandingOrAuth) {
+      talker.info(
+        'Navigation redirect: Authenticated user redirected to dashboard',
+      );
+      return AppRoutes.dashboard;
+    }
+
+    // If not authenticated and trying to access protected routes, redirect to home
     if (!isAuthenticated && isProtectedRoute) {
       talker.info(
         'Navigation redirect: Unauthenticated user blocked from ${state.matchedLocation}',
       );
       return AppRoutes.home;
     }
+
     return null;
   },
 );
