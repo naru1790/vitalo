@@ -200,14 +200,20 @@ class _EditSheetState extends State<_EditSheet> {
             decoration: InputDecoration(
               hintText: widget.placeholder,
               filled: true,
+              fillColor: colorScheme.surfaceContainerLow,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
-                borderSide: BorderSide(color: colorScheme.outline),
+                borderSide: BorderSide(color: colorScheme.outline, width: 1.5),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
+                borderSide: BorderSide(color: colorScheme.outline, width: 1.5),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
-                borderSide: BorderSide(color: colorScheme.primary, width: 2),
+                borderSide: BorderSide(color: colorScheme.primary, width: 1.5),
               ),
+              floatingLabelBehavior: FloatingLabelBehavior.never,
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: AppSpacing.md,
                 vertical: AppSpacing.sm,

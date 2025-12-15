@@ -269,11 +269,17 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
                 ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
-                  borderSide: BorderSide(color: colorScheme.outline),
+                  borderSide: BorderSide(
+                    color: colorScheme.outline,
+                    width: 1.5,
+                  ),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
-                  borderSide: BorderSide(color: colorScheme.outline),
+                  borderSide: BorderSide(
+                    color: colorScheme.outline,
+                    width: 1.5,
+                  ),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
@@ -281,14 +287,15 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
                 ),
                 errorBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
-                  borderSide: BorderSide(color: colorScheme.error),
+                  borderSide: BorderSide(color: colorScheme.error, width: 1.5),
                 ),
                 focusedErrorBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
                   borderSide: BorderSide(color: colorScheme.error, width: 2),
                 ),
                 filled: true,
-                fillColor: colorScheme.surfaceContainerHighest,
+                fillColor: colorScheme.surfaceContainerLow,
+                floatingLabelBehavior: FloatingLabelBehavior.auto,
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: AppSpacing.lg,
                   vertical: AppSpacing.lg,

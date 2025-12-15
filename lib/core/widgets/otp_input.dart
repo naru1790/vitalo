@@ -34,7 +34,7 @@ class OtpInput extends StatelessWidget {
         color: colorScheme.onSurface,
       ),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerHighest,
+        color: colorScheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
         border: Border.all(
           color: hasError ? colorScheme.error : colorScheme.outline,
@@ -45,9 +45,9 @@ class OtpInput extends StatelessWidget {
 
     final focusedPinTheme = defaultPinTheme.copyWith(
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerHighest,
+        color: colorScheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
-        border: Border.all(color: colorScheme.primary, width: 2),
+        border: Border.all(color: colorScheme.primary, width: 1.5),
       ),
     );
 

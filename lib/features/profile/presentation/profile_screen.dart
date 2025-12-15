@@ -377,7 +377,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             height: AppSpacing.avatarSizeLarge,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: colorScheme.surfaceContainerHighest,
+              color: colorScheme.surfaceContainerLow,
               border: Border.all(color: colorScheme.primary, width: 3),
             ),
             child: Center(
@@ -904,7 +904,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           Container(
             decoration: BoxDecoration(
-              color: colorScheme.surfaceContainerHighest,
+              color: colorScheme.surfaceContainerLow,
               borderRadius: BorderRadius.circular(AppSpacing.xs),
             ),
             child: Row(
