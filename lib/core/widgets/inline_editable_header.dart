@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../main.dart';
-import '../theme/app_colors.dart';
-import '../theme/app_spacing.dart';
+import '../theme.dart';
 
 /// Reusable inline editable header - tap to edit in bottom sheet.
 ///
@@ -14,7 +12,7 @@ class InlineEditableHeader extends StatefulWidget {
     required this.initialText,
     required this.onSave,
     this.placeholder = 'Add text',
-    this.fontSize = AppSpacing.iconSize - 2,
+    this.fontSize = AppSpacing.xl,
   });
 
   final String initialText;
@@ -48,7 +46,7 @@ class _InlineEditableHeaderState extends State<InlineEditableHeader> {
     showModalBottomSheet<String>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
+      showDragHandle: true,
       builder: (context) => _EditSheet(
         initialText: _currentText,
         placeholder: widget.placeholder,
@@ -63,19 +61,14 @@ class _InlineEditableHeaderState extends State<InlineEditableHeader> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     final isEmpty = _currentText.isEmpty;
 
-    final textColor = isDark ? AppColors.darkOnSurface : AppColors.onSurface;
-    final subtleColor = isDark
-        ? AppColors.darkOnSurfaceVariant
-        : AppColors.onSurfaceVariant;
-    final primaryColor = isDark ? AppColors.darkPrimary : AppColors.primary;
-
-    final textStyle = GoogleFonts.poppins(
+    final textStyle = textTheme.titleLarge?.copyWith(
       fontSize: widget.fontSize,
       fontWeight: FontWeight.w600,
-      color: isEmpty ? subtleColor : textColor,
+      color: isEmpty ? colorScheme.onSurfaceVariant : colorScheme.onSurface,
       height: 1.0,
     );
 
@@ -88,27 +81,25 @@ class _InlineEditableHeaderState extends State<InlineEditableHeader> {
       },
       behavior: HitTestBehavior.opaque,
       child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.iconSize + 2,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
         child: Stack(
           alignment: Alignment.center,
           clipBehavior: Clip.none,
           children: [
-            // Centered name
             Text(
               displayText,
               style: textStyle,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-            // Icon positioned to the right, outside of text
             Positioned(
-              right: -(AppSpacing.iconSize + 2),
+              right: -AppSpacing.xl,
               child: Icon(
                 Icons.edit_outlined,
                 size: AppSpacing.md,
-                color: isEmpty ? primaryColor : subtleColor,
+                color: isEmpty
+                    ? colorScheme.primary
+                    : colorScheme.onSurfaceVariant,
               ),
             ),
           ],
@@ -184,90 +175,63 @@ class _EditSheetState extends State<_EditSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor = isDark ? AppColors.darkPrimary : AppColors.primary;
-    final surfaceColor = isDark ? AppColors.darkSurface : AppColors.surface;
-    final bottomPadding = MediaQuery.of(context).viewInsets.bottom;
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    final bottomPadding = MediaQuery.viewInsetsOf(context).bottom;
 
-    return Container(
-      padding: EdgeInsets.only(bottom: bottomPadding),
-      decoration: BoxDecoration(
-        color: surfaceColor,
-        borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(AppSpacing.md),
-        ),
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+        AppSpacing.lg,
+        0,
+        AppSpacing.lg,
+        bottomPadding + AppSpacing.sm,
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.lg),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Handle bar
-            Center(
-              child: Container(
-                width: AppSpacing.xxxl,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? AppColors.darkOnSurfaceVariant.withValues(alpha: 0.3)
-                      : AppColors.onSurfaceVariant.withValues(alpha: 0.3),
-                  borderRadius: BorderRadius.circular(2),
-                ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          TextField(
+            controller: _controller,
+            focusNode: _focusNode,
+            textAlign: TextAlign.center,
+            textInputAction: TextInputAction.done,
+            onSubmitted: (_) => _save(),
+            style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
+            decoration: InputDecoration(
+              hintText: widget.placeholder,
+              filled: true,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
+                borderSide: BorderSide(color: colorScheme.outline),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
+                borderSide: BorderSide(color: colorScheme.primary, width: 2),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.md,
+                vertical: AppSpacing.sm,
               ),
             ),
-            const SizedBox(height: AppSpacing.lg),
-            // Text field
-            TextField(
-              controller: _controller,
-              focusNode: _focusNode,
-              textAlign: TextAlign.center,
-              textInputAction: TextInputAction.done,
-              onSubmitted: (_) => _save(),
-              style: GoogleFonts.poppins(
-                fontSize: AppSpacing.lg,
-                fontWeight: FontWeight.w600,
-              ),
-              decoration: InputDecoration(
-                hintText: widget.placeholder,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(
-                    AppSpacing.cardRadiusSmall,
-                  ),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(
-                    AppSpacing.cardRadiusSmall,
-                  ),
-                  borderSide: BorderSide(color: primaryColor, width: 2),
-                ),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.md,
-                  vertical: AppSpacing.sm,
-                ),
-              ),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          SizedBox(
+            height: AppSpacing.touchTargetMin,
+            child: FilledButton(
+              onPressed: _isSaving ? null : _save,
+              child: _isSaving
+                  ? SizedBox(
+                      width: AppSpacing.iconSizeSmall,
+                      height: AppSpacing.iconSizeSmall,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: colorScheme.onPrimary,
+                      ),
+                    )
+                  : const Text('Save'),
             ),
-            const SizedBox(height: AppSpacing.md),
-            // Save button
-            SizedBox(
-              height: AppSpacing.huge,
-              child: FilledButton(
-                onPressed: _isSaving ? null : _save,
-                child: _isSaving
-                    ? const SizedBox(
-                        width: AppSpacing.iconSizeSmall,
-                        height: AppSpacing.iconSizeSmall,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
-                    : const Text('Save'),
-              ),
-            ),
-            const SizedBox(height: AppSpacing.sm),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

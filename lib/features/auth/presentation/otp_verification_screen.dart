@@ -6,10 +6,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../main.dart';
 import '../../../core/router.dart';
 import '../../../core/services/auth_service.dart';
-import '../../../core/theme/app_spacing.dart';
+import '../../../core/theme.dart';
 import '../../../core/widgets/loading_button.dart';
 import '../../../core/widgets/otp_input.dart';
-import '../../../core/widgets/vitalo_snackbar.dart';
+import '../../../core/widgets/app_snackbar.dart';
 
 class OtpVerificationScreen extends StatefulWidget {
   const OtpVerificationScreen({super.key, required this.email, this.onSuccess});
@@ -165,10 +165,10 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     switch (result) {
       case AuthFailure(:final message):
         talker.warning('Resend OTP failed: $message');
-        VitaloSnackBar.showError(context, message);
+        AppSnackBar.showError(context, message);
       case AuthSuccess():
         talker.info('OTP resent successfully');
-        VitaloSnackBar.showSuccess(context, 'Verification code sent!');
+        AppSnackBar.showSuccess(context, 'Verification code sent!');
         _startCountdown();
     }
   }
@@ -203,7 +203,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                     children: [
                       Icon(
                         Icons.email_outlined,
-                        size: AppSpacing.giant,
+                        size: AppSpacing.iconSizeHero,
                         color: colorScheme.primary,
                       ),
                       const SizedBox(height: AppSpacing.xl),

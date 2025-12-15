@@ -5,13 +5,10 @@ import 'package:go_router/go_router.dart';
 import '../../../main.dart';
 import '../../../core/router.dart';
 import '../../../core/services/auth_service.dart';
-import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_spacing.dart';
+import '../../../core/theme.dart';
 import '../../../core/widgets/inline_editable_header.dart';
-import '../../../core/widgets/vitalo_snackbar.dart';
+import '../../../core/widgets/app_snackbar.dart';
 
-/// Profile & Settings Screen - Modern 2025 Inline-First UX
-/// No dialogs. Everything editable inline or via expanding cards.
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
@@ -157,7 +154,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _selectDateOfBirth() async {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colorScheme = Theme.of(context).colorScheme;
     final now = DateTime.now();
     final initialDate = _dateOfBirth != null
         ? DateTime.tryParse(_dateOfBirth!) ?? DateTime(now.year - 25)
@@ -171,12 +168,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       helpText: 'Date of Birth',
       builder: (context, child) {
         return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: ColorScheme.fromSeed(
-              seedColor: AppColors.primary,
-              brightness: isDark ? Brightness.dark : Brightness.light,
-            ),
-          ),
+          data: Theme.of(context).copyWith(colorScheme: colorScheme),
           child: child!,
         );
       },
@@ -214,7 +206,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       final error = await _authService.signOut();
       if (error != null && mounted) {
         talker.warning('Sign out failed: $error');
-        VitaloSnackBar.showError(context, error);
+        AppSnackBar.showError(context, error);
       } else if (mounted) {
         talker.info('Sign out successful');
         context.go(AppRoutes.home);
@@ -274,7 +266,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               if (typeController.text.trim().toUpperCase() == 'DELETE') {
                 Navigator.pop(context, true);
               } else {
-                VitaloSnackBar.showWarning(context, 'Type DELETE to confirm');
+                AppSnackBar.showWarning(context, 'Type DELETE to confirm');
               }
             },
             isDestructiveAction: true,
@@ -286,39 +278,35 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     if (secondConfirm == true && mounted) {
       talker.info('Account deletion confirmed');
-      VitaloSnackBar.showWarning(context, 'Account deletion coming soon.');
+      AppSnackBar.showWarning(context, 'Account deletion coming soon.');
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: isDark ? AppColors.darkBackground : AppColors.background,
+      backgroundColor: colorScheme.surface,
       body: CustomScrollView(
         slivers: [
-          // Collapsible App Bar with Avatar
           SliverAppBar(
             expandedHeight: 200,
             floating: false,
             pinned: true,
-            backgroundColor: isDark
-                ? AppColors.darkBackground
-                : AppColors.background,
+            backgroundColor: colorScheme.surface,
             leading: IconButton(
               icon: Icon(
                 Icons.arrow_back_rounded,
-                color: isDark ? AppColors.darkOnSurface : AppColors.onSurface,
+                color: colorScheme.onSurface,
               ),
               onPressed: () => context.pop(),
             ),
             flexibleSpace: FlexibleSpaceBar(
-              background: SafeArea(child: _buildHeader(isDark)),
+              background: SafeArea(child: _buildHeader(colorScheme)),
             ),
           ),
 
-          // Content
           SliverPadding(
             padding: const EdgeInsets.symmetric(
               horizontal: AppSpacing.pageHorizontalPadding,
@@ -327,59 +315,49 @@ class _ProfileScreenState extends State<ProfileScreen> {
               delegate: SliverChildListDelegate([
                 const SizedBox(height: AppSpacing.lg),
 
-                // Personal Info Section
-                _buildSectionTitle('Personal Info', isDark),
+                _buildSectionTitle('Personal Info', colorScheme),
                 const SizedBox(height: AppSpacing.sm),
-                _buildPersonalInfoCard(isDark),
+                _buildPersonalInfoCard(colorScheme),
 
                 const SizedBox(height: AppSpacing.xl),
 
-                // Body Metrics Section
-                _buildSectionTitle('Body Metrics', isDark),
+                _buildSectionTitle('Body Metrics', colorScheme),
                 const SizedBox(height: AppSpacing.sm),
-                _buildBodyMetricsCard(isDark),
+                _buildBodyMetricsCard(colorScheme),
 
                 const SizedBox(height: AppSpacing.xl),
 
-                // Dietary Preference Section
-                _buildSectionTitle('Dietary Preference', isDark),
+                _buildSectionTitle('Dietary Preference', colorScheme),
                 const SizedBox(height: AppSpacing.sm),
-                _buildDietaryChips(isDark),
+                _buildDietaryChips(colorScheme),
 
                 const SizedBox(height: AppSpacing.xl),
 
-                // Preferences Section
-                _buildSectionTitle('Preferences', isDark),
+                _buildSectionTitle('Preferences', colorScheme),
                 const SizedBox(height: AppSpacing.sm),
-                _buildPreferencesCard(isDark),
+                _buildPreferencesCard(colorScheme),
 
                 const SizedBox(height: AppSpacing.xl),
 
-                // Account Actions
-                _buildSectionTitle('Account', isDark),
+                _buildSectionTitle('Account', colorScheme),
                 const SizedBox(height: AppSpacing.sm),
-                _buildAccountCard(isDark),
+                _buildAccountCard(colorScheme),
 
                 const SizedBox(height: AppSpacing.xxl),
 
-                // Delete Account - Subtle at bottom
                 Center(
                   child: TextButton(
                     onPressed: _handleDeleteAccount,
                     child: Text(
                       'Delete My Account',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color:
-                            (isDark
-                                    ? AppColors.darkOnSurfaceVariant
-                                    : AppColors.onSurfaceVariant)
-                                .withValues(alpha: 0.6),
+                        color: colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ),
                 ),
 
-                const SizedBox(height: AppSpacing.huge),
+                const SizedBox(height: AppSpacing.xxxl),
               ]),
             ),
           ),
@@ -388,25 +366,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildHeader(bool isDark) {
+  Widget _buildHeader(ColorScheme colorScheme) {
     return Padding(
       padding: const EdgeInsets.only(top: 56),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Avatar
           Container(
-            width: AppSpacing.avatarSizeLarge + AppSpacing.xs,
-            height: AppSpacing.avatarSizeLarge + AppSpacing.xs,
+            width: AppSpacing.avatarSizeLarge,
+            height: AppSpacing.avatarSizeLarge,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: isDark
-                  ? AppColors.darkSurfaceVariant
-                  : AppColors.surfaceVariant,
-              border: Border.all(
-                color: isDark ? AppColors.darkPrimary : AppColors.primary,
-                width: 3,
-              ),
+              color: colorScheme.surfaceContainerHighest,
+              border: Border.all(color: colorScheme.primary, width: 3),
             ),
             child: Center(
               child: Text(
@@ -414,7 +386,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ? _getDisplayName()[0].toUpperCase()
                     : '?',
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  color: isDark ? AppColors.darkPrimary : AppColors.primary,
+                  color: colorScheme.primary,
                 ),
               ),
             ),
@@ -424,15 +396,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
             initialText: _displayName ?? _getDisplayName(),
             onSave: _saveDisplayName,
             placeholder: 'Add your name',
-            fontSize: 22, // titleLarge fontSize
+            fontSize: 22,
           ),
           const SizedBox(height: AppSpacing.xs),
           Text(
             _getUserEmail(),
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: isDark
-                  ? AppColors.darkOnSurfaceVariant
-                  : AppColors.onSurfaceVariant,
+              color: colorScheme.onSurfaceVariant,
             ),
           ),
         ],
@@ -440,56 +410,51 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildSectionTitle(String title, bool isDark) {
+  Widget _buildSectionTitle(String title, ColorScheme colorScheme) {
     return Padding(
-      padding: const EdgeInsets.only(left: AppSpacing.unit),
+      padding: const EdgeInsets.only(left: AppSpacing.xxs),
       child: Text(
         title,
         style: Theme.of(context).textTheme.titleSmall?.copyWith(
-          color: isDark
-              ? AppColors.darkOnSurfaceVariant
-              : AppColors.onSurfaceVariant,
+          color: colorScheme.onSurfaceVariant,
           fontWeight: FontWeight.w600,
         ),
       ),
     );
   }
 
-  Widget _buildPersonalInfoCard(bool isDark) {
+  Widget _buildPersonalInfoCard(ColorScheme colorScheme) {
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? AppColors.darkSurface : AppColors.surface,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
       ),
       child: Column(
         children: [
-          // Gender - Inline chips
           _buildChipSelector(
             icon: Icons.wc_outlined,
             label: 'Gender',
             options: const ['Male', 'Female', 'Other'],
             selected: _gender,
-            isDark: isDark,
+            colorScheme: colorScheme,
             onSelected: (value) {
               setState(() => _gender = value);
               talker.info('Gender set: $value');
             },
           ),
 
-          _buildDivider(isDark),
+          _buildDivider(colorScheme),
 
-          // Date of Birth - Tap to pick
           _buildTappableRow(
             icon: Icons.cake_outlined,
             label: 'Date of Birth',
             value: _formatDateOfBirth(),
-            isDark: isDark,
+            colorScheme: colorScheme,
             onTap: _selectDateOfBirth,
           ),
 
-          _buildDivider(isDark),
+          _buildDivider(colorScheme),
 
-          // Country - Inline chips
           _buildChipSelector(
             icon: Icons.public_outlined,
             label: 'Country',
@@ -501,7 +466,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               'Other',
             ],
             selected: _country,
-            isDark: isDark,
+            colorScheme: colorScheme,
             onSelected: (value) {
               setState(() => _country = value);
               talker.info('Country set: $value');
@@ -512,22 +477,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildBodyMetricsCard(bool isDark) {
+  Widget _buildBodyMetricsCard(ColorScheme colorScheme) {
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? AppColors.darkSurface : AppColors.surface,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
       ),
       child: Column(
         children: [
-          // Weight - Inline stepper
           _buildStepperRow(
             icon: Icons.monitor_weight_outlined,
             label: 'Weight',
             value: _weightKg,
             unit: _isMetric ? 'kg' : 'lbs',
             displayValue: _formatWeight(),
-            isDark: isDark,
+            colorScheme: colorScheme,
             onIncrement: () {
               setState(() => _weightKg = (_weightKg ?? 70) + 0.5);
               talker.debug('Weight: $_weightKg kg');
@@ -548,16 +512,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 : null,
           ),
 
-          _buildDivider(isDark),
+          _buildDivider(colorScheme),
 
-          // Height - Inline stepper
           _buildStepperRow(
             icon: Icons.height_outlined,
             label: 'Height',
             value: _heightCm,
             unit: _isMetric ? 'cm' : 'ft',
             displayValue: _formatHeight(),
-            isDark: isDark,
+            colorScheme: colorScheme,
             onIncrement: () {
               setState(() => _heightCm = (_heightCm ?? 170) + 1);
               talker.debug('Height: $_heightCm cm');
@@ -578,9 +541,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 : null,
           ),
 
-          _buildDivider(isDark),
+          _buildDivider(colorScheme),
 
-          // Unit toggle
           Padding(
             padding: const EdgeInsets.symmetric(
               horizontal: AppSpacing.md,
@@ -591,20 +553,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 Icon(
                   Icons.straighten_outlined,
                   size: AppSpacing.iconSizeSmall,
-                  color: isDark ? AppColors.darkPrimary : AppColors.primary,
+                  color: colorScheme.primary,
                 ),
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
                   child: Text(
                     'Unit System',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: isDark
-                          ? AppColors.darkOnSurface
-                          : AppColors.onSurface,
+                      color: colorScheme.onSurface,
                     ),
                   ),
                 ),
-                _buildSegmentedControl(isDark),
+                _buildSegmentedControl(),
               ],
             ),
           ),
@@ -613,7 +573,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildDietaryChips(bool isDark) {
+  Widget _buildDietaryChips(ColorScheme colorScheme) {
     final options = [
       ('🌱', 'Vegetarian'),
       ('🥗', 'Eggetarian'),
@@ -630,7 +590,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: isDark ? AppColors.darkSurface : AppColors.surface,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
       ),
       child: Column(
@@ -642,9 +602,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: Text(
                 'Select your dietary preference',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: isDark
-                      ? AppColors.darkOnSurfaceVariant
-                      : AppColors.onSurfaceVariant,
+                  color: colorScheme.onSurfaceVariant,
                 ),
               ),
             ),
@@ -658,7 +616,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(option.$1),
-                    const SizedBox(width: AppSpacing.xs - 2),
+                    const SizedBox(width: AppSpacing.xs),
                     Text(option.$2),
                   ],
                 ),
@@ -677,10 +635,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildPreferencesCard(bool isDark) {
+  Widget _buildPreferencesCard(ColorScheme colorScheme) {
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? AppColors.darkSurface : AppColors.surface,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
       ),
       child: Padding(
@@ -693,22 +651,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Icon(
               Icons.notifications_outlined,
               size: AppSpacing.iconSizeSmall,
-              color: isDark ? AppColors.darkPrimary : AppColors.primary,
+              color: colorScheme.primary,
             ),
             const SizedBox(width: AppSpacing.md),
             Expanded(
               child: Text(
                 'Notifications',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: isDark ? AppColors.darkOnSurface : AppColors.onSurface,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface),
               ),
             ),
             Switch.adaptive(
               value: _notificationsEnabled,
-              activeTrackColor: isDark
-                  ? AppColors.darkPrimary
-                  : AppColors.primary,
+              activeTrackColor: colorScheme.primary,
               onChanged: (value) {
                 setState(() => _notificationsEnabled = value);
                 talker.info('Notifications: $value');
@@ -720,10 +676,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildAccountCard(bool isDark) {
+  Widget _buildAccountCard(ColorScheme colorScheme) {
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? AppColors.darkSurface : AppColors.surface,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
       ),
       child: Column(
@@ -733,27 +689,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
               icon: Icons.link_rounded,
               label: 'Link Google Account',
               value: 'Save your progress',
-              isDark: isDark,
+              colorScheme: colorScheme,
               onTap: () {
                 talker.info('Link account tapped');
-                // TODO: Implement account linking
               },
             ),
-            _buildDivider(isDark),
+            _buildDivider(colorScheme),
           ],
           _buildTappableRow(
             icon: Icons.privacy_tip_outlined,
             label: 'Privacy Policy',
-            isDark: isDark,
+            colorScheme: colorScheme,
             onTap: () => context.push(AppRoutes.privacy),
           ),
-          _buildDivider(isDark),
+          _buildDivider(colorScheme),
           _buildTappableRow(
             icon: Icons.logout_rounded,
             label: 'Sign Out',
-            isDark: isDark,
-            iconColor: AppColors.error,
-            labelColor: AppColors.error,
+            colorScheme: colorScheme,
+            iconColor: colorScheme.error,
+            labelColor: colorScheme.error,
             onTap: _handleSignOut,
           ),
         ],
@@ -761,15 +716,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // Reusable Inline Components
-  // ─────────────────────────────────────────────────────────────────────────
-
-  Widget _buildDivider(bool isDark) {
+  Widget _buildDivider(ColorScheme colorScheme) {
     return Divider(
       height: 1,
-      indent: AppSpacing.huge + AppSpacing.unit, // 52
-      color: isDark ? AppColors.darkSurfaceVariant : AppColors.surfaceVariant,
+      indent: AppSpacing.touchTargetMin + AppSpacing.xxs,
+      color: colorScheme.outlineVariant,
     );
   }
 
@@ -778,7 +729,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     required String label,
     required List<String> options,
     required String? selected,
-    required bool isDark,
+    required ColorScheme colorScheme,
     required ValueChanged<String> onSelected,
   }) {
     return Padding(
@@ -791,7 +742,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Icon(
             icon,
             size: AppSpacing.iconSizeSmall,
-            color: isDark ? AppColors.darkPrimary : AppColors.primary,
+            color: colorScheme.primary,
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
@@ -808,22 +759,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         duration: const Duration(milliseconds: 150),
                         padding: const EdgeInsets.symmetric(
                           horizontal: AppSpacing.sm,
-                          vertical: AppSpacing.xs - 2,
+                          vertical: AppSpacing.xs,
                         ),
                         decoration: BoxDecoration(
                           color: isSelected
-                              ? (isDark
-                                    ? AppColors.darkPrimary
-                                    : AppColors.primary)
+                              ? colorScheme.primary
                               : Colors.transparent,
                           borderRadius: BorderRadius.circular(AppSpacing.md),
                           border: Border.all(
                             color: isSelected
                                 ? Colors.transparent
-                                : (isDark
-                                          ? AppColors.darkOnSurfaceVariant
-                                          : AppColors.onSurfaceVariant)
-                                      .withValues(alpha: 0.3),
+                                : colorScheme.outlineVariant,
                           ),
                         ),
                         child: Text(
@@ -831,12 +777,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           style: Theme.of(context).textTheme.labelMedium
                               ?.copyWith(
                                 color: isSelected
-                                    ? (isDark
-                                          ? AppColors.darkOnPrimary
-                                          : AppColors.onPrimary)
-                                    : (isDark
-                                          ? AppColors.darkOnSurface
-                                          : AppColors.onSurface),
+                                    ? colorScheme.onPrimary
+                                    : colorScheme.onSurface,
                                 fontWeight: isSelected
                                     ? FontWeight.w600
                                     : FontWeight.w400,
@@ -858,7 +800,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     required IconData icon,
     required String label,
     String? value,
-    required bool isDark,
+    required ColorScheme colorScheme,
     Color? iconColor,
     Color? labelColor,
     required VoidCallback onTap,
@@ -869,16 +811,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
       child: Padding(
         padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.md,
-          vertical: AppSpacing.sm + AppSpacing.unit,
+          vertical: AppSpacing.md,
         ),
         child: Row(
           children: [
             Icon(
               icon,
               size: AppSpacing.iconSizeSmall,
-              color:
-                  iconColor ??
-                  (isDark ? AppColors.darkPrimary : AppColors.primary),
+              color: iconColor ?? colorScheme.primary,
             ),
             const SizedBox(width: AppSpacing.md),
             Expanded(
@@ -888,25 +828,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Text(
                     label,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color:
-                          labelColor ??
-                          (isDark
-                              ? AppColors.darkOnSurface
-                              : AppColors.onSurface),
+                      color: labelColor ?? colorScheme.onSurface,
                     ),
                   ),
                   if (value != null) ...[
-                    const SizedBox(height: AppSpacing.unit / 2),
+                    const SizedBox(height: AppSpacing.xxs),
                     Text(
                       value,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: value == 'Not Set'
-                            ? (isDark
-                                  ? AppColors.darkOnSurfaceVariant
-                                  : AppColors.onSurfaceVariant)
-                            : (isDark
-                                  ? AppColors.darkOnSurfaceVariant
-                                  : AppColors.onSurfaceVariant),
+                        color: colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ],
@@ -916,9 +846,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Icon(
               Icons.chevron_right_rounded,
               size: AppSpacing.iconSizeSmall,
-              color: isDark
-                  ? AppColors.darkOnSurfaceVariant
-                  : AppColors.onSurfaceVariant,
+              color: colorScheme.onSurfaceVariant,
             ),
           ],
         ),
@@ -932,7 +860,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     required double? value,
     required String unit,
     required String displayValue,
-    required bool isDark,
+    required ColorScheme colorScheme,
     required VoidCallback onIncrement,
     required VoidCallback onDecrement,
     VoidCallback? onClear,
@@ -948,8 +876,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         children: [
           Icon(
             icon,
-            size: 20,
-            color: isDark ? AppColors.darkPrimary : AppColors.primary,
+            size: AppSpacing.iconSizeSmall,
+            color: colorScheme.primary,
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
@@ -959,31 +887,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 Text(
                   label,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: isDark
-                        ? AppColors.darkOnSurface
-                        : AppColors.onSurface,
+                    color: colorScheme.onSurface,
                   ),
                 ),
                 Text(
                   displayValue,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: isSet
-                        ? (isDark ? AppColors.darkPrimary : AppColors.primary)
-                        : (isDark
-                              ? AppColors.darkOnSurfaceVariant
-                              : AppColors.onSurfaceVariant),
+                        ? colorScheme.primary
+                        : colorScheme.onSurfaceVariant,
                     fontWeight: isSet ? FontWeight.w600 : FontWeight.w400,
                   ),
                 ),
               ],
             ),
           ),
-          // Stepper controls
           Container(
             decoration: BoxDecoration(
-              color: isDark
-                  ? AppColors.darkSurfaceVariant
-                  : AppColors.surfaceVariant,
+              color: colorScheme.surfaceContainerHighest,
               borderRadius: BorderRadius.circular(AppSpacing.xs),
             ),
             child: Row(
@@ -992,19 +913,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 _buildStepperButton(
                   icon: Icons.remove,
                   onTap: isSet ? onDecrement : null,
-                  isDark: isDark,
+                  colorScheme: colorScheme,
                 ),
                 Container(
                   width: 1,
                   height: AppSpacing.xl,
-                  color: isDark
-                      ? AppColors.darkOnSurfaceVariant.withValues(alpha: 0.2)
-                      : AppColors.onSurfaceVariant.withValues(alpha: 0.2),
+                  color: colorScheme.outlineVariant,
                 ),
                 _buildStepperButton(
                   icon: Icons.add,
                   onTap: onIncrement,
-                  isDark: isDark,
+                  colorScheme: colorScheme,
                 ),
               ],
             ),
@@ -1015,10 +934,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               onTap: onClear,
               child: Icon(
                 Icons.close_rounded,
-                size: AppSpacing.iconSizeSmall - 2,
-                color: isDark
-                    ? AppColors.darkOnSurfaceVariant
-                    : AppColors.onSurfaceVariant,
+                size: AppSpacing.iconSizeSmall,
+                color: colorScheme.onSurfaceVariant,
               ),
             ),
           ],
@@ -1030,7 +947,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildStepperButton({
     required IconData icon,
     VoidCallback? onTap,
-    required bool isDark,
+    required ColorScheme colorScheme,
   }) {
     final isDisabled = onTap == null;
     return GestureDetector(
@@ -1039,18 +956,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
         padding: const EdgeInsets.all(AppSpacing.xs),
         child: Icon(
           icon,
-          size: AppSpacing.iconSizeSmall - 2,
+          size: AppSpacing.iconSizeSmall,
           color: isDisabled
-              ? (isDark
-                    ? AppColors.darkOnSurfaceVariant.withValues(alpha: 0.3)
-                    : AppColors.onSurfaceVariant.withValues(alpha: 0.3))
-              : (isDark ? AppColors.darkPrimary : AppColors.primary),
+              ? colorScheme.onSurfaceVariant.withValues(alpha: 0.3)
+              : colorScheme.primary,
         ),
       ),
     );
   }
 
-  Widget _buildSegmentedControl(bool isDark) {
+  Widget _buildSegmentedControl() {
     return SegmentedButton<bool>(
       showSelectedIcon: false,
       segments: const [

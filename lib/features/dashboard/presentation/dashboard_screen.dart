@@ -3,11 +3,8 @@ import 'package:go_router/go_router.dart';
 import '../../../main.dart';
 import '../../../core/router.dart';
 import '../../../core/services/auth_service.dart';
-import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_spacing.dart';
+import '../../../core/theme.dart';
 
-/// Polished Dashboard Screen - Empathetic Tech Design
-/// Material Design 3 + Apple Bento Box aesthetics
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
 
@@ -47,38 +44,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final brightness = Theme.of(context).brightness;
-    final isDark = brightness == Brightness.dark;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: isDark ? AppColors.darkBackground : AppColors.background,
+      backgroundColor: colorScheme.surface,
       body: CustomScrollView(
         slivers: [
-          // Header with greeting, coins, and notifications
-          SliverToBoxAdapter(child: _buildHeader(context, isDark)),
-
-          // Companion Hero Section
-          SliverToBoxAdapter(child: _buildCompanionHero(context, isDark)),
-
-          // Vitality Grid
-          SliverToBoxAdapter(child: _buildVitalityGrid(context, isDark)),
-
-          // Action Section
-          SliverToBoxAdapter(child: _buildActionSection(context, isDark)),
-
-          // Bottom spacing
-          const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.massive)),
+          SliverToBoxAdapter(child: _buildHeader(context, colorScheme)),
+          SliverToBoxAdapter(child: _buildCompanionHero(context, colorScheme)),
+          SliverToBoxAdapter(child: _buildVitalityGrid(context, colorScheme)),
+          SliverToBoxAdapter(child: _buildActionSection(context, colorScheme)),
+          const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.xxxl)),
         ],
       ),
-      bottomNavigationBar: _buildBottomNav(context, isDark),
+      bottomNavigationBar: _buildBottomNav(context, colorScheme),
     );
   }
 
-  Widget _buildHeader(BuildContext context, bool isDark) {
+  Widget _buildHeader(BuildContext context, ColorScheme colorScheme) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.pageHorizontalPadding,
-        AppSpacing.huge,
+        AppSpacing.xxxl,
         AppSpacing.pageHorizontalPadding,
         AppSpacing.md,
       ),
@@ -91,84 +78,74 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 Text(
                   '${_getGreeting()}, ${_getFirstName()} 👋',
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    color: isDark
-                        ? AppColors.darkOnSurface
-                        : AppColors.onSurface,
+                    color: colorScheme.onSurface,
                   ),
                 ),
-                const SizedBox(height: AppSpacing.unit),
+                const SizedBox(height: AppSpacing.xxs),
                 Text(
                   'Ready to crush your goals?',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: isDark
-                        ? AppColors.darkOnSurfaceVariant
-                        : AppColors.onSurfaceVariant,
+                    color: colorScheme.onSurfaceVariant,
                   ),
                 ),
               ],
             ),
           ),
           const SizedBox(width: AppSpacing.md),
-          _buildCoinCounter(context, isDark),
+          _buildCoinCounter(context, colorScheme),
           const SizedBox(width: AppSpacing.sm),
-          _buildNotificationBell(context, isDark),
+          _buildNotificationBell(context, colorScheme),
         ],
       ),
     );
   }
 
-  Widget _buildCoinCounter(BuildContext context, bool isDark) {
+  Widget _buildCoinCounter(BuildContext context, ColorScheme colorScheme) {
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.md,
         vertical: AppSpacing.xs,
       ),
       decoration: BoxDecoration(
-        color: isDark ? AppColors.darkSurface : AppColors.surface,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-        border: Border.all(
-          color: isDark ? AppColors.darkOutline : AppColors.outline,
-          width: 1,
-        ),
+        border: Border.all(color: colorScheme.outline, width: 1),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
             Icons.stars_rounded,
-            color: isDark ? AppColors.darkPrimary : AppColors.primary,
+            color: colorScheme.primary,
             size: AppSpacing.iconSizeSmall,
           ),
-          const SizedBox(width: AppSpacing.xs - 2),
+          const SizedBox(width: AppSpacing.xs),
           Text(
             '250',
-            style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              color: isDark ? AppColors.darkOnSurface : AppColors.onSurface,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.labelLarge?.copyWith(color: colorScheme.onSurface),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildNotificationBell(BuildContext context, bool isDark) {
+  Widget _buildNotificationBell(BuildContext context, ColorScheme colorScheme) {
     return Stack(
       children: [
         Container(
-          width: AppSpacing.xxxl + AppSpacing.unit,
-          height: AppSpacing.xxxl + AppSpacing.unit,
+          width: AppSpacing.xxxl,
+          height: AppSpacing.xxxl,
           decoration: BoxDecoration(
-            color: isDark ? AppColors.darkSurface : AppColors.surface,
+            color: colorScheme.surface,
             borderRadius: BorderRadius.circular(AppSpacing.cardRadiusSmall),
-            border: Border.all(
-              color: isDark ? AppColors.darkOutline : AppColors.outline,
-              width: 1,
-            ),
+            border: Border.all(color: colorScheme.outline, width: 1),
           ),
           child: Icon(
             Icons.notifications_outlined,
-            color: isDark ? AppColors.darkOnSurface : AppColors.onSurface,
-            size: AppSpacing.lg + 2,
+            color: colorScheme.onSurface,
+            size: AppSpacing.xl,
           ),
         ),
         Positioned(
@@ -178,7 +155,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             width: AppSpacing.xs,
             height: AppSpacing.xs,
             decoration: BoxDecoration(
-              color: isDark ? AppColors.darkPrimary : AppColors.primary,
+              color: colorScheme.primary,
               shape: BoxShape.circle,
             ),
           ),
@@ -187,7 +164,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildCompanionHero(BuildContext context, bool isDark) {
+  Widget _buildCompanionHero(BuildContext context, ColorScheme colorScheme) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.pageHorizontalPadding,
@@ -197,52 +174,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
       child: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: isDark
-                ? [
-                    AppColors.darkPrimaryContainer.withValues(alpha: 0.3),
-                    AppColors.darkSecondaryContainer.withValues(alpha: 0.2),
-                  ]
-                : [
-                    AppColors.success.withValues(alpha: 0.15),
-                    AppColors.info.withValues(alpha: 0.1),
-                  ],
-          ),
+          color: colorScheme.primaryContainer,
           borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-          border: Border.all(
-            color: isDark
-                ? AppColors.darkOutline
-                : AppColors.outline.withValues(alpha: 0.5),
-            width: 1,
-          ),
+          border: Border.all(color: colorScheme.outlineVariant, width: 1),
         ),
         padding: const EdgeInsets.all(AppSpacing.lg),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Avatar
             Container(
-              width: AppSpacing.avatarSizeLarge,
-              height: AppSpacing.avatarSizeLarge,
+              width: AppSpacing.xxxl,
+              height: AppSpacing.xxxl,
               decoration: BoxDecoration(
-                color: isDark ? AppColors.darkSurface : AppColors.surface,
+                color: colorScheme.surface,
                 shape: BoxShape.circle,
-                border: Border.all(
-                  color: isDark ? AppColors.darkPrimary : AppColors.success,
-                  width: 3,
-                ),
+                border: Border.all(color: colorScheme.primary, width: 3),
               ),
               child: const Center(
-                child: Text(
-                  '🌟',
-                  style: TextStyle(fontSize: AppSpacing.xxl + AppSpacing.unit),
-                ),
+                child: Text('🌟', style: TextStyle(fontSize: AppSpacing.xl)),
               ),
             ),
             const SizedBox(width: AppSpacing.md),
-            // Speech Bubble
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -250,9 +202,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   Text(
                     'Your AI Companion',
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: isDark
-                          ? AppColors.darkOnSurfaceVariant
-                          : AppColors.onSurfaceVariant,
+                      color: colorScheme.onPrimaryContainer,
                       letterSpacing: 0.5,
                     ),
                   ),
@@ -261,9 +211,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     'You slept great! Let\'s hit 10k steps today and keep that momentum going. 💪',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       fontWeight: FontWeight.w500,
-                      color: isDark
-                          ? AppColors.darkOnSurface
-                          : AppColors.onSurface,
+                      color: colorScheme.onPrimaryContainer,
                       height: 1.5,
                     ),
                   ),
@@ -276,7 +224,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildVitalityGrid(BuildContext context, bool isDark) {
+  Widget _buildVitalityGrid(BuildContext context, ColorScheme colorScheme) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.pageHorizontalPadding,
@@ -289,20 +237,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
         children: [
           Text(
             'Your Vitality',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              color: isDark ? AppColors.darkOnSurface : AppColors.onSurface,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(color: colorScheme.onSurface),
           ),
           const SizedBox(height: AppSpacing.md),
-          // Large Card - Calorie Budget
-          _buildCalorieCard(context, isDark),
+          _buildCalorieCard(context, colorScheme),
           const SizedBox(height: AppSpacing.md),
-          // Two medium cards side by side
           Row(
             children: [
-              Expanded(child: _buildStepsCard(context, isDark)),
+              Expanded(child: _buildStepsCard(context, colorScheme)),
               const SizedBox(width: AppSpacing.md),
-              Expanded(child: _buildHealthScoreCard(context, isDark)),
+              Expanded(child: _buildHealthScoreCard(context, colorScheme)),
             ],
           ),
         ],
@@ -310,7 +256,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildCalorieCard(BuildContext context, bool isDark) {
+  Widget _buildCalorieCard(BuildContext context, ColorScheme colorScheme) {
     const eaten = 1450;
     const burned = 2100;
     const progress = eaten / burned;
@@ -318,12 +264,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: isDark ? AppColors.darkSurface : AppColors.surface,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-        border: Border.all(
-          color: isDark ? AppColors.darkOutline : AppColors.outline,
-          width: 1,
-        ),
+        border: Border.all(color: colorScheme.outline, width: 1),
       ),
       child: Column(
         children: [
@@ -332,34 +275,32 @@ class _DashboardScreenState extends State<DashboardScreen> {
             children: [
               Text(
                 'Calorie Budget',
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  color: isDark ? AppColors.darkOnSurface : AppColors.onSurface,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleSmall?.copyWith(color: colorScheme.onSurface),
               ),
               Icon(
                 Icons.local_fire_department_rounded,
-                color: isDark ? AppColors.darkPrimary : AppColors.primary,
-                size: 24,
+                color: colorScheme.primary,
+                size: AppSpacing.xl,
               ),
             ],
           ),
           const SizedBox(height: AppSpacing.lg),
           SizedBox(
-            width: AppSpacing.xxxl * 3 + AppSpacing.lg, // 140
-            height: AppSpacing.xxxl * 3 + AppSpacing.lg, // 140
+            width: AppSpacing.cardHeightSmall,
+            height: AppSpacing.cardHeightSmall,
             child: Stack(
               alignment: Alignment.center,
               children: [
                 SizedBox(
-                  width: AppSpacing.xxxl * 3 + AppSpacing.lg,
-                  height: AppSpacing.xxxl * 3 + AppSpacing.lg,
+                  width: AppSpacing.cardHeightSmall,
+                  height: AppSpacing.cardHeightSmall,
                   child: CircularProgressIndicator(
                     value: progress,
                     strokeWidth: AppSpacing.sm,
-                    backgroundColor: isDark
-                        ? AppColors.darkSurfaceVariant
-                        : AppColors.surfaceVariant,
-                    color: isDark ? AppColors.darkPrimary : AppColors.success,
+                    backgroundColor: colorScheme.surfaceContainerHighest,
+                    color: colorScheme.primary,
                   ),
                 ),
                 Column(
@@ -370,17 +311,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       style: Theme.of(context).textTheme.headlineMedium
                           ?.copyWith(
                             fontWeight: FontWeight.w700,
-                            color: isDark
-                                ? AppColors.darkOnSurface
-                                : AppColors.onSurface,
+                            color: colorScheme.onSurface,
                           ),
                     ),
                     Text(
                       'cal left',
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: isDark
-                            ? AppColors.darkOnSurfaceVariant
-                            : AppColors.onSurfaceVariant,
+                        color: colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ],
@@ -392,13 +329,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildCalorieStat(context, 'Eaten', eaten.toString(), isDark),
+              _buildCalorieStat(
+                context,
+                'Eaten',
+                eaten.toString(),
+                colorScheme,
+              ),
               Container(
                 width: 1,
-                height: AppSpacing.xxl - 2,
-                color: isDark ? AppColors.darkOutline : AppColors.outline,
+                height: AppSpacing.xxl,
+                color: colorScheme.outline,
               ),
-              _buildCalorieStat(context, 'Burned', burned.toString(), isDark),
+              _buildCalorieStat(
+                context,
+                'Burned',
+                burned.toString(),
+                colorScheme,
+              ),
             ],
           ),
         ],
@@ -410,80 +357,71 @@ class _DashboardScreenState extends State<DashboardScreen> {
     BuildContext context,
     String label,
     String value,
-    bool isDark,
+    ColorScheme colorScheme,
   ) {
     return Column(
       children: [
         Text(
           value,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            color: isDark ? AppColors.darkOnSurface : AppColors.onSurface,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(color: colorScheme.onSurface),
         ),
-        const SizedBox(height: AppSpacing.unit / 2),
+        const SizedBox(height: AppSpacing.xxs),
         Text(
           label,
-          style: Theme.of(context).textTheme.labelSmall?.copyWith(
-            color: isDark
-                ? AppColors.darkOnSurfaceVariant
-                : AppColors.onSurfaceVariant,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.labelSmall?.copyWith(color: colorScheme.onSurfaceVariant),
         ),
       ],
     );
   }
 
-  Widget _buildStepsCard(BuildContext context, bool isDark) {
+  Widget _buildStepsCard(BuildContext context, ColorScheme colorScheme) {
     const steps = 6842;
     const goal = 10000;
     const progress = steps / goal;
 
     return Container(
-      height: AppSpacing.xxxl * 4, // 160
+      height: AppSpacing.cardHeightMedium,
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: isDark ? AppColors.darkSurface : AppColors.surface,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-        border: Border.all(
-          color: isDark ? AppColors.darkOutline : AppColors.outline,
-          width: 1,
-        ),
+        border: Border.all(color: colorScheme.outline, width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(
             Icons.directions_walk_rounded,
-            color: isDark ? AppColors.darkPrimary : AppColors.info,
-            size: AppSpacing.xxl - AppSpacing.unit,
+            color: colorScheme.tertiary,
+            size: AppSpacing.xxl,
           ),
           const Spacer(),
           Text(
             steps.toString(),
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
               fontWeight: FontWeight.w700,
-              color: isDark ? AppColors.darkOnSurface : AppColors.onSurface,
+              color: colorScheme.onSurface,
             ),
           ),
-          const SizedBox(height: AppSpacing.unit),
+          const SizedBox(height: AppSpacing.xxs),
           Text(
             'Steps',
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: isDark
-                  ? AppColors.darkOnSurfaceVariant
-                  : AppColors.onSurfaceVariant,
+              color: colorScheme.onSurfaceVariant,
             ),
           ),
           const SizedBox(height: AppSpacing.sm),
           ClipRRect(
-            borderRadius: BorderRadius.circular(AppSpacing.unit),
+            borderRadius: BorderRadius.circular(AppSpacing.xxs),
             child: LinearProgressIndicator(
               value: progress,
-              minHeight: AppSpacing.xs - 2,
-              backgroundColor: isDark
-                  ? AppColors.darkSurfaceVariant
-                  : AppColors.surfaceVariant,
-              color: isDark ? AppColors.darkPrimary : AppColors.info,
+              minHeight: AppSpacing.xs,
+              backgroundColor: colorScheme.surfaceContainerHighest,
+              color: colorScheme.tertiary,
             ),
           ),
         ],
@@ -491,25 +429,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildHealthScoreCard(BuildContext context, bool isDark) {
+  Widget _buildHealthScoreCard(BuildContext context, ColorScheme colorScheme) {
     return Container(
-      height: AppSpacing.xxxl * 4, // 160
+      height: AppSpacing.cardHeightMedium,
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: isDark ? AppColors.darkSurface : AppColors.surface,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-        border: Border.all(
-          color: isDark ? AppColors.darkOutline : AppColors.outline,
-          width: 1,
-        ),
+        border: Border.all(color: colorScheme.outline, width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(
             Icons.favorite_rounded,
-            color: isDark ? AppColors.darkPrimary : AppColors.error,
-            size: AppSpacing.xxl - AppSpacing.unit,
+            color: colorScheme.error,
+            size: AppSpacing.xxl,
           ),
           const Spacer(),
           Row(
@@ -519,32 +454,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 '85',
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.w700,
-                  color: isDark ? AppColors.darkOnSurface : AppColors.onSurface,
+                  color: colorScheme.onSurface,
                 ),
               ),
               Padding(
                 padding: const EdgeInsets.only(
-                  bottom: AppSpacing.xs - 2,
-                  left: AppSpacing.unit / 2,
+                  bottom: AppSpacing.xs,
+                  left: AppSpacing.xxs,
                 ),
                 child: Text(
                   '/100',
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    color: isDark
-                        ? AppColors.darkOnSurfaceVariant
-                        : AppColors.onSurfaceVariant,
+                    color: colorScheme.onSurfaceVariant,
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: AppSpacing.unit),
+          const SizedBox(height: AppSpacing.xxs),
           Text(
             'Health Index',
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: isDark
-                  ? AppColors.darkOnSurfaceVariant
-                  : AppColors.onSurfaceVariant,
+              color: colorScheme.onSurfaceVariant,
             ),
           ),
         ],
@@ -552,7 +483,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildActionSection(BuildContext context, bool isDark) {
+  Widget _buildActionSection(BuildContext context, ColorScheme colorScheme) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -562,9 +493,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
           child: Text(
             'Your Today Plan',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              color: isDark ? AppColors.darkOnSurface : AppColors.onSurface,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(color: colorScheme.onSurface),
           ),
         ),
         const SizedBox(height: AppSpacing.md),
@@ -584,25 +515,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   icon: Icons.fitness_center_rounded,
                   title: 'Morning Workout',
                   subtitle: '20 min',
-                  color: isDark ? AppColors.darkPrimary : AppColors.success,
+                  color: colorScheme.tertiary,
                 ),
                 (
                   icon: Icons.restaurant_rounded,
                   title: 'Lunch',
                   subtitle: 'Quinoa Salad',
-                  color: isDark ? AppColors.darkPrimary : AppColors.primary,
+                  color: colorScheme.primary,
                 ),
                 (
                   icon: Icons.mood_rounded,
                   title: 'Log Mood',
                   subtitle: 'Quick check-in',
-                  color: isDark ? AppColors.darkPrimary : AppColors.info,
+                  color: colorScheme.secondary,
                 ),
               ];
               final item = items[index];
               return _buildActionCard(
                 context,
-                isDark,
+                colorScheme,
                 icon: item.icon,
                 title: item.title,
                 subtitle: item.subtitle,
@@ -617,23 +548,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildActionCard(
     BuildContext context,
-    bool isDark, {
+    ColorScheme colorScheme, {
     required IconData icon,
     required String title,
     required String subtitle,
     required Color color,
   }) {
     return SizedBox(
-      width: AppSpacing.xxxl * 4, // 160
+      width: AppSpacing.cardHeightMedium,
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.sm),
         decoration: BoxDecoration(
-          color: isDark ? AppColors.darkSurface : AppColors.surface,
+          color: colorScheme.surface,
           borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-          border: Border.all(
-            color: isDark ? AppColors.darkOutline : AppColors.outline,
-            width: 1,
-          ),
+          border: Border.all(color: colorScheme.outline, width: 1),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -645,24 +573,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 color: color.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(AppSpacing.cardRadiusSmall),
               ),
-              child: Icon(icon, color: color, size: AppSpacing.lg + 2),
+              child: Icon(icon, color: color, size: AppSpacing.xl),
             ),
             const Spacer(),
             Text(
               title,
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                color: isDark ? AppColors.darkOnSurface : AppColors.onSurface,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleSmall?.copyWith(color: colorScheme.onSurface),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(height: AppSpacing.unit / 2),
+            const SizedBox(height: AppSpacing.xxs),
             Text(
               subtitle,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: isDark
-                    ? AppColors.darkOnSurfaceVariant
-                    : AppColors.onSurfaceVariant,
+                color: colorScheme.onSurfaceVariant,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -673,16 +599,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildBottomNav(BuildContext context, bool isDark) {
+  Widget _buildBottomNav(BuildContext context, ColorScheme colorScheme) {
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? AppColors.darkSurface : AppColors.surface,
-        border: Border(
-          top: BorderSide(
-            color: isDark ? AppColors.darkOutline : AppColors.outline,
-            width: 1,
-          ),
-        ),
+        color: colorScheme.surface,
+        border: Border(top: BorderSide(color: colorScheme.outline, width: 1)),
       ),
       child: SafeArea(
         child: Padding(
@@ -695,27 +616,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
             children: [
               _buildNavItem(
                 context,
-                isDark,
+                colorScheme,
                 Icons.home_rounded,
                 'Home',
                 isActive: true,
               ),
               _buildNavItem(
                 context,
-                isDark,
+                colorScheme,
                 Icons.calendar_today_rounded,
                 'Plan',
               ),
-              _buildNavItemFAB(context, isDark),
+              _buildNavItemFAB(context, colorScheme),
               _buildNavItem(
                 context,
-                isDark,
+                colorScheme,
                 Icons.chat_bubble_rounded,
                 'Coach',
               ),
               _buildNavItem(
                 context,
-                isDark,
+                colorScheme,
                 Icons.person_rounded,
                 'Profile',
                 onTap: () {
@@ -732,7 +653,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildNavItem(
     BuildContext context,
-    bool isDark,
+    ColorScheme colorScheme,
     IconData icon,
     String label, {
     bool isActive = false,
@@ -752,22 +673,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
             Icon(
               icon,
               color: isActive
-                  ? (isDark ? AppColors.darkPrimary : AppColors.primary)
-                  : (isDark
-                        ? AppColors.darkOnSurfaceVariant
-                        : AppColors.onSurfaceVariant),
-              size: AppSpacing.xl + AppSpacing.unit / 2,
+                  ? colorScheme.primary
+                  : colorScheme.onSurfaceVariant,
+              size: AppSpacing.xl,
             ),
-            const SizedBox(height: AppSpacing.unit),
+            const SizedBox(height: AppSpacing.xxs),
             Text(
               label,
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
                 fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
                 color: isActive
-                    ? (isDark ? AppColors.darkPrimary : AppColors.primary)
-                    : (isDark
-                          ? AppColors.darkOnSurfaceVariant
-                          : AppColors.onSurfaceVariant),
+                    ? colorScheme.primary
+                    : colorScheme.onSurfaceVariant,
               ),
             ),
           ],
@@ -776,32 +693,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildNavItemFAB(BuildContext context, bool isDark) {
+  Widget _buildNavItemFAB(BuildContext context, ColorScheme colorScheme) {
     return Container(
-      width: AppSpacing.massive,
-      height: AppSpacing.massive,
+      width: AppSpacing.xxxl,
+      height: AppSpacing.xxxl,
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: isDark
-              ? [AppColors.darkPrimary, AppColors.darkSecondary]
-              : [AppColors.primary, AppColors.secondary],
-        ),
+        color: colorScheme.primary,
         borderRadius: BorderRadius.circular(AppSpacing.md),
         boxShadow: [
           BoxShadow(
-            color: (isDark ? AppColors.darkPrimary : AppColors.primary)
-                .withValues(alpha: 0.3),
+            color: colorScheme.primary.withValues(alpha: 0.3),
             blurRadius: AppSpacing.sm,
-            offset: const Offset(0, AppSpacing.unit),
+            offset: const Offset(0, AppSpacing.xxs),
           ),
         ],
       ),
-      child: const Icon(
+      child: Icon(
         Icons.qr_code_scanner_rounded,
-        color: AppColors.onPrimary,
-        size: AppSpacing.xxl - AppSpacing.unit,
+        color: colorScheme.onPrimary,
+        size: AppSpacing.xl,
       ),
     );
   }

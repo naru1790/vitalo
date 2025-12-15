@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pinput/pinput.dart';
 
-import '../theme/app_spacing.dart';
+import '../theme.dart';
 
 class OtpInput extends StatelessWidget {
   const OtpInput({
@@ -27,15 +27,15 @@ class OtpInput extends StatelessWidget {
     final colorScheme = theme.colorScheme;
 
     final defaultPinTheme = PinTheme(
-      width: AppSpacing.huge,
-      height: AppSpacing.massive,
+      width: AppSpacing.touchTargetMin,
+      height: AppSpacing.buttonHeight,
       textStyle: theme.textTheme.headlineSmall?.copyWith(
         fontWeight: FontWeight.bold,
         color: colorScheme.onSurface,
       ),
       decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(AppSpacing.cardRadiusSmall),
+        color: colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
         border: Border.all(
           color: hasError ? colorScheme.error : colorScheme.outline,
           width: 1.5,
@@ -45,16 +45,16 @@ class OtpInput extends StatelessWidget {
 
     final focusedPinTheme = defaultPinTheme.copyWith(
       decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(AppSpacing.cardRadiusSmall),
+        color: colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
         border: Border.all(color: colorScheme.primary, width: 2),
       ),
     );
 
     final submittedPinTheme = defaultPinTheme.copyWith(
       decoration: BoxDecoration(
-        color: colorScheme.primaryContainer.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(AppSpacing.cardRadiusSmall),
+        color: colorScheme.primaryContainer,
+        borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
         border: Border.all(color: colorScheme.primary, width: 1.5),
       ),
     );

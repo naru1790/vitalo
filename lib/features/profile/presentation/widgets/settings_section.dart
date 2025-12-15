@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/theme.dart';
 
-/// Reusable settings section container with title
 class SettingsSection extends StatelessWidget {
   const SettingsSection({
     super.key,
@@ -16,7 +14,7 @@ class SettingsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -29,21 +27,16 @@ class SettingsSection extends StatelessWidget {
           child: Text(
             title.toUpperCase(),
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: isDark
-                  ? AppColors.darkOnSurfaceVariant
-                  : AppColors.onSurfaceVariant,
+              color: colorScheme.onSurfaceVariant,
               letterSpacing: 1.0,
             ),
           ),
         ),
         Container(
           decoration: BoxDecoration(
-            color: isDark ? AppColors.darkSurface : AppColors.surface,
+            color: colorScheme.surface,
             borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-            border: Border.all(
-              color: isDark ? AppColors.darkOutline : AppColors.outline,
-              width: 1,
-            ),
+            border: Border.all(color: colorScheme.outline, width: 1),
           ),
           child: Column(
             children: [
@@ -53,8 +46,8 @@ class SettingsSection extends StatelessWidget {
                   Divider(
                     height: 1,
                     thickness: 1,
-                    indent: AppSpacing.md + AppSpacing.xxxl + AppSpacing.md,
-                    color: isDark ? AppColors.darkOutline : AppColors.outline,
+                    indent: 72,
+                    color: colorScheme.outline,
                   ),
               ],
             ],

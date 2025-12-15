@@ -1,18 +1,11 @@
 import 'package:flutter/material.dart';
 
-import '../theme/app_colors.dart';
-
 /// FluxMascot - 3-layer animated vitality indicator
 /// Represents Physical (outer), Nutritional (middle), Mental (core) health dimensions
 class FluxMascot extends StatefulWidget {
-  const FluxMascot({
-    super.key,
-    this.size = 200,
-    this.themeMode = Brightness.light,
-  });
+  const FluxMascot({super.key, this.size = 200});
 
   final double size;
-  final Brightness themeMode;
 
   @override
   State<FluxMascot> createState() => _FluxMascotState();
@@ -56,12 +49,16 @@ class _FluxMascotState extends State<FluxMascot> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    final isLight = widget.themeMode == Brightness.light;
+    final colorScheme = Theme.of(context).colorScheme;
 
-    // Use Solar theme colors from AppColors
-    final back = isLight ? AppColors.primaryContainer : AppColors.darkPrimary;
-    final mid = isLight ? AppColors.primary : AppColors.darkPrimary;
-    final front = isLight ? AppColors.secondary : AppColors.darkSecondary;
+    // Use Material 3 color roles:
+    // - primaryContainer: Outer aura (subtle, background emphasis)
+    // - primary: Middle flow layer (main brand color)
+    // - secondary: Core center (complementary accent)
+    final back = colorScheme.primaryContainer;
+    final mid = colorScheme.primary;
+    final front = colorScheme.secondary;
+    final shine = colorScheme.surfaceContainerHighest;
 
     return SizedBox(
       width: widget.size,
@@ -128,7 +125,7 @@ class _FluxMascotState extends State<FluxMascot> with TickerProviderStateMixin {
                           width: widget.size * 0.12,
                           height: widget.size * 0.06,
                           decoration: BoxDecoration(
-                            color: AppColors.shimmer.withValues(alpha: 0.3),
+                            color: shine.withValues(alpha: 0.3),
                             borderRadius: BorderRadius.circular(100),
                           ),
                         ),

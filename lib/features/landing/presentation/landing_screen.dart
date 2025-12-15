@@ -5,14 +5,11 @@ import '../../../core/widgets/social_sign_in_button.dart';
 
 import '../../../main.dart';
 import '../../../core/router.dart';
-import '../../../core/theme/app_spacing.dart';
+import '../../../core/theme.dart';
 import '../../../core/widgets/flux_mascot.dart';
 import '../../../core/services/auth_service.dart';
-import '../../../core/widgets/vitalo_snackbar.dart';
+import '../../../core/widgets/app_snackbar.dart';
 
-/// Landing Page - "Soft Gateway" for Vitalo
-/// Top 60%: Brand Hook (logo, mascot, slogan)
-/// Bottom 40%: Hierarchical login actions
 class LandingScreen extends StatelessWidget {
   const LandingScreen({super.key});
 
@@ -34,8 +31,6 @@ class LandingScreen extends StatelessWidget {
   }
 }
 
-/// Placeholder widget for the Brand Hook section.
-/// Contains logo, mascot, and slogan - DO NOT MODIFY alignment/design.
 class BrandHookSection extends StatelessWidget {
   const BrandHookSection({super.key});
 
@@ -51,7 +46,7 @@ class BrandHookSection extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          FluxMascot(size: 200, themeMode: Theme.of(context).brightness),
+          const FluxMascot(size: 200),
           const SizedBox(height: AppSpacing.xl),
           Text(
             'Vitalo',
@@ -72,7 +67,7 @@ class BrandHookSection extends StatelessWidget {
           Text(
             'Vitalo learns and grows with you — mind, body, and beyond.',
             style: theme.textTheme.bodyLarge?.copyWith(
-              color: colorScheme.onSurface.withValues(alpha: 0.7),
+              color: colorScheme.onSurfaceVariant,
             ),
             textAlign: TextAlign.center,
           ),
@@ -82,7 +77,6 @@ class BrandHookSection extends StatelessWidget {
   }
 }
 
-/// Bottom section with hierarchical login actions
 class _ActionsSection extends StatefulWidget {
   const _ActionsSection();
 
@@ -124,7 +118,7 @@ class _ActionsSectionState extends State<_ActionsSection> {
 
     if (error != null) {
       talker.warning('$provider OAuth failed: $error');
-      VitaloSnackBar.showError(context, error);
+      AppSnackBar.showError(context, error);
     } else {
       talker.info('$provider OAuth successful, navigating to dashboard');
       context.go(AppRoutes.dashboard);
@@ -182,12 +176,12 @@ class _ActionsSectionState extends State<_ActionsSection> {
           // Email sign-in option
           SizedBox(
             width: double.infinity,
-            height: AppSpacing.buttonHeight - 6, // 54px
+            height: AppSpacing.buttonHeight,
             child: OutlinedButton.icon(
               onPressed: _isLoading ? null : _handleEmailFlow,
               icon: Icon(
                 Icons.email_outlined,
-                size: AppSpacing.iconSizeSmall - 2, // 18px
+                size: AppSpacing.iconSizeSmall,
                 color: colorScheme.onSurface,
               ),
               label: Text(
@@ -218,7 +212,7 @@ class _ActionsSectionState extends State<_ActionsSection> {
               TextSpan(
                 text: 'By continuing, you agree to our ',
                 style: theme.textTheme.bodySmall?.copyWith(
-                  color: colorScheme.onSurface.withValues(alpha: 0.7),
+                  color: colorScheme.onSurfaceVariant,
                 ),
                 children: [
                   WidgetSpan(
@@ -238,10 +232,10 @@ class _ActionsSectionState extends State<_ActionsSection> {
                               decorationColor: colorScheme.primary,
                             ),
                           ),
-                          const SizedBox(width: AppSpacing.unit / 2),
+                          const SizedBox(width: AppSpacing.xxs),
                           Icon(
                             Icons.open_in_new,
-                            size: 12,
+                            size: AppSpacing.sm,
                             color: colorScheme.primary,
                           ),
                         ],
@@ -251,7 +245,7 @@ class _ActionsSectionState extends State<_ActionsSection> {
                   TextSpan(
                     text: ' & ',
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: colorScheme.onSurface.withValues(alpha: 0.7),
+                      color: colorScheme.onSurfaceVariant,
                     ),
                   ),
                   WidgetSpan(
@@ -271,7 +265,7 @@ class _ActionsSectionState extends State<_ActionsSection> {
                               decorationColor: colorScheme.primary,
                             ),
                           ),
-                          const SizedBox(width: AppSpacing.unit / 2),
+                          const SizedBox(width: AppSpacing.xxs),
                           Icon(
                             Icons.open_in_new,
                             size: AppSpacing.sm,

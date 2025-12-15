@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../theme/app_spacing.dart';
+import '../theme.dart';
 
 class LoadingButton extends StatelessWidget {
   const LoadingButton({
@@ -9,7 +9,7 @@ class LoadingButton extends StatelessWidget {
     required this.label,
     this.isLoading = false,
     this.enabled = true,
-    this.height = AppSpacing.buttonHeight - AppSpacing.xs, // 52
+    this.height = AppSpacing.buttonHeight,
   });
 
   final VoidCallback? onPressed;

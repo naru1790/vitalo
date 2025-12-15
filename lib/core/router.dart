@@ -21,7 +21,6 @@ abstract class AppRoutes {
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
-/// Smooth fade + slide transition for navigation
 CustomTransitionPage<T> _buildSmoothTransition<T>({
   required BuildContext context,
   required GoRouterState state,
@@ -34,20 +33,17 @@ CustomTransitionPage<T> _buildSmoothTransition<T>({
     transitionDuration: const Duration(milliseconds: 300),
     reverseTransitionDuration: const Duration(milliseconds: 250),
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
-      // Smooth easing curve
       final curvedAnimation = CurvedAnimation(
         parent: animation,
         curve: Curves.easeOutCubic,
         reverseCurve: Curves.easeInCubic,
       );
 
-      // Fade transition
       final fadeAnimation = Tween<double>(
         begin: 0.0,
         end: 1.0,
       ).animate(curvedAnimation);
 
-      // Subtle slide transition
       final slideAnimation = Tween<Offset>(
         begin: Offset(slideFromRight ? 0.05 : -0.05, 0.0),
         end: Offset.zero,
@@ -139,7 +135,6 @@ final router = GoRouter(
         state.matchedLocation == AppRoutes.dashboard ||
         state.matchedLocation == AppRoutes.profile;
 
-    // If authenticated and on landing/auth pages, redirect to dashboard
     if (isAuthenticated && isOnLandingOrAuth) {
       talker.info(
         'Navigation redirect: Authenticated user redirected to dashboard',
@@ -147,7 +142,6 @@ final router = GoRouter(
       return AppRoutes.dashboard;
     }
 
-    // If not authenticated and trying to access protected routes, redirect to home
     if (!isAuthenticated && isProtectedRoute) {
       talker.info(
         'Navigation redirect: Unauthenticated user blocked from ${state.matchedLocation}',
@@ -159,7 +153,6 @@ final router = GoRouter(
   },
 );
 
-/// Navigation observer for tracking route changes
 class _NavigationObserver extends NavigatorObserver {
   @override
   void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {

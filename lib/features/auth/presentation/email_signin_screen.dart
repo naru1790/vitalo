@@ -6,14 +6,11 @@ import 'package:go_router/go_router.dart';
 import '../../../main.dart';
 import '../../../core/router.dart';
 import '../../../core/services/auth_service.dart';
-import '../../../core/theme/app_spacing.dart';
+import '../../../core/theme.dart';
 import '../../../core/widgets/loading_button.dart';
 import '../../../core/widgets/otp_input.dart';
-import '../../../core/widgets/vitalo_snackbar.dart';
+import '../../../core/widgets/app_snackbar.dart';
 
-/// Email Sign-In Screen with Password-less OTP Flow
-/// Step 1: Email Entry
-/// Step 2: OTP Verification
 class EmailSignInScreen extends StatefulWidget {
   const EmailSignInScreen({super.key});
 
@@ -71,7 +68,6 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
       'Send OTP code requested for email: ${_emailController.text.trim()}',
     );
 
-    // Dismiss keyboard
     FocusScope.of(context).unfocus();
 
     setState(() => _isLoading = true);
@@ -87,7 +83,7 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
     switch (result) {
       case AuthFailure(:final message):
         talker.warning('OTP send failed: $message');
-        VitaloSnackBar.showError(context, message);
+        AppSnackBar.showError(context, message);
       case AuthSuccess():
         talker.info('OTP sent successfully, moving to verification step');
         setState(() => _isStep2 = true);
@@ -122,37 +118,32 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
     switch (result) {
       case AuthFailure(:final message):
         talker.warning('OTP resend failed: $message');
-        VitaloSnackBar.showError(context, message);
+        AppSnackBar.showError(context, message);
       case AuthSuccess():
         talker.info('OTP resent successfully');
         _startResendCountdown();
-        VitaloSnackBar.showSuccess(context, 'Code sent!');
+        AppSnackBar.showSuccess(context, 'Code sent!');
     }
   }
 
   Future<void> _verifyOtp() async {
-    // Early exit if already loading or incomplete code
     if (_isLoading) return;
 
     if (_otpController.text.length != 6) {
       talker.debug(
         'OTP verification blocked: incomplete code (${_otpController.text.length}/6)',
       );
-      VitaloSnackBar.showError(context, 'Please enter the complete code');
+      AppSnackBar.showError(context, 'Please enter the complete code');
       return;
     }
 
     talker.info('OTP verification started');
 
-    // Dismiss keyboard
     FocusScope.of(context).unfocus();
 
     setState(() => _isLoading = true);
 
     try {
-      // NOTE: Captcha not needed for OTP verification
-      // Standard practice: captcha protects email sending (abuse prevention),
-      // not verification (user already has valid OTP token)
       final result = await _authService.verifyOtp(
         _emailController.text.trim(),
         _otpController.text,
@@ -164,7 +155,7 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
         case AuthFailure(:final message):
           talker.warning('OTP verification failed: $message');
           setState(() => _isLoading = false);
-          VitaloSnackBar.showError(context, message);
+          AppSnackBar.showError(context, message);
           _otpController.clear();
         case AuthSuccess(:final data):
           if (data != null && mounted) {
@@ -173,7 +164,7 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
           } else {
             talker.error('OTP verification returned null user data');
             setState(() => _isLoading = false);
-            VitaloSnackBar.showError(
+            AppSnackBar.showError(
               context,
               'Verification failed. Please try again.',
             );
@@ -184,10 +175,7 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
       talker.error('OTP verification exception', e, stack);
       if (mounted) {
         setState(() => _isLoading = false);
-        VitaloSnackBar.showError(
-          context,
-          'An error occurred. Please try again.',
-        );
+        AppSnackBar.showError(context, 'An error occurred. Please try again.');
         _otpController.clear();
       }
     }
@@ -262,7 +250,7 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
             Text(
               'Enter your email to access your health vault.',
               style: theme.textTheme.bodyLarge?.copyWith(
-                color: colorScheme.onSurface.withValues(alpha: 0.7),
+                color: colorScheme.onSurfaceVariant,
               ),
             ),
             const SizedBox(height: AppSpacing.xxl),
@@ -280,27 +268,27 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
                   color: colorScheme.primary,
                 ),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppSpacing.md),
+                  borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
                   borderSide: BorderSide(color: colorScheme.outline),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppSpacing.md),
+                  borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
                   borderSide: BorderSide(color: colorScheme.outline),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppSpacing.md),
+                  borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
                   borderSide: BorderSide(color: colorScheme.primary, width: 2),
                 ),
                 errorBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppSpacing.md),
+                  borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
                   borderSide: BorderSide(color: colorScheme.error),
                 ),
                 focusedErrorBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppSpacing.md),
+                  borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
                   borderSide: BorderSide(color: colorScheme.error, width: 2),
                 ),
                 filled: true,
-                fillColor: colorScheme.surface,
+                fillColor: colorScheme.surfaceContainerHighest,
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: AppSpacing.lg,
                   vertical: AppSpacing.lg,
@@ -325,7 +313,6 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
               onPressed: _sendCode,
               label: 'Send Code',
               isLoading: _isLoading,
-              height: AppSpacing.massive,
             ),
           ],
         ),
@@ -396,7 +383,6 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
             label: 'Verify & Login',
             isLoading: _isLoading,
             enabled: _otpController.text.length == 6,
-            height: AppSpacing.massive,
           ),
         ],
       ),

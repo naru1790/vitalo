@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 
-import '../theme/app_spacing.dart';
+import '../theme.dart';
 
-/// Custom social sign-in buttons with Vitalo brand identity
+/// Custom social sign-in buttons with brand identity
 /// while maintaining official provider logo guidelines.
 
 enum SocialProvider { google, apple }
 
-/// A branded social sign-in button that follows provider guidelines
-/// while integrating with Vitalo's visual identity.
 class SocialSignInButton extends StatelessWidget {
   const SocialSignInButton({
     super.key,
@@ -40,8 +38,6 @@ class SocialSignInButton extends StatelessWidget {
   }
 }
 
-/// Google Sign-In button with official Google "G" logo
-/// Uses white/light background with colored Google logo per guidelines
 class _GoogleSignInButton extends StatelessWidget {
   const _GoogleSignInButton({
     required this.onPressed,
@@ -66,22 +62,21 @@ class _GoogleSignInButton extends StatelessWidget {
 
     return SizedBox(
       width: double.infinity,
-      height: AppSpacing.buttonHeight - AppSpacing.xs,
+      height: AppSpacing.buttonHeight,
       child: Material(
         color: backgroundColor,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.cardRadiusSmall),
-          side: BorderSide(color: borderColor, width: 1),
+          borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
+          side: BorderSide(color: borderColor),
         ),
         child: InkWell(
           onTap: isLoading ? null : onPressed,
-          borderRadius: BorderRadius.circular(AppSpacing.cardRadiusSmall),
+          borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Official Google "G" logo
                 if (isLoading)
                   SizedBox(
                     width: AppSpacing.iconSizeSmall,
@@ -114,8 +109,6 @@ class _GoogleSignInButton extends StatelessWidget {
   }
 }
 
-/// Apple Sign-In button with native Apple styling
-/// Black background with white Apple logo and text
 class _AppleSignInButton extends StatelessWidget {
   const _AppleSignInButton({
     required this.onPressed,
@@ -133,21 +126,20 @@ class _AppleSignInButton extends StatelessWidget {
 
     return SizedBox(
       width: double.infinity,
-      height: AppSpacing.buttonHeight - AppSpacing.xs,
+      height: AppSpacing.buttonHeight,
       child: Material(
         color: Colors.black,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.cardRadiusSmall),
+          borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
         ),
         child: InkWell(
           onTap: isLoading ? null : onPressed,
-          borderRadius: BorderRadius.circular(AppSpacing.cardRadiusSmall),
+          borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Apple logo
                 if (isLoading)
                   const SizedBox(
                     width: AppSpacing.iconSizeSmall,
@@ -161,7 +153,7 @@ class _AppleSignInButton extends StatelessWidget {
                   const Icon(
                     Icons.apple,
                     color: Colors.white,
-                    size: AppSpacing.iconSize - 2,
+                    size: AppSpacing.iconSize,
                   ),
                 const SizedBox(width: AppSpacing.sm),
                 Text(
@@ -180,8 +172,6 @@ class _AppleSignInButton extends StatelessWidget {
   }
 }
 
-/// Official Google "G" logo using CustomPainter
-/// Path data derived from official Google branding assets
 class _GoogleLogo extends StatelessWidget {
   const _GoogleLogo();
 

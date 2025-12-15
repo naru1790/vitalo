@@ -6,7 +6,7 @@ import 'package:talker_flutter/talker_flutter.dart';
 
 import 'core/config.dart';
 import 'core/router.dart';
-import 'core/theme/app_theme.dart';
+import 'core/theme.dart';
 
 /// Global Talker instance for observability
 final talker = Talker(
@@ -62,12 +62,16 @@ class VitaloApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Create text theme with Google Fonts (Inter for body, Manrope for display)
+    TextTheme textTheme = createTextTheme(context, 'Inter', 'Manrope');
+    MaterialTheme theme = MaterialTheme(textTheme);
+
     return MaterialApp.router(
       title: 'Vitalo',
       debugShowCheckedModeBanner: false,
       themeMode: ThemeMode.system,
-      theme: getTheme(Brightness.light),
-      darkTheme: getTheme(Brightness.dark),
+      theme: theme.light(),
+      darkTheme: theme.dark(),
       routerConfig: router,
     );
   }

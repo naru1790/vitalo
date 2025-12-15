@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/theme.dart';
 
-/// Reusable menu tile for profile settings
 class ProfileMenuTile extends StatelessWidget {
   const ProfileMenuTile({
     super.key,
@@ -30,7 +28,7 @@ class ProfileMenuTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return InkWell(
       onTap: onTap,
@@ -46,22 +44,15 @@ class ProfileMenuTile extends StatelessWidget {
               width: AppSpacing.xxxl,
               height: AppSpacing.xxxl,
               decoration: BoxDecoration(
-                color:
-                    (iconColor ??
-                            (isDark
-                                ? AppColors.darkPrimary
-                                : AppColors.primary))
-                        .withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(
-                  AppSpacing.cardRadiusSmall - 2,
+                color: (iconColor ?? colorScheme.primary).withValues(
+                  alpha: 0.1,
                 ),
+                borderRadius: BorderRadius.circular(AppSpacing.cardRadiusSmall),
               ),
               child: Icon(
                 icon,
                 size: AppSpacing.iconSizeSmall,
-                color:
-                    iconColor ??
-                    (isDark ? AppColors.darkPrimary : AppColors.primary),
+                color: iconColor ?? colorScheme.primary,
               ),
             ),
             const SizedBox(width: AppSpacing.md),
@@ -72,23 +63,15 @@ class ProfileMenuTile extends StatelessWidget {
                   Text(
                     title,
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      color:
-                          titleColor ??
-                          (isDark
-                              ? AppColors.darkOnSurface
-                              : AppColors.onSurface),
+                      color: titleColor ?? colorScheme.onSurface,
                     ),
                   ),
                   if (subtitle != null) ...[
-                    const SizedBox(height: 2),
+                    const SizedBox(height: AppSpacing.xxs),
                     Text(
                       subtitle!,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color:
-                            subtitleColor ??
-                            (isDark
-                                ? AppColors.darkOnSurfaceVariant
-                                : AppColors.onSurfaceVariant),
+                        color: subtitleColor ?? colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ],
@@ -99,10 +82,8 @@ class ProfileMenuTile extends StatelessWidget {
             if (showArrow && trailing == null)
               Icon(
                 Icons.chevron_right_rounded,
-                size: AppSpacing.iconSize - 2,
-                color: isDark
-                    ? AppColors.darkOnSurfaceVariant
-                    : AppColors.onSurfaceVariant,
+                size: AppSpacing.iconSize,
+                color: colorScheme.onSurfaceVariant,
               ),
           ],
         ),
