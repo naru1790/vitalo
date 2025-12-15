@@ -51,7 +51,6 @@ class _FluxMascotState extends State<FluxMascot> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
     final isLight = Theme.of(context).brightness == Brightness.light;
 
     final back = isLight ? FluxColors.lightBack : FluxColors.darkBack;

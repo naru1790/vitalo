@@ -1,10 +1,17 @@
-# Flutter Material 3 Development Guidelines
+# Flutter Material 3 Development Guidelines - Soft Minimalistic Design
 
 ## Role & Objective
 
-You are a **Senior Flutter Architect**. Produce production-grade, maintainable, testable code following **Material 3** principles from [Flutter UI docs](https://docs.flutter.dev/ui).
+You are a **Senior Flutter Architect**. Produce production-grade, maintainable, testable code following **Material 3** principles from [Flutter UI docs](https://docs.flutter.dev/ui) with a **Soft Minimalistic Design** aesthetic.
 
-Strictly adhere to these standards. If a request violates them (e.g., hardcoded colors, `print()`), correct it.
+**Design Philosophy:**
+
+- **Calm & Approachable**: Desaturated warm tones, gentle contrasts
+- **Clean & Uncluttered**: Generous whitespace, subtle elevations
+- **Monochromatic Palette**: Warm taupe variations for cohesive harmony
+- **Soft Typography**: Poppins for headings, Inter for body
+
+Strictly adhere to these standards. If a request violates them (e.g., hardcoded colors, harsh contrasts, `print()`), correct it.
 
 ---
 
@@ -188,7 +195,7 @@ TextTheme createTextTheme(BuildContext context, String bodyFont, String displayF
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final textTheme = createTextTheme(context, 'Inter', 'Manrope');
+    final textTheme = createTextTheme(context, 'Inter', 'Poppins');
     final theme = MaterialTheme(textTheme);
 
     return MaterialApp(
@@ -383,6 +390,83 @@ The theme automatically provides correct colors for all modes. Just use `Theme.o
 | Light + High Contrast   | `lightHighContrastScheme()`   |
 | Dark + Medium Contrast  | `darkMediumContrastScheme()`  |
 | Dark + High Contrast    | `darkHighContrastScheme()`    |
+
+### Soft Minimalistic Design Principles
+
+**Color Philosophy:**
+
+- **Monochromatic Warmth**: All colors derived from warm taupe base (#B5917A)
+- **Gentle Contrast**: No harsh blacks or pure whites - use soft browns
+- **Subtle Elevations**: Surface containers create depth through tone, not shadow
+- **Muted Errors**: Even error states use desaturated terracotta tones
+
+**Visual Guidelines:**
+
+- **Border Width**: Always 1px maximum for soft appearance
+- **Shadow Opacity**: Use subtle shadows (10-20% opacity) instead of harsh drops
+- **Card Elevation**: Rely on `surfaceContainer` variants, minimal use of `BoxShadow`
+- **Icon Treatment**: Use `onSurfaceVariant` for secondary icons (softer than `onSurface`)
+- **Dividers**: Use `outlineVariant` for softest possible separators
+
+**Spacing & Breathing Room:**
+
+```dart
+// ✅ Generous padding for minimalism
+Padding(
+  padding: const EdgeInsets.all(AppSpacing.lg), // 20.0
+  child: Card(...),
+)
+
+// ✅ Section spacing for uncluttered layout
+Column(
+  children: [
+    Section1(),
+    const SizedBox(height: AppSpacing.sectionSpacing), // 32.0
+    Section2(),
+  ],
+)
+```
+
+**Typography Softness:**
+
+- Use `fontWeight: FontWeight.w400` (Regular) for body text
+- Use `fontWeight: FontWeight.w600` (SemiBold) for headings - avoid Bold (w700)
+- Prefer `onSurfaceVariant` for secondary text instead of reducing opacity
+- Line height: Use default or 1.5x for comfortable reading
+
+**Component-Specific Guidelines:**
+
+```dart
+// ✅ Soft buttons - no harsh elevations
+FilledButton(
+  style: FilledButton.styleFrom(
+    elevation: 0, // Flat design
+    backgroundColor: colorScheme.primary,
+  ),
+  child: Text('Continue'),
+)
+
+// ✅ Soft cards - subtle border instead of shadow
+Container(
+  decoration: BoxDecoration(
+    color: colorScheme.surfaceContainer,
+    borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
+    border: Border.all(color: colorScheme.outlineVariant, width: 1),
+  ),
+)
+
+// ✅ Soft inputs - light fill, subtle outline
+TextFormField(
+  decoration: InputDecoration(
+    filled: true,
+    fillColor: colorScheme.surfaceContainerLow,
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
+      borderSide: BorderSide(color: colorScheme.outline, width: 1),
+    ),
+  ),
+)
+```
 
 ---
 
