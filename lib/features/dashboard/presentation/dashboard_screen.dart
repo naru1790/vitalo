@@ -96,7 +96,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         : AppColors.onSurface,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: AppSpacing.unit),
                 Text(
                   'Ready to crush your goals?',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -125,7 +125,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkSurface : AppColors.surface,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
         border: Border.all(
           color: isDark ? AppColors.darkOutline : AppColors.outline,
           width: 1,
@@ -137,9 +137,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
           Icon(
             Icons.stars_rounded,
             color: isDark ? AppColors.darkPrimary : AppColors.primary,
-            size: 20,
+            size: AppSpacing.iconSizeSmall,
           ),
-          const SizedBox(width: 6),
+          const SizedBox(width: AppSpacing.xs - 2),
           Text(
             '250',
             style: Theme.of(context).textTheme.labelLarge?.copyWith(
@@ -155,11 +155,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Stack(
       children: [
         Container(
-          width: 44,
-          height: 44,
+          width: AppSpacing.xxxl + AppSpacing.unit,
+          height: AppSpacing.xxxl + AppSpacing.unit,
           decoration: BoxDecoration(
             color: isDark ? AppColors.darkSurface : AppColors.surface,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(AppSpacing.cardRadiusSmall),
             border: Border.all(
               color: isDark ? AppColors.darkOutline : AppColors.outline,
               width: 1,
@@ -168,15 +168,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
           child: Icon(
             Icons.notifications_outlined,
             color: isDark ? AppColors.darkOnSurface : AppColors.onSurface,
-            size: 22,
+            size: AppSpacing.lg + 2,
           ),
         ),
         Positioned(
-          right: 8,
-          top: 8,
+          right: AppSpacing.xs,
+          top: AppSpacing.xs,
           child: Container(
-            width: 8,
-            height: 8,
+            width: AppSpacing.xs,
+            height: AppSpacing.xs,
             decoration: BoxDecoration(
               color: isDark ? AppColors.darkPrimary : AppColors.primary,
               shape: BoxShape.circle,
@@ -206,8 +206,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     AppColors.darkSecondaryContainer.withValues(alpha: 0.2),
                   ]
                 : [
-                    const Color(0xFF10B981).withValues(alpha: 0.15),
-                    const Color(0xFF14B8A6).withValues(alpha: 0.1),
+                    AppColors.success.withValues(alpha: 0.15),
+                    AppColors.info.withValues(alpha: 0.1),
                   ],
           ),
           borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
@@ -224,20 +224,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
           children: [
             // Avatar
             Container(
-              width: 72,
-              height: 72,
+              width: AppSpacing.avatarSizeLarge,
+              height: AppSpacing.avatarSizeLarge,
               decoration: BoxDecoration(
                 color: isDark ? AppColors.darkSurface : AppColors.surface,
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: isDark
-                      ? AppColors.darkPrimary
-                      : const Color(0xFF10B981),
+                  color: isDark ? AppColors.darkPrimary : AppColors.success,
                   width: 3,
                 ),
               ),
               child: const Center(
-                child: Text('🌟', style: TextStyle(fontSize: 36)),
+                child: Text(
+                  '🌟',
+                  style: TextStyle(fontSize: AppSpacing.xxl + AppSpacing.unit),
+                ),
               ),
             ),
             const SizedBox(width: AppSpacing.md),
@@ -255,7 +256,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       letterSpacing: 0.5,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppSpacing.xs),
                   Text(
                     'You slept great! Let\'s hit 10k steps today and keep that momentum going. 💪',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -344,23 +345,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
           const SizedBox(height: AppSpacing.lg),
           SizedBox(
-            width: 140,
-            height: 140,
+            width: AppSpacing.xxxl * 3 + AppSpacing.lg, // 140
+            height: AppSpacing.xxxl * 3 + AppSpacing.lg, // 140
             child: Stack(
               alignment: Alignment.center,
               children: [
                 SizedBox(
-                  width: 140,
-                  height: 140,
+                  width: AppSpacing.xxxl * 3 + AppSpacing.lg,
+                  height: AppSpacing.xxxl * 3 + AppSpacing.lg,
                   child: CircularProgressIndicator(
                     value: progress,
-                    strokeWidth: 12,
+                    strokeWidth: AppSpacing.sm,
                     backgroundColor: isDark
                         ? AppColors.darkSurfaceVariant
                         : AppColors.surfaceVariant,
-                    color: isDark
-                        ? AppColors.darkPrimary
-                        : const Color(0xFF10B981),
+                    color: isDark ? AppColors.darkPrimary : AppColors.success,
                   ),
                 ),
                 Column(
@@ -396,7 +395,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               _buildCalorieStat(context, 'Eaten', eaten.toString(), isDark),
               Container(
                 width: 1,
-                height: 30,
+                height: AppSpacing.xxl - 2,
                 color: isDark ? AppColors.darkOutline : AppColors.outline,
               ),
               _buildCalorieStat(context, 'Burned', burned.toString(), isDark),
@@ -421,7 +420,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             color: isDark ? AppColors.darkOnSurface : AppColors.onSurface,
           ),
         ),
-        const SizedBox(height: 2),
+        const SizedBox(height: AppSpacing.unit / 2),
         Text(
           label,
           style: Theme.of(context).textTheme.labelSmall?.copyWith(
@@ -440,7 +439,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     const progress = steps / goal;
 
     return Container(
-      height: 160,
+      height: AppSpacing.xxxl * 4, // 160
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkSurface : AppColors.surface,
@@ -455,8 +454,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
         children: [
           Icon(
             Icons.directions_walk_rounded,
-            color: isDark ? AppColors.darkPrimary : const Color(0xFF14B8A6),
-            size: 28,
+            color: isDark ? AppColors.darkPrimary : AppColors.info,
+            size: AppSpacing.xxl - AppSpacing.unit,
           ),
           const Spacer(),
           Text(
@@ -466,7 +465,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               color: isDark ? AppColors.darkOnSurface : AppColors.onSurface,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: AppSpacing.unit),
           Text(
             'Steps',
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
@@ -477,14 +476,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
           const SizedBox(height: AppSpacing.sm),
           ClipRRect(
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: BorderRadius.circular(AppSpacing.unit),
             child: LinearProgressIndicator(
               value: progress,
-              minHeight: 6,
+              minHeight: AppSpacing.xs - 2,
               backgroundColor: isDark
                   ? AppColors.darkSurfaceVariant
                   : AppColors.surfaceVariant,
-              color: isDark ? AppColors.darkPrimary : const Color(0xFF14B8A6),
+              color: isDark ? AppColors.darkPrimary : AppColors.info,
             ),
           ),
         ],
@@ -494,7 +493,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildHealthScoreCard(BuildContext context, bool isDark) {
     return Container(
-      height: 160,
+      height: AppSpacing.xxxl * 4, // 160
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkSurface : AppColors.surface,
@@ -510,7 +509,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           Icon(
             Icons.favorite_rounded,
             color: isDark ? AppColors.darkPrimary : AppColors.error,
-            size: 28,
+            size: AppSpacing.xxl - AppSpacing.unit,
           ),
           const Spacer(),
           Row(
@@ -524,7 +523,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.only(bottom: 6, left: 2),
+                padding: const EdgeInsets.only(
+                  bottom: AppSpacing.xs - 2,
+                  left: AppSpacing.unit / 2,
+                ),
                 child: Text(
                   '/100',
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
@@ -536,7 +538,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: AppSpacing.unit),
           Text(
             'Health Index',
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
@@ -582,9 +584,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   icon: Icons.fitness_center_rounded,
                   title: 'Morning Workout',
                   subtitle: '20 min',
-                  color: isDark
-                      ? AppColors.darkPrimary
-                      : const Color(0xFF10B981),
+                  color: isDark ? AppColors.darkPrimary : AppColors.success,
                 ),
                 (
                   icon: Icons.restaurant_rounded,
@@ -596,9 +596,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   icon: Icons.mood_rounded,
                   title: 'Log Mood',
                   subtitle: 'Quick check-in',
-                  color: isDark
-                      ? AppColors.darkPrimary
-                      : const Color(0xFF4F46E5),
+                  color: isDark ? AppColors.darkPrimary : AppColors.info,
                 ),
               ];
               final item = items[index];
@@ -626,12 +624,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
     required Color color,
   }) {
     return SizedBox(
-      width: 160,
+      width: AppSpacing.xxxl * 4, // 160
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.sm),
         decoration: BoxDecoration(
           color: isDark ? AppColors.darkSurface : AppColors.surface,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
           border: Border.all(
             color: isDark ? AppColors.darkOutline : AppColors.outline,
             width: 1,
@@ -641,13 +639,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              width: 40,
-              height: 40,
+              width: AppSpacing.xxxl,
+              height: AppSpacing.xxxl,
               decoration: BoxDecoration(
                 color: color.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(AppSpacing.cardRadiusSmall),
               ),
-              child: Icon(icon, color: color, size: 22),
+              child: Icon(icon, color: color, size: AppSpacing.lg + 2),
             ),
             const Spacer(),
             Text(
@@ -658,7 +656,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(height: 2),
+            const SizedBox(height: AppSpacing.unit / 2),
             Text(
               subtitle,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -742,7 +740,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(AppSpacing.cardRadiusSmall),
       child: Container(
         padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.md,
@@ -758,9 +756,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   : (isDark
                         ? AppColors.darkOnSurfaceVariant
                         : AppColors.onSurfaceVariant),
-              size: 26,
+              size: AppSpacing.xl + AppSpacing.unit / 2,
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: AppSpacing.unit),
             Text(
               label,
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
@@ -780,8 +778,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildNavItemFAB(BuildContext context, bool isDark) {
     return Container(
-      width: 56,
-      height: 56,
+      width: AppSpacing.massive,
+      height: AppSpacing.massive,
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -790,20 +788,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ? [AppColors.darkPrimary, AppColors.darkSecondary]
               : [AppColors.primary, AppColors.secondary],
         ),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppSpacing.md),
         boxShadow: [
           BoxShadow(
             color: (isDark ? AppColors.darkPrimary : AppColors.primary)
                 .withValues(alpha: 0.3),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+            blurRadius: AppSpacing.sm,
+            offset: const Offset(0, AppSpacing.unit),
           ),
         ],
       ),
       child: const Icon(
         Icons.qr_code_scanner_rounded,
-        color: Colors.white,
-        size: 28,
+        color: AppColors.onPrimary,
+        size: AppSpacing.xxl - AppSpacing.unit,
       ),
     );
   }

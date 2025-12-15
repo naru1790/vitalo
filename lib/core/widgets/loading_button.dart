@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../theme/app_spacing.dart';
+
 class LoadingButton extends StatelessWidget {
   const LoadingButton({
     super.key,
@@ -7,7 +9,7 @@ class LoadingButton extends StatelessWidget {
     required this.label,
     this.isLoading = false,
     this.enabled = true,
-    this.height = 52,
+    this.height = AppSpacing.buttonHeight - AppSpacing.xs, // 52
   });
 
   final VoidCallback? onPressed;
@@ -27,8 +29,8 @@ class LoadingButton extends StatelessWidget {
         onPressed: isLoading || !enabled ? null : onPressed,
         child: isLoading
             ? SizedBox(
-                height: 20,
-                width: 20,
+                height: AppSpacing.iconSizeSmall,
+                width: AppSpacing.iconSizeSmall,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
                   color: colorScheme.onPrimary,

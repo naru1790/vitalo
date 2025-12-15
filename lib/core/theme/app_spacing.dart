@@ -26,6 +26,7 @@ class AppSpacing {
 
   static const double cardRadius = 20.0;
   static const double cardRadiusSmall = 12.0;
+  static const double inputRadius = 14.0;
   static const double cardPadding = 20.0;
 
   static const double iconSize = 24.0;

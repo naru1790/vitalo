@@ -244,7 +244,7 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
 
   Widget _buildEmailStep(ThemeData theme, ColorScheme colorScheme) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24.0),
+      padding: const EdgeInsets.all(AppSpacing.pageHorizontalPadding),
       child: Form(
         key: _formKey,
         child: Column(
@@ -280,30 +280,30 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
                   color: colorScheme.primary,
                 ),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(AppSpacing.md),
                   borderSide: BorderSide(color: colorScheme.outline),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(AppSpacing.md),
                   borderSide: BorderSide(color: colorScheme.outline),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(AppSpacing.md),
                   borderSide: BorderSide(color: colorScheme.primary, width: 2),
                 ),
                 errorBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(AppSpacing.md),
                   borderSide: BorderSide(color: colorScheme.error),
                 ),
                 focusedErrorBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(AppSpacing.md),
                   borderSide: BorderSide(color: colorScheme.error, width: 2),
                 ),
                 filled: true,
                 fillColor: colorScheme.surface,
                 contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 20,
+                  horizontal: AppSpacing.lg,
+                  vertical: AppSpacing.lg,
                 ),
               ),
               validator: (value) {
@@ -325,7 +325,7 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
               onPressed: _sendCode,
               label: 'Send Code',
               isLoading: _isLoading,
-              height: 56,
+              height: AppSpacing.massive,
             ),
           ],
         ),
@@ -335,7 +335,7 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
 
   Widget _buildOtpStep(ThemeData theme, ColorScheme colorScheme) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(24.0),
+      padding: const EdgeInsets.all(AppSpacing.pageHorizontalPadding),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -396,7 +396,7 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
             label: 'Verify & Login',
             isLoading: _isLoading,
             enabled: _otpController.text.length == 6,
-            height: 56,
+            height: AppSpacing.massive,
           ),
         ],
       ),

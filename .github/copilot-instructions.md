@@ -132,9 +132,19 @@ Widget build(BuildContext context) {
 
 ---
 
-## 3. Visual Design System (Strict Enforcement)
+## 3. Design System & UI (Solar Theme)
 
-### Colors — NEVER use raw Colors
+### Design System Authority
+
+You are the guardian of the Vitalo Design System. You must strictly adhere to the project's custom theme configuration.
+
+**Source of Truth:**
+
+- Colors: `package:vitalo/core/theme/app_colors.dart`
+- Typography: `package:vitalo/core/theme/app_typography.dart`
+- Spacing: `package:vitalo/core/theme/app_spacing.dart`
+
+**Rule:** Never introduce hardcoded colors (e.g., `Colors.orange`). Always use `AppColors.primary`.
 
 ```dart
 // ❌ WRONG
@@ -147,6 +157,32 @@ color: Theme.of(context).brightness == Brightness.dark
     ? AppColors.darkPrimary
     : AppColors.primary  // Adaptive
 ```
+
+### Material 3 Widget Mapping (MANDATORY)
+
+We strictly follow Material 3. Do not use legacy widgets. Refer to the catalog: https://docs.flutter.dev/ui/widgets/material
+
+| Component Category    | Legacy / Avoid ❌       | **Vitalo Standard (M3) ✅**          | Notes                                                                  |
+| :-------------------- | :---------------------- | :----------------------------------- | :--------------------------------------------------------------------- |
+| **Top Navigation**    | `AppBar` (Generic)      | `AppBar`                             | Use `centerTitle: true`. Background is usually transparent/surface.    |
+| **Bottom Navigation** | `BottomNavigationBar`   | **`NavigationBar`**                  | The tall, pill-shaped bar.                                             |
+| **Single Choice**     | `ToggleButtons`, `Row`  | **`SegmentedButton`**                | Used for Gender, Unit System, Theme Toggle.                            |
+| **Multiple Choice**   | `Wrap` + `Container`    | **`FilterChip`** or **`ChoiceChip`** | Used for "Dietary Prefs" or "Allergies".                               |
+| **Primary Actions**   | `ElevatedButton`        | **`FilledButton`**                   | High emphasis (Log In, Save).                                          |
+| **Secondary Actions** | `TextButton`            | **`OutlinedButton`**                 | Medium emphasis (Cancel, Skip).                                        |
+| **Floating Action**   | `FloatingActionButton`  | **`ExtendedFloatingActionButton`**   | If space permits, include text label + icon.                           |
+| **Text Inputs**       | `TextField`             | **`TextFormField`**                  | Always use `InputDecoration(filled: true)`.                            |
+| **Switches**          | `Switch`                | **`Switch.adaptive`**                | Ensures native feel on iOS.                                            |
+| **Cards**             | `Container` with shadow | **`Card`**                           | Force `elevation: 0` and `side: BorderSide(color: AppColors.outline)`. |
+| **Dialogs**           | `Dialog`                | **`AlertDialog`**                    | Use `icon:` property for a top icon in the dialog.                     |
+| **Bottom Sheet**      | `BottomSheet`           | **`showModalBottomSheet`**           | Use `showDragHandle: true` for the visual pill at top.                 |
+
+### "Soft Minimalist" Implementation Rules
+
+- **No Heavy Shadows:** We do not use high elevation. Use color borders (`AppColors.outline`) to separate content.
+- **Inline Editing:** For profile fields, use the "Inline Morph" pattern (Text turns into Input), avoiding heavy modal dialogs for small edits.
+- **Padding:** ALWAYS use `AppSpacing.pageHorizontalPadding` (24.0) for screen edges.
+- **Border Radius:** Default to `AppSpacing.cardRadius` (20.0).
 
 ### Spacing — STRICTLY use AppSpacing
 
@@ -162,6 +198,14 @@ VitaloSnackBar.showSuccess(context, 'Saved!');
 VitaloSnackBar.showError(context, error);
 VitaloSnackBar.showWarning(context, 'Check connection');
 ```
+
+### Behavior on Request
+
+When asked to build a screen:
+
+1. Check `app_theme.dart` for available styles.
+2. Select the correct M3 widgets from the table above.
+3. Generate code that is responsive and follows `AppSpacing`.
 
 ---
 

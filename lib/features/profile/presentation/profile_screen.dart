@@ -7,6 +7,7 @@ import '../../../core/router.dart';
 import '../../../core/services/auth_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/widgets/inline_editable_header.dart';
 import '../../../core/widgets/vitalo_snackbar.dart';
 
 /// Profile & Settings Screen - Modern 2025 Inline-First UX
@@ -20,8 +21,9 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   final _authService = AuthService();
-  final _nameController = TextEditingController();
-  final _nameFocusNode = FocusNode();
+
+  // User name for header
+  String? _displayName;
 
   // User preferences
   bool _isMetric = true;
@@ -46,8 +48,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   void dispose() {
-    _nameController.dispose();
-    _nameFocusNode.dispose();
     talker.debug('Profile screen disposed');
     super.dispose();
   }
@@ -62,16 +62,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
             metadata['name'] as String? ??
             metadata['display_name'] as String?;
         if (name != null && name.isNotEmpty) {
-          _nameController.text = name;
+          setState(() => _displayName = name);
         }
         talker.debug('Loaded user metadata: name=$name');
       }
     }
   }
 
+  Future<bool> _saveDisplayName(String newName) async {
+    // TODO: Implement profile table update once fields are added
+    // For now, just update local state
+    talker.info('Name update requested: $newName (pending profile table)');
+    setState(() => _displayName = newName);
+    return true;
+  }
+
   String _getDisplayName() {
-    if (_nameController.text.isNotEmpty) {
-      return _nameController.text;
+    if (_displayName != null && _displayName!.isNotEmpty) {
+      return _displayName!;
     }
     final user = _authService.currentUser;
     if (user?.email != null) {
@@ -382,14 +390,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildHeader(bool isDark) {
     return Padding(
-      padding: const EdgeInsets.only(top: 60),
+      padding: const EdgeInsets.only(top: 56),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
           // Avatar
           Container(
-            width: 80,
-            height: 80,
+            width: AppSpacing.avatarSizeLarge + AppSpacing.xs,
+            height: AppSpacing.avatarSizeLarge + AppSpacing.xs,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: isDark
@@ -412,13 +420,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
           const SizedBox(height: AppSpacing.sm),
-          Text(
-            _getDisplayName(),
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              color: isDark ? AppColors.darkOnSurface : AppColors.onSurface,
-            ),
+          InlineEditableHeader(
+            initialText: _displayName ?? _getDisplayName(),
+            onSave: _saveDisplayName,
+            placeholder: 'Add your name',
+            fontSize: 22, // titleLarge fontSize
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: AppSpacing.xs),
           Text(
             _getUserEmail(),
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -434,7 +442,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildSectionTitle(String title, bool isDark) {
     return Padding(
-      padding: const EdgeInsets.only(left: 4),
+      padding: const EdgeInsets.only(left: AppSpacing.unit),
       child: Text(
         title,
         style: Theme.of(context).textTheme.titleSmall?.copyWith(
@@ -455,21 +463,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
       child: Column(
         children: [
-          // Name - Inline editable
-          _buildInlineTextField(
-            icon: Icons.person_outline_rounded,
-            label: 'Name',
-            controller: _nameController,
-            focusNode: _nameFocusNode,
-            isDark: isDark,
-            onChanged: (value) {
-              setState(() {}); // Update header
-              talker.debug('Name updated: $value');
-            },
-          ),
-
-          _buildDivider(isDark),
-
           // Gender - Inline chips
           _buildChipSelector(
             icon: Icons.wc_outlined,
@@ -597,7 +590,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               children: [
                 Icon(
                   Icons.straighten_outlined,
-                  size: 20,
+                  size: AppSpacing.iconSizeSmall,
                   color: isDark ? AppColors.darkPrimary : AppColors.primary,
                 ),
                 const SizedBox(width: AppSpacing.md),
@@ -660,51 +653,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
             runSpacing: AppSpacing.sm,
             children: options.map((option) {
               final isSelected = _dietaryPref == option.$2;
-              return GestureDetector(
-                onTap: () {
+              return ChoiceChip(
+                label: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(option.$1),
+                    const SizedBox(width: AppSpacing.xs - 2),
+                    Text(option.$2),
+                  ],
+                ),
+                selected: isSelected,
+                onSelected: (selected) {
                   setState(() {
-                    _dietaryPref = isSelected ? null : option.$2;
+                    _dietaryPref = selected ? option.$2 : null;
                   });
                   talker.info('Dietary preference: $_dietaryPref');
                 },
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.md,
-                    vertical: AppSpacing.sm,
-                  ),
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? (isDark ? AppColors.darkPrimary : AppColors.primary)
-                        : (isDark
-                              ? AppColors.darkSurfaceVariant
-                              : AppColors.surfaceVariant),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(option.$1, style: const TextStyle(fontSize: 16)),
-                      const SizedBox(width: 6),
-                      Text(
-                        option.$2,
-                        style: Theme.of(context).textTheme.labelMedium
-                            ?.copyWith(
-                              color: isSelected
-                                  ? (isDark
-                                        ? AppColors.darkOnPrimary
-                                        : AppColors.onPrimary)
-                                  : (isDark
-                                        ? AppColors.darkOnSurface
-                                        : AppColors.onSurface),
-                              fontWeight: isSelected
-                                  ? FontWeight.w600
-                                  : FontWeight.w400,
-                            ),
-                      ),
-                    ],
-                  ),
-                ),
               );
             }).toList(),
           ),
@@ -728,7 +692,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           children: [
             Icon(
               Icons.notifications_outlined,
-              size: 20,
+              size: AppSpacing.iconSizeSmall,
               color: isDark ? AppColors.darkPrimary : AppColors.primary,
             ),
             const SizedBox(width: AppSpacing.md),
@@ -740,7 +704,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
             ),
-            CupertinoSwitch(
+            Switch.adaptive(
               value: _notificationsEnabled,
               activeTrackColor: isDark
                   ? AppColors.darkPrimary
@@ -804,56 +768,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildDivider(bool isDark) {
     return Divider(
       height: 1,
-      indent: 52,
+      indent: AppSpacing.huge + AppSpacing.unit, // 52
       color: isDark ? AppColors.darkSurfaceVariant : AppColors.surfaceVariant,
-    );
-  }
-
-  Widget _buildInlineTextField({
-    required IconData icon,
-    required String label,
-    required TextEditingController controller,
-    required FocusNode focusNode,
-    required bool isDark,
-    required ValueChanged<String> onChanged,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.md,
-        vertical: AppSpacing.xs,
-      ),
-      child: Row(
-        children: [
-          Icon(
-            icon,
-            size: 20,
-            color: isDark ? AppColors.darkPrimary : AppColors.primary,
-          ),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: TextField(
-              controller: controller,
-              focusNode: focusNode,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: isDark ? AppColors.darkOnSurface : AppColors.onSurface,
-              ),
-              decoration: InputDecoration(
-                border: InputBorder.none,
-                hintText: 'Enter your name',
-                hintStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: isDark
-                      ? AppColors.darkOnSurfaceVariant
-                      : AppColors.onSurfaceVariant,
-                ),
-                isDense: true,
-                contentPadding: const EdgeInsets.symmetric(vertical: 12),
-              ),
-              textCapitalization: TextCapitalization.words,
-              onChanged: onChanged,
-            ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -874,7 +790,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         children: [
           Icon(
             icon,
-            size: 20,
+            size: AppSpacing.iconSizeSmall,
             color: isDark ? AppColors.darkPrimary : AppColors.primary,
           ),
           const SizedBox(width: AppSpacing.md),
@@ -891,8 +807,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 150),
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
+                          horizontal: AppSpacing.sm,
+                          vertical: AppSpacing.xs - 2,
                         ),
                         decoration: BoxDecoration(
                           color: isSelected
@@ -900,7 +816,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     ? AppColors.darkPrimary
                                     : AppColors.primary)
                               : Colors.transparent,
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(AppSpacing.md),
                           border: Border.all(
                             color: isSelected
                                 ? Colors.transparent
@@ -953,13 +869,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
       child: Padding(
         padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.md,
-          vertical: AppSpacing.sm + 4,
+          vertical: AppSpacing.sm + AppSpacing.unit,
         ),
         child: Row(
           children: [
             Icon(
               icon,
-              size: 20,
+              size: AppSpacing.iconSizeSmall,
               color:
                   iconColor ??
                   (isDark ? AppColors.darkPrimary : AppColors.primary),
@@ -980,7 +896,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
                   if (value != null) ...[
-                    const SizedBox(height: 2),
+                    const SizedBox(height: AppSpacing.unit / 2),
                     Text(
                       value,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -999,7 +915,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             Icon(
               Icons.chevron_right_rounded,
-              size: 20,
+              size: AppSpacing.iconSizeSmall,
               color: isDark
                   ? AppColors.darkOnSurfaceVariant
                   : AppColors.onSurfaceVariant,
@@ -1068,7 +984,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               color: isDark
                   ? AppColors.darkSurfaceVariant
                   : AppColors.surfaceVariant,
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(AppSpacing.xs),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -1080,7 +996,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 Container(
                   width: 1,
-                  height: 24,
+                  height: AppSpacing.xl,
                   color: isDark
                       ? AppColors.darkOnSurfaceVariant.withValues(alpha: 0.2)
                       : AppColors.onSurfaceVariant.withValues(alpha: 0.2),
@@ -1099,7 +1015,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               onTap: onClear,
               child: Icon(
                 Icons.close_rounded,
-                size: 18,
+                size: AppSpacing.iconSizeSmall - 2,
                 color: isDark
                     ? AppColors.darkOnSurfaceVariant
                     : AppColors.onSurfaceVariant,
@@ -1120,10 +1036,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return GestureDetector(
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.all(8),
+        padding: const EdgeInsets.all(AppSpacing.xs),
         child: Icon(
           icon,
-          size: 18,
+          size: AppSpacing.iconSizeSmall - 2,
           color: isDisabled
               ? (isDark
                     ? AppColors.darkOnSurfaceVariant.withValues(alpha: 0.3)
@@ -1135,70 +1051,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildSegmentedControl(bool isDark) {
-    return Container(
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.darkSurfaceVariant : AppColors.surfaceVariant,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          GestureDetector(
-            onTap: () {
-              if (!_isMetric) {
-                setState(() => _isMetric = true);
-                talker.info('Unit: Metric');
-              }
-            },
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: _isMetric
-                    ? (isDark ? AppColors.darkPrimary : AppColors.primary)
-                    : Colors.transparent,
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: Text(
-                'Metric',
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: _isMetric
-                      ? (isDark ? AppColors.darkOnPrimary : AppColors.onPrimary)
-                      : (isDark
-                            ? AppColors.darkOnSurfaceVariant
-                            : AppColors.onSurfaceVariant),
-                ),
-              ),
-            ),
-          ),
-          GestureDetector(
-            onTap: () {
-              if (_isMetric) {
-                setState(() => _isMetric = false);
-                talker.info('Unit: Imperial');
-              }
-            },
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: !_isMetric
-                    ? (isDark ? AppColors.darkPrimary : AppColors.primary)
-                    : Colors.transparent,
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: Text(
-                'Imperial',
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: !_isMetric
-                      ? (isDark ? AppColors.darkOnPrimary : AppColors.onPrimary)
-                      : (isDark
-                            ? AppColors.darkOnSurfaceVariant
-                            : AppColors.onSurfaceVariant),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
+    return SegmentedButton<bool>(
+      showSelectedIcon: false,
+      segments: const [
+        ButtonSegment<bool>(value: true, label: Text('Metric')),
+        ButtonSegment<bool>(value: false, label: Text('Imperial')),
+      ],
+      selected: {_isMetric},
+      onSelectionChanged: (Set<bool> newSelection) {
+        setState(() => _isMetric = newSelection.first);
+        talker.info('Unit: ${_isMetric ? 'Metric' : 'Imperial'}');
+      },
     );
   }
 }

@@ -34,7 +34,7 @@ class ProfileMenuTile extends StatelessWidget {
 
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(AppSpacing.cardRadiusSmall),
       child: Padding(
         padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.md,
@@ -43,8 +43,8 @@ class ProfileMenuTile extends StatelessWidget {
         child: Row(
           children: [
             Container(
-              width: 40,
-              height: 40,
+              width: AppSpacing.xxxl,
+              height: AppSpacing.xxxl,
               decoration: BoxDecoration(
                 color:
                     (iconColor ??
@@ -52,11 +52,13 @@ class ProfileMenuTile extends StatelessWidget {
                                 ? AppColors.darkPrimary
                                 : AppColors.primary))
                         .withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(
+                  AppSpacing.cardRadiusSmall - 2,
+                ),
               ),
               child: Icon(
                 icon,
-                size: 20,
+                size: AppSpacing.iconSizeSmall,
                 color:
                     iconColor ??
                     (isDark ? AppColors.darkPrimary : AppColors.primary),
@@ -97,7 +99,7 @@ class ProfileMenuTile extends StatelessWidget {
             if (showArrow && trailing == null)
               Icon(
                 Icons.chevron_right_rounded,
-                size: 22,
+                size: AppSpacing.iconSize - 2,
                 color: isDark
                     ? AppColors.darkOnSurfaceVariant
                     : AppColors.onSurfaceVariant,

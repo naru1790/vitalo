@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../theme/app_spacing.dart';
+
 /// Custom social sign-in buttons with Vitalo brand identity
 /// while maintaining official provider logo guidelines.
 
@@ -64,40 +66,43 @@ class _GoogleSignInButton extends StatelessWidget {
 
     return SizedBox(
       width: double.infinity,
-      height: 54,
+      height: AppSpacing.buttonHeight - AppSpacing.xs,
       child: Material(
         color: backgroundColor,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppSpacing.cardRadiusSmall),
           side: BorderSide(color: borderColor, width: 1),
         ),
         child: InkWell(
           onTap: isLoading ? null : onPressed,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppSpacing.cardRadiusSmall),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 // Official Google "G" logo
                 if (isLoading)
                   SizedBox(
-                    width: 20,
-                    height: 20,
+                    width: AppSpacing.iconSizeSmall,
+                    height: AppSpacing.iconSizeSmall,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
                       valueColor: AlwaysStoppedAnimation(textColor),
                     ),
                   )
                 else
-                  const SizedBox(width: 20, height: 20, child: _GoogleLogo()),
-                const SizedBox(width: 12),
+                  const SizedBox(
+                    width: AppSpacing.iconSizeSmall,
+                    height: AppSpacing.iconSizeSmall,
+                    child: _GoogleLogo(),
+                  ),
+                const SizedBox(width: AppSpacing.sm),
                 Text(
                   isLoading ? 'Signing in...' : text,
                   style: theme.textTheme.labelLarge?.copyWith(
                     color: textColor,
                     fontWeight: FontWeight.w500,
-                    fontSize: 15,
                   ),
                 ),
               ],
@@ -128,37 +133,42 @@ class _AppleSignInButton extends StatelessWidget {
 
     return SizedBox(
       width: double.infinity,
-      height: 54,
+      height: AppSpacing.buttonHeight - AppSpacing.xs,
       child: Material(
         color: Colors.black,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppSpacing.cardRadiusSmall),
+        ),
         child: InkWell(
           onTap: isLoading ? null : onPressed,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppSpacing.cardRadiusSmall),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 // Apple logo
                 if (isLoading)
                   const SizedBox(
-                    width: 20,
-                    height: 20,
+                    width: AppSpacing.iconSizeSmall,
+                    height: AppSpacing.iconSizeSmall,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
                       valueColor: AlwaysStoppedAnimation(Colors.white),
                     ),
                   )
                 else
-                  const Icon(Icons.apple, color: Colors.white, size: 22),
-                const SizedBox(width: 12),
+                  const Icon(
+                    Icons.apple,
+                    color: Colors.white,
+                    size: AppSpacing.iconSize - 2,
+                  ),
+                const SizedBox(width: AppSpacing.sm),
                 Text(
                   isLoading ? 'Signing in...' : text,
                   style: theme.textTheme.labelLarge?.copyWith(
                     color: Colors.white,
                     fontWeight: FontWeight.w500,
-                    fontSize: 15,
                   ),
                 ),
               ],
@@ -177,7 +187,10 @@ class _GoogleLogo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomPaint(size: const Size(20, 20), painter: _GoogleLogoPainter());
+    return CustomPaint(
+      size: const Size(AppSpacing.iconSizeSmall, AppSpacing.iconSizeSmall),
+      painter: _GoogleLogoPainter(),
+    );
   }
 }
 

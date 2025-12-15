@@ -203,7 +203,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                     children: [
                       Icon(
                         Icons.email_outlined,
-                        size: 64,
+                        size: AppSpacing.giant,
                         color: colorScheme.primary,
                       ),
                       const SizedBox(height: AppSpacing.xl),

@@ -53,7 +53,7 @@ class SettingsSection extends StatelessWidget {
                   Divider(
                     height: 1,
                     thickness: 1,
-                    indent: AppSpacing.md + 40 + AppSpacing.md,
+                    indent: AppSpacing.md + AppSpacing.xxxl + AppSpacing.md,
                     color: isDark ? AppColors.darkOutline : AppColors.outline,
                   ),
               ],

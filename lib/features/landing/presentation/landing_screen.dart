@@ -1,5 +1,3 @@
-import 'dart:io' show Platform;
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -152,7 +150,6 @@ class _ActionsSectionState extends State<_ActionsSection> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final isIOS = Platform.isIOS;
 
     return Container(
       width: double.infinity,
@@ -171,7 +168,7 @@ class _ActionsSectionState extends State<_ActionsSection> {
             onPressed: _isLoading ? null : _handleAppleSignIn,
             isLoading: _loadingState == _LoadingState.apple,
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.sm),
 
           // Google Sign-In button
           SocialSignInButton(
@@ -180,31 +177,32 @@ class _ActionsSectionState extends State<_ActionsSection> {
             isLoading: _loadingState == _LoadingState.google,
           ),
 
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.sm),
 
           // Email sign-in option
           SizedBox(
             width: double.infinity,
-            height: 54,
+            height: AppSpacing.buttonHeight - 6, // 54px
             child: OutlinedButton.icon(
               onPressed: _isLoading ? null : _handleEmailFlow,
               icon: Icon(
                 Icons.email_outlined,
-                size: 18,
+                size: AppSpacing.iconSizeSmall - 2, // 18px
                 color: colorScheme.onSurface,
               ),
               label: Text(
                 'Sign in with Email',
-                style: TextStyle(
+                style: theme.textTheme.labelLarge?.copyWith(
                   color: colorScheme.onSurface,
                   fontWeight: FontWeight.w500,
-                  fontSize: 15,
                 ),
               ),
               style: OutlinedButton.styleFrom(
                 side: BorderSide(color: colorScheme.outline),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(
+                    AppSpacing.cardRadiusSmall,
+                  ),
                 ),
               ),
             ),
@@ -240,7 +238,7 @@ class _ActionsSectionState extends State<_ActionsSection> {
                               decorationColor: colorScheme.primary,
                             ),
                           ),
-                          const SizedBox(width: 2),
+                          const SizedBox(width: AppSpacing.unit / 2),
                           Icon(
                             Icons.open_in_new,
                             size: 12,
@@ -273,10 +271,10 @@ class _ActionsSectionState extends State<_ActionsSection> {
                               decorationColor: colorScheme.primary,
                             ),
                           ),
-                          const SizedBox(width: 2),
+                          const SizedBox(width: AppSpacing.unit / 2),
                           Icon(
                             Icons.open_in_new,
-                            size: 12,
+                            size: AppSpacing.sm,
                             color: colorScheme.primary,
                           ),
                         ],
