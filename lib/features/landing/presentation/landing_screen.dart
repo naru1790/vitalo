@@ -182,21 +182,19 @@ class _ActionsSectionState extends State<_ActionsSection> {
               icon: Icon(
                 Icons.email_outlined,
                 size: AppSpacing.iconSizeSmall,
-                color: colorScheme.onSurface,
+                color: colorScheme.primary,
               ),
               label: Text(
                 'Sign in with Email',
                 style: theme.textTheme.labelLarge?.copyWith(
-                  color: colorScheme.onSurface,
+                  color: colorScheme.primary,
                   fontWeight: FontWeight.w500,
                 ),
               ),
               style: OutlinedButton.styleFrom(
                 side: BorderSide(color: colorScheme.outline),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(
-                    AppSpacing.cardRadiusSmall,
-                  ),
+                  borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
                 ),
               ),
             ),

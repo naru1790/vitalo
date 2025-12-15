@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../theme.dart';
+
 /// FluxMascot - 3-layer animated vitality indicator
 /// Represents Physical (outer), Nutritional (middle), Mental (core) health dimensions
 class FluxMascot extends StatefulWidget {
@@ -50,15 +52,12 @@ class _FluxMascotState extends State<FluxMascot> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final isLight = Theme.of(context).brightness == Brightness.light;
 
-    // Use Material 3 color roles:
-    // - primaryContainer: Outer aura (subtle, background emphasis)
-    // - primary: Middle flow layer (main brand color)
-    // - secondary: Core center (complementary accent)
-    final back = colorScheme.primaryContainer;
-    final mid = colorScheme.primary;
-    final front = colorScheme.secondary;
-    final shine = colorScheme.surfaceContainerHighest;
+    final back = isLight ? FluxColors.lightBack : FluxColors.darkBack;
+    final mid = isLight ? FluxColors.lightMid : FluxColors.darkMid;
+    final front = isLight ? FluxColors.lightFront : FluxColors.darkFront;
+    final shine = isLight ? FluxColors.lightShine : FluxColors.darkShine;
 
     return SizedBox(
       width: widget.size,
