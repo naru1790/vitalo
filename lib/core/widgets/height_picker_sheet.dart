@@ -56,7 +56,7 @@ String _formatInchesLabel(double inches) {
 }
 
 /// Feet ruler - values in inches for precision, displayed as feet'inches"
-final _inchesUnit = RulerUnit(
+const _inchesUnit = RulerUnit(
   label: 'in',
   minValue: 39.0, // ~100cm = 39.4 inches
   maxValue: 98.0, // ~250cm = 98.4 inches

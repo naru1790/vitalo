@@ -1,4 +1,5 @@
-import 'package:flutter/cupertino.dart';
+import 'dart:io' show Platform;
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -13,6 +14,7 @@ import '../../../core/widgets/year_picker_sheet.dart';
 import '../../../core/widgets/weight_picker_sheet.dart';
 import '../../../core/widgets/height_picker_sheet.dart';
 import '../../../core/widgets/location_picker_sheet.dart';
+import '../../../core/widgets/dietary_preferences_sheet.dart';
 import 'widgets/gender_selection.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -41,7 +43,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
   // Health data - null means "Not Set"
   double? _weightKg;
   double? _heightCm;
-  String? _dietaryPref;
+  DietaryPreferencesResult? _dietaryPref;
+
+  // Health integrations
+  bool _healthConnected = false;
+  bool _fitbitConnected = false;
+  bool _garminConnected = false;
 
   @override
   void initState() {
@@ -97,10 +104,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   String _getUserEmail() {
     return _authService.currentUser?.email ?? 'Not signed in';
-  }
-
-  bool _isGuest() {
-    return _authService.currentUser?.email == null;
   }
 
   String _formatWeight() {
@@ -199,24 +202,108 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+  String _formatDietaryPreference() {
+    if (_dietaryPref == null) return 'Not Set';
+    return _dietaryPref!.displayText;
+  }
+
+  Future<void> _selectDietaryPreference() async {
+    final result = await DietaryPreferencesSheet.show(
+      context: context,
+      initialResult: _dietaryPref,
+    );
+
+    if (result != null && mounted) {
+      setState(() => _dietaryPref = result);
+      talker.info('Dietary preference set: ${result.displayText}');
+    }
+  }
+
   Future<void> _handleSignOut() async {
     talker.info('Sign out initiated');
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
 
-    final confirmed = await showCupertinoModalPopup<bool>(
+    final confirmed = await showModalBottomSheet<bool>(
       context: context,
-      builder: (context) => CupertinoActionSheet(
-        title: const Text('Sign Out'),
-        message: const Text('Are you sure you want to sign out?'),
-        actions: [
-          CupertinoActionSheetAction(
-            onPressed: () => Navigator.pop(context, true),
-            isDestructiveAction: true,
-            child: const Text('Sign Out'),
-          ),
-        ],
-        cancelButton: CupertinoActionSheetAction(
-          onPressed: () => Navigator.pop(context, false),
-          child: const Text('Cancel'),
+      backgroundColor: colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppSpacing.cardRadiusLarge),
+        ),
+      ),
+      builder: (context) => Padding(
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.xl,
+          AppSpacing.md,
+          AppSpacing.xl,
+          AppSpacing.xl,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Drag handle
+            Container(
+              width: 32,
+              height: 4,
+              decoration: BoxDecoration(
+                color: colorScheme.outlineVariant,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xl),
+            Icon(
+              Icons.logout_rounded,
+              color: colorScheme.error,
+              size: AppSpacing.touchTargetMin,
+            ),
+            const SizedBox(height: AppSpacing.md),
+            Text(
+              'Sign Out',
+              style: textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              'Are you sure you want to sign out?',
+              style: textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppSpacing.xl),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: AppSpacing.md,
+                      ),
+                    ),
+                    child: const Text('Cancel'),
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: FilledButton(
+                    onPressed: () => Navigator.pop(context, true),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: colorScheme.error,
+                      foregroundColor: colorScheme.onError,
+                      padding: const EdgeInsets.symmetric(
+                        vertical: AppSpacing.md,
+                      ),
+                    ),
+                    child: const Text('Sign Out'),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: MediaQuery.paddingOf(context).bottom),
+          ],
         ),
       ),
     );
@@ -235,67 +322,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _handleDeleteAccount() async {
     talker.info('Delete account initiated');
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
 
-    final firstConfirm = await showCupertinoModalPopup<bool>(
+    // Single confirmation with DELETE typing
+    final confirmed = await showModalBottomSheet<bool>(
       context: context,
-      builder: (context) => CupertinoActionSheet(
-        title: const Text('Delete Account'),
-        message: const Text(
-          'This will permanently delete your account and all data. This cannot be undone.',
+      isScrollControlled: true,
+      backgroundColor: colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppSpacing.cardRadiusLarge),
         ),
-        actions: [
-          CupertinoActionSheetAction(
-            onPressed: () => Navigator.pop(context, true),
-            isDestructiveAction: true,
-            child: const Text('Delete My Account'),
-          ),
-        ],
-        cancelButton: CupertinoActionSheetAction(
-          onPressed: () => Navigator.pop(context, false),
-          child: const Text('Cancel'),
-        ),
+      ),
+      builder: (context) => _DeleteConfirmationSheet(
+        colorScheme: colorScheme,
+        textTheme: textTheme,
       ),
     );
 
-    if (firstConfirm != true || !mounted) return;
-
-    // Second confirmation
-    final typeController = TextEditingController();
-
-    final secondConfirm = await showCupertinoDialog<bool>(
-      context: context,
-      builder: (context) => CupertinoAlertDialog(
-        title: const Text('Type DELETE to confirm'),
-        content: Padding(
-          padding: const EdgeInsets.only(top: AppSpacing.md),
-          child: CupertinoTextField(
-            controller: typeController,
-            placeholder: 'DELETE',
-            textCapitalization: TextCapitalization.characters,
-            autofocus: true,
-          ),
-        ),
-        actions: [
-          CupertinoDialogAction(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          CupertinoDialogAction(
-            onPressed: () {
-              if (typeController.text.trim().toUpperCase() == 'DELETE') {
-                Navigator.pop(context, true);
-              } else {
-                AppSnackBar.showWarning(context, 'Type DELETE to confirm');
-              }
-            },
-            isDestructiveAction: true,
-            child: const Text('Delete Forever'),
-          ),
-        ],
-      ),
-    );
-
-    if (secondConfirm == true && mounted) {
+    if (confirmed == true && mounted) {
       talker.info('Account deletion confirmed');
       AppSnackBar.showWarning(context, 'Account deletion coming soon.');
     }
@@ -348,13 +394,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                 _buildSectionTitle('Dietary Preference', colorScheme),
                 const SizedBox(height: AppSpacing.sm),
-                _buildDietaryChips(colorScheme),
+                _buildDietaryPreferenceCard(colorScheme),
 
                 const SizedBox(height: AppSpacing.xl),
 
                 _buildSectionTitle('Preferences', colorScheme),
                 const SizedBox(height: AppSpacing.sm),
                 _buildPreferencesCard(colorScheme),
+
+                const SizedBox(height: AppSpacing.xl),
+
+                _buildSectionTitle('Integrations', colorScheme),
+                const SizedBox(height: AppSpacing.sm),
+                _buildIntegrationsCard(colorScheme),
 
                 const SizedBox(height: AppSpacing.xl),
 
@@ -540,64 +592,69 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildDietaryChips(ColorScheme colorScheme) {
-    final options = [
-      ('🌱', 'Vegetarian'),
-      ('🥗', 'Eggetarian'),
-      ('🍗', 'Non-Veg'),
-      ('🌿', 'Vegan'),
-      ('🐟', 'Pescatarian'),
-      ('🥩', 'Keto'),
-      ('🍖', 'Paleo'),
-      ('☪️', 'Halal'),
-      ('✡️', 'Kosher'),
-    ];
-
+  Widget _buildDietaryPreferenceCard(ColorScheme colorScheme) {
+    final hasValue = _dietaryPref != null;
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         color: colorScheme.surface,
         borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (_dietaryPref == null)
-            Padding(
-              padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-              child: Text(
-                'Select your dietary preference',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: _selectDietaryPreference,
+          borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.restaurant_menu_rounded,
+                  size: AppSpacing.iconSizeSmall,
+                  color: colorScheme.primary,
+                ),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Dietary Preferences',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: colorScheme.onSurface,
+                        ),
+                      ),
+                      if (hasValue) ...[
+                        const SizedBox(height: AppSpacing.xxs),
+                        Text(
+                          _formatDietaryPreference(),
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
+                                color: colorScheme.primary,
+                                fontWeight: FontWeight.w500,
+                              ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                if (!hasValue)
+                  Text(
+                    'Set up',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                const SizedBox(width: AppSpacing.xs),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  size: AppSpacing.iconSize,
                   color: colorScheme.onSurfaceVariant,
                 ),
-              ),
+              ],
             ),
-          Wrap(
-            spacing: AppSpacing.sm,
-            runSpacing: AppSpacing.sm,
-            children: options.map((option) {
-              final isSelected = _dietaryPref == option.$2;
-              return ChoiceChip(
-                label: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(option.$1),
-                    const SizedBox(width: AppSpacing.xs),
-                    Text(option.$2),
-                  ],
-                ),
-                selected: isSelected,
-                onSelected: (selected) {
-                  setState(() {
-                    _dietaryPref = selected ? option.$2 : null;
-                  });
-                  talker.info('Dietary preference: $_dietaryPref');
-                },
-              );
-            }).toList(),
           ),
-        ],
+        ),
       ),
     );
   }
@@ -643,6 +700,176 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  Widget _buildIntegrationsCard(ColorScheme colorScheme) {
+    final isIOS = Platform.isIOS;
+    final healthAppName = isIOS ? 'Apple Health' : 'Health Connect';
+    const healthIcon = Icons.favorite_rounded;
+    final healthIconColor = isIOS
+        ? const Color(0xFFFF2D55)
+        : const Color(0xFF4285F4);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
+      ),
+      child: Column(
+        children: [
+          // Platform Health App (Apple Health / Health Connect)
+          _buildIntegrationRow(
+            icon: healthIcon,
+            iconColor: healthIconColor,
+            name: healthAppName,
+            subtitle: 'Recommended • Syncs with 100+ apps',
+            isConnected: _healthConnected,
+            colorScheme: colorScheme,
+            onChanged: (value) {
+              setState(() => _healthConnected = value);
+              talker.info(
+                '$healthAppName: ${value ? 'Connected' : 'Disconnected'}',
+              );
+              if (value) {
+                _showHealthPermissionsInfo(healthAppName);
+              }
+            },
+          ),
+          _buildDivider(colorScheme),
+          // Fitbit
+          _buildIntegrationRow(
+            icon: Icons.watch_rounded,
+            iconColor: const Color(0xFF00B0B9), // Fitbit teal
+            name: 'Fitbit',
+            subtitle: 'Steps, sleep & heart rate',
+            isConnected: _fitbitConnected,
+            colorScheme: colorScheme,
+            onChanged: (value) {
+              setState(() => _fitbitConnected = value);
+              talker.info('Fitbit: ${value ? 'Connected' : 'Disconnected'}');
+              if (value) {
+                _showComingSoonDialog('Fitbit');
+                setState(() => _fitbitConnected = false);
+              }
+            },
+          ),
+          _buildDivider(colorScheme),
+          // Garmin
+          _buildIntegrationRow(
+            icon: Icons.watch_rounded,
+            iconColor: const Color(0xFF007CC3), // Garmin blue
+            name: 'Garmin',
+            subtitle: 'Activities & fitness data',
+            isConnected: _garminConnected,
+            colorScheme: colorScheme,
+            onChanged: (value) {
+              setState(() => _garminConnected = value);
+              talker.info('Garmin: ${value ? 'Connected' : 'Disconnected'}');
+              if (value) {
+                _showComingSoonDialog('Garmin');
+                setState(() => _garminConnected = false);
+              }
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildIntegrationRow({
+    required IconData icon,
+    required Color iconColor,
+    required String name,
+    required String subtitle,
+    required bool isConnected,
+    required ColorScheme colorScheme,
+    required ValueChanged<bool> onChanged,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.sm,
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: AppSpacing.iconSizeSmall, color: iconColor),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  name,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurface,
+                  ),
+                ),
+                Text(
+                  isConnected ? 'Connected' : subtitle,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: isConnected
+                        ? colorScheme.primary
+                        : colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Switch.adaptive(
+            value: isConnected,
+            activeTrackColor: colorScheme.primary,
+            onChanged: onChanged,
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showComingSoonDialog(String serviceName) {
+    final colorScheme = Theme.of(context).colorScheme;
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        icon: Icon(Icons.construction_rounded, color: colorScheme.tertiary),
+        title: const Text('Coming Soon'),
+        content: Text(
+          '$serviceName integration is coming in a future update!\n\n'
+          'For now, you can sync $serviceName data through '
+          '${Platform.isIOS ? 'Apple Health' : 'Health Connect'} instead.',
+        ),
+        actions: [
+          FilledButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Got it'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showHealthPermissionsInfo(String healthAppName) {
+    final colorScheme = Theme.of(context).colorScheme;
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        icon: Icon(Icons.info_outline_rounded, color: colorScheme.primary),
+        title: Text('$healthAppName Integration'),
+        content: const Text(
+          'Vitalo will request permission to read and write:\n\n'
+          '• Weight\n'
+          '• Height\n'
+          '• Steps\n'
+          '• Active calories\n\n'
+          'You can manage these permissions anytime in your device settings.',
+        ),
+        actions: [
+          FilledButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Got it'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildAccountCard(ColorScheme colorScheme) {
     return Container(
       decoration: BoxDecoration(
@@ -651,23 +878,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
       child: Column(
         children: [
-          if (_isGuest()) ...[
-            _buildTappableRow(
-              icon: Icons.link_rounded,
-              label: 'Link Google Account',
-              value: 'Save your progress',
-              colorScheme: colorScheme,
-              onTap: () {
-                talker.info('Link account tapped');
-              },
-            ),
-            _buildDivider(colorScheme),
-          ],
           _buildTappableRow(
             icon: Icons.privacy_tip_outlined,
             label: 'Privacy Policy',
             colorScheme: colorScheme,
             onTap: () => context.push(AppRoutes.privacy),
+          ),
+          _buildDivider(colorScheme),
+          _buildTappableRow(
+            icon: Icons.description_outlined,
+            label: 'Terms of Service',
+            colorScheme: colorScheme,
+            onTap: () => context.push(AppRoutes.terms),
           ),
           _buildDivider(colorScheme),
           _buildTappableRow(
@@ -832,6 +1054,177 @@ class _ProfileScreenState extends State<ProfileScreen> {
         setState(() => _isMetric = newSelection.first);
         talker.info('Unit: ${_isMetric ? 'Metric' : 'Imperial'}');
       },
+    );
+  }
+}
+
+/// Bottom sheet for DELETE confirmation with real-time validation
+class _DeleteConfirmationSheet extends StatefulWidget {
+  final ColorScheme colorScheme;
+  final TextTheme textTheme;
+
+  const _DeleteConfirmationSheet({
+    required this.colorScheme,
+    required this.textTheme,
+  });
+
+  @override
+  State<_DeleteConfirmationSheet> createState() =>
+      _DeleteConfirmationSheetState();
+}
+
+class _DeleteConfirmationSheetState extends State<_DeleteConfirmationSheet> {
+  final _controller = TextEditingController();
+  final _focusNode = FocusNode();
+  bool _isValid = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.addListener(_validateInput);
+  }
+
+  void _validateInput() {
+    final isValid = _controller.text.trim().toUpperCase() == 'DELETE';
+    if (isValid != _isValid) {
+      setState(() => _isValid = isValid);
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+        AppSpacing.xl,
+        AppSpacing.md,
+        AppSpacing.xl,
+        MediaQuery.viewInsetsOf(context).bottom + AppSpacing.xl,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Drag handle
+          Container(
+            width: 32,
+            height: 4,
+            decoration: BoxDecoration(
+              color: widget.colorScheme.outlineVariant,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xl),
+          Icon(
+            Icons.delete_forever_rounded,
+            color: widget.colorScheme.error,
+            size: AppSpacing.touchTargetMin,
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Text(
+            'Delete Account',
+            style: widget.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: widget.colorScheme.onSurface,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            'This will permanently delete your account and all data. This action cannot be undone.',
+            style: widget.textTheme.bodyMedium?.copyWith(
+              color: widget.colorScheme.onSurfaceVariant,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          Text(
+            'Type DELETE to confirm',
+            style: widget.textTheme.labelMedium?.copyWith(
+              color: widget.colorScheme.onSurfaceVariant,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          TextField(
+            controller: _controller,
+            focusNode: _focusNode,
+            textCapitalization: TextCapitalization.characters,
+            textAlign: TextAlign.center,
+            style: widget.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+              letterSpacing: 2,
+              color: widget.colorScheme.onSurface,
+            ),
+            decoration: InputDecoration(
+              hintText: 'DELETE',
+              hintStyle: widget.textTheme.titleMedium?.copyWith(
+                color: widget.colorScheme.onSurfaceVariant.withValues(
+                  alpha: 0.4,
+                ),
+                letterSpacing: 2,
+              ),
+              filled: true,
+              fillColor: widget.colorScheme.surfaceContainerLow,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.md,
+                vertical: AppSpacing.md,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
+                borderSide: BorderSide.none,
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
+                borderSide: BorderSide(
+                  color: widget.colorScheme.error.withValues(alpha: 0.5),
+                  width: 1.5,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xl),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: AppSpacing.md,
+                    ),
+                  ),
+                  child: const Text('Cancel'),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: FilledButton(
+                  onPressed: _isValid
+                      ? () => Navigator.pop(context, true)
+                      : null,
+                  style: FilledButton.styleFrom(
+                    backgroundColor: widget.colorScheme.error,
+                    foregroundColor: widget.colorScheme.onError,
+                    disabledBackgroundColor: widget.colorScheme.error
+                        .withValues(alpha: 0.38),
+                    disabledForegroundColor: widget.colorScheme.onError
+                        .withValues(alpha: 0.38),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: AppSpacing.md,
+                    ),
+                  ),
+                  child: const Text('Delete Forever'),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
