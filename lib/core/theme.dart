@@ -8,29 +8,90 @@ import 'package:google_fonts/google_fonts.dart';
 // ═══════════════════════════════════════════════════════════════════════════
 
 /// Creates a text theme using Google Fonts
-/// [bodyFont] - Font for body and label styles (Inter or Roboto)
-/// [displayFont] - Font for display, headline, title styles (Poppins or Public Sans)
+/// "Smart Companion" pairing - Modern, confident, distinctive
+/// Heading: Outfit (SemiBold/Medium) - Geometric precision with warmth
+/// Body: Inter (Regular/Medium) - Designed for screens, incredible legibility
 TextTheme createTextTheme(
   BuildContext context,
   String bodyFontString,
   String displayFontString,
 ) {
   TextTheme baseTextTheme = Theme.of(context).textTheme;
+
+  // Body text: Inter - designed specifically for screen legibility
   TextTheme bodyTextTheme = GoogleFonts.getTextTheme(
     bodyFontString,
     baseTextTheme,
   );
-  TextTheme displayTextTheme = GoogleFonts.getTextTheme(
-    displayFontString,
-    baseTextTheme,
-  );
-  TextTheme textTheme = displayTextTheme.copyWith(
+
+  // Smart Companion Typography Scale
+  // ─────────────────────────────────────────────────────────────────────────
+  // UI Element          | Font   | Weight        | Usage
+  // ─────────────────────────────────────────────────────────────────────────
+  // Main Page Titles    | Outfit | SemiBold (600)| Confident, modern headers
+  // Section Headers     | Outfit | SemiBold (600)| "Today's Progress", "Your Goals"
+  // Big Data/Stats      | Outfit | SemiBold (600)| Step counts, heart rate
+  // Body Text           | Inter  | Regular (400) | Instructions, descriptions
+  // Data Labels         | Inter  | Medium (500)  | "Steps", "Calories", "Sleep"
+  // Data Values         | Inter  | SemiBold (600)| Actual metric numbers
+  // Buttons             | Outfit | SemiBold (600)| Action-oriented CTAs
+  // ─────────────────────────────────────────────────────────────────────────
+
+  TextTheme textTheme = TextTheme(
+    // Display styles - Outfit SemiBold (w600) for main page titles
+    displayLarge: GoogleFonts.outfit(
+      fontSize: baseTextTheme.displayLarge?.fontSize,
+      fontWeight: FontWeight.w600,
+    ),
+    displayMedium: GoogleFonts.outfit(
+      fontSize: baseTextTheme.displayMedium?.fontSize,
+      fontWeight: FontWeight.w600,
+    ),
+    displaySmall: GoogleFonts.outfit(
+      fontSize: baseTextTheme.displaySmall?.fontSize,
+      fontWeight: FontWeight.w600,
+    ),
+    // Headline styles - Outfit SemiBold (w600) for section headers
+    headlineLarge: GoogleFonts.outfit(
+      fontSize: baseTextTheme.headlineLarge?.fontSize,
+      fontWeight: FontWeight.w600,
+    ),
+    headlineMedium: GoogleFonts.outfit(
+      fontSize: baseTextTheme.headlineMedium?.fontSize,
+      fontWeight: FontWeight.w600,
+    ),
+    headlineSmall: GoogleFonts.outfit(
+      fontSize: baseTextTheme.headlineSmall?.fontSize,
+      fontWeight: FontWeight.w600,
+    ),
+    // Title styles - Outfit SemiBold for big stats and subtitles
+    titleLarge: GoogleFonts.outfit(
+      fontSize: baseTextTheme.titleLarge?.fontSize,
+      fontWeight: FontWeight.w600,
+    ),
+    titleMedium: GoogleFonts.outfit(
+      fontSize: baseTextTheme.titleMedium?.fontSize,
+      fontWeight: FontWeight.w500,
+    ),
+    titleSmall: GoogleFonts.outfit(
+      fontSize: baseTextTheme.titleSmall?.fontSize,
+      fontWeight: FontWeight.w500,
+    ),
+    // Body styles - Inter Regular (w400) for readable content
     bodyLarge: bodyTextTheme.bodyLarge,
     bodyMedium: bodyTextTheme.bodyMedium,
     bodySmall: bodyTextTheme.bodySmall,
-    labelLarge: bodyTextTheme.labelLarge,
-    labelMedium: bodyTextTheme.labelMedium,
-    labelSmall: bodyTextTheme.labelSmall,
+    // Label styles - Outfit SemiBold for buttons, Inter for data labels
+    labelLarge: GoogleFonts.outfit(
+      fontSize: bodyTextTheme.labelLarge?.fontSize,
+      fontWeight: FontWeight.w600, // Buttons: confident action
+    ),
+    labelMedium: bodyTextTheme.labelMedium?.copyWith(
+      fontWeight: FontWeight.w500, // Data labels: "Steps", "Calories"
+    ),
+    labelSmall: bodyTextTheme.labelSmall?.copyWith(
+      fontWeight: FontWeight.w600, // Data values: actual numbers
+    ),
   );
   return textTheme;
 }

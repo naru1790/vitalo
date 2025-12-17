@@ -62,8 +62,10 @@ class VitaloApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Create text theme with Google Fonts (Inter for body, Manrope for display)
-    TextTheme textTheme = createTextTheme(context, 'Inter', 'Poppins');
+    // Smart Companion font pairing: Outfit (headings) + Inter (body)
+    // Outfit: Geometric precision with warmth - confident, modern headers
+    // Inter: Designed for screens - incredible legibility at all sizes
+    TextTheme textTheme = createTextTheme(context, 'Inter', 'Outfit');
     MaterialTheme theme = MaterialTheme(textTheme);
 
     return MaterialApp.router(
