@@ -8,6 +8,7 @@ import '../../../core/services/auth_service.dart';
 import '../../../core/theme.dart';
 import '../../../core/widgets/inline_editable_header.dart';
 import '../../../core/widgets/app_snackbar.dart';
+import 'widgets/gender_selection.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -431,13 +432,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
       child: Column(
         children: [
-          _buildChipSelector(
-            icon: Icons.wc_outlined,
-            label: 'Gender',
-            options: const ['Male', 'Female', 'Other'],
-            selected: _gender,
-            colorScheme: colorScheme,
-            onSelected: (value) {
+          GenderSelection(
+            selectedGender: _gender,
+            onGenderSelected: (value) {
               setState(() => _gender = value);
               talker.info('Gender set: $value');
             },

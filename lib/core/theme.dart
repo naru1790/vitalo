@@ -471,6 +471,59 @@ class MaterialTheme {
     ),
     scaffoldBackgroundColor: colorScheme.surface,
     canvasColor: colorScheme.surface,
+    // ───── Polished SegmentedButton Theme ─────
+    segmentedButtonTheme: SegmentedButtonThemeData(
+      style: ButtonStyle(
+        // Remove icon from selected state
+        iconSize: WidgetStateProperty.all(0),
+        // Compact padding for cleaner look
+        padding: WidgetStateProperty.all(
+          const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        ),
+        // Visible side borders
+        side: WidgetStateProperty.resolveWith((states) {
+          return BorderSide(
+            color: states.contains(WidgetState.selected)
+                ? colorScheme.primary
+                : colorScheme.outline,
+            width: 1,
+          );
+        }),
+        // Full pill shape
+        shape: WidgetStateProperty.all(
+          RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
+          ),
+        ),
+        // Background colors
+        backgroundColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return colorScheme.primary;
+          }
+          return colorScheme.surfaceContainerLow;
+        }),
+        // Text/icon colors
+        foregroundColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return colorScheme.onPrimary;
+          }
+          return colorScheme.onSurfaceVariant;
+        }),
+        // Text styling
+        textStyle: WidgetStateProperty.resolveWith((states) {
+          return textTheme.labelMedium?.copyWith(
+            fontWeight: states.contains(WidgetState.selected)
+                ? FontWeight.w600
+                : FontWeight.w400,
+          );
+        }),
+        // Minimum touch target
+        minimumSize: WidgetStateProperty.all(const Size(48, 36)),
+        // No elevation - prevents top border thinning
+        elevation: WidgetStateProperty.all(0),
+        shadowColor: WidgetStateProperty.all(Colors.transparent),
+      ),
+    ),
   );
 
   List<ExtendedColor> get extendedColors => [];
@@ -544,7 +597,7 @@ class AppSpacing {
   static const double cardRadius = 16.0;
   static const double cardRadiusLarge = 28.0;
   static const double cardRadiusSmall = 12.0;
-  static const double buttonRadius = 28.0;
+  static const double buttonRadius = 12.0; // Modern rectangular, not pill
   static const double inputRadius = 12.0;
 
   // ───── Icon Sizes ─────
