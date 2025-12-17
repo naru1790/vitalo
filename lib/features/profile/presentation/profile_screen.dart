@@ -9,6 +9,7 @@ import '../../../core/theme.dart';
 import '../../../core/widgets/app_segmented_button.dart';
 import '../../../core/widgets/inline_editable_header.dart';
 import '../../../core/widgets/app_snackbar.dart';
+import '../../../core/widgets/year_picker_sheet.dart';
 import 'widgets/gender_selection.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -30,7 +31,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   // Personal info
   String? _gender;
-  String? _dateOfBirth;
+  int? _birthYear;
   String? _country;
 
   // Health data - null means "Not Set"
@@ -119,66 +120,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  String _formatDateOfBirth() {
-    if (_dateOfBirth == null) return 'Not Set';
-    final date = DateTime.tryParse(_dateOfBirth!);
-    if (date == null) return 'Not Set';
-    final months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
+  String _formatBirthYear() {
+    if (_birthYear == null) return 'Not Set';
     final age = _calculateAge();
     final ageStr = age != null ? ' ($age yrs)' : '';
-    return '${date.day} ${months[date.month - 1]} ${date.year}$ageStr';
+    return '$_birthYear$ageStr';
   }
 
   int? _calculateAge() {
-    if (_dateOfBirth == null) return null;
-    final date = DateTime.tryParse(_dateOfBirth!);
-    if (date == null) return null;
+    if (_birthYear == null) return null;
     final now = DateTime.now();
-    int age = now.year - date.year;
-    if (now.month < date.month ||
-        (now.month == date.month && now.day < date.day)) {
-      age--;
-    }
-    return age;
+    return now.year - _birthYear!;
   }
 
-  Future<void> _selectDateOfBirth() async {
-    final colorScheme = Theme.of(context).colorScheme;
-    final now = DateTime.now();
-    final initialDate = _dateOfBirth != null
-        ? DateTime.tryParse(_dateOfBirth!) ?? DateTime(now.year - 25)
-        : DateTime(now.year - 25);
-
-    final picked = await showDatePicker(
+  Future<void> _selectBirthYear() async {
+    final selectedYear = await YearPickerSheet.show(
       context: context,
-      initialDate: initialDate,
-      firstDate: DateTime(1920),
-      lastDate: now,
-      helpText: 'Date of Birth',
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(colorScheme: colorScheme),
-          child: child!,
-        );
-      },
+      initialYear: _birthYear,
     );
 
-    if (picked != null) {
-      setState(() => _dateOfBirth = picked.toIso8601String().split('T')[0]);
-      talker.info('Date of birth set: $_dateOfBirth');
+    if (selectedYear != null) {
+      setState(() => _birthYear = selectedYear);
+      talker.info('Birth year set: $_birthYear');
     }
   }
 
@@ -445,10 +408,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
           _buildTappableRow(
             icon: Icons.cake_outlined,
-            label: 'Date of Birth',
-            value: _formatDateOfBirth(),
+            label: 'Birth Year',
+            value: _formatBirthYear(),
             colorScheme: colorScheme,
-            onTap: _selectDateOfBirth,
+            onTap: _selectBirthYear,
           ),
 
           _buildDivider(colorScheme),
