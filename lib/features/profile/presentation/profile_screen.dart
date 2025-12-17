@@ -974,6 +974,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
         setState(() => _isMetric = newSelection.first);
         talker.info('Unit: ${_isMetric ? 'Metric' : 'Imperial'}');
       },
+      style: ButtonStyle(
+        elevation: WidgetStateProperty.all(0),
+        shadowColor: WidgetStateProperty.all(Colors.transparent),
+      ),
     );
   }
 }

@@ -49,6 +49,10 @@ class GenderSelection extends StatelessWidget {
             onSelectionChanged: (selection) {
               onGenderSelected(selection.isEmpty ? null : selection.first);
             },
+            style: ButtonStyle(
+              elevation: WidgetStateProperty.all(0),
+              shadowColor: WidgetStateProperty.all(Colors.transparent),
+            ),
           ),
         ],
       ),

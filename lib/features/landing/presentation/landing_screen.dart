@@ -157,47 +157,54 @@ class _ActionsSectionState extends State<_ActionsSection> {
         children: [
           // Smart Auth: Show Apple button only on iOS (temporarily shown on all platforms for testing)
           // TODO: Restore `if (isIOS)` check before production
-          SocialSignInButton(
-            provider: SocialProvider.apple,
+          SignInButton(
             onPressed: _isLoading ? null : _handleAppleSignIn,
+            label: 'Continue with Apple',
+            icon: const Icon(
+              Icons.apple,
+              color: Colors.white,
+              size: AppSpacing.iconSize,
+            ),
+            backgroundColor: Colors.black,
+            foregroundColor: Colors.white,
+            borderColor: Colors.black,
             isLoading: _loadingState == _LoadingState.apple,
           ),
           const SizedBox(height: AppSpacing.sm),
 
           // Google Sign-In button
-          SocialSignInButton(
-            provider: SocialProvider.google,
+          SignInButton(
             onPressed: _isLoading ? null : _handleGoogleSignIn,
+            label: 'Continue with Google',
+            icon: const SizedBox(
+              width: AppSpacing.iconSizeSmall,
+              height: AppSpacing.iconSizeSmall,
+              child: GoogleLogo(),
+            ),
+            backgroundColor: theme.brightness == Brightness.dark
+                ? const Color(0xFF131314)
+                : Colors.white,
+            foregroundColor: theme.brightness == Brightness.dark
+                ? Colors.white
+                : const Color(0xFF1F1F1F),
+            borderColor: theme.brightness == Brightness.dark
+                ? const Color(0xFF8E918F)
+                : colorScheme.outline,
             isLoading: _loadingState == _LoadingState.google,
           ),
 
           const SizedBox(height: AppSpacing.sm),
 
           // Email sign-in option
-          SizedBox(
-            width: double.infinity,
-            height: AppSpacing.buttonHeight,
-            child: OutlinedButton.icon(
-              onPressed: _isLoading ? null : _handleEmailFlow,
-              icon: Icon(
-                Icons.email_outlined,
-                size: AppSpacing.iconSizeSmall,
-                color: colorScheme.primary,
-              ),
-              label: Text(
-                'Sign in with Email',
-                style: theme.textTheme.labelLarge?.copyWith(
-                  color: colorScheme.primary,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              style: OutlinedButton.styleFrom(
-                side: BorderSide(color: colorScheme.outline),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
-                ),
-              ),
+          SignInButton(
+            onPressed: _handleEmailFlow,
+            label: 'Sign in with Email',
+            icon: Icon(
+              Icons.email_outlined,
+              size: AppSpacing.iconSizeSmall,
+              color: colorScheme.primary,
             ),
+            isLoading: _isLoading,
           ),
 
           const Spacer(),

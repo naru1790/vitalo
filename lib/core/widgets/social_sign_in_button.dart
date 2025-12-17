@@ -2,106 +2,64 @@ import 'package:flutter/material.dart';
 
 import '../theme.dart';
 
-/// Custom social sign-in buttons with brand identity
-/// while maintaining official provider logo guidelines.
-
-enum SocialProvider { google, apple }
-
-class SocialSignInButton extends StatelessWidget {
-  const SocialSignInButton({
+/// Generic sign-in button with consistent styling
+class SignInButton extends StatelessWidget {
+  const SignInButton({
     super.key,
-    required this.provider,
     required this.onPressed,
-    this.text,
+    required this.label,
+    required this.icon,
+    this.backgroundColor,
+    this.foregroundColor,
+    this.borderColor,
     this.isLoading = false,
   });
 
-  final SocialProvider provider;
   final VoidCallback? onPressed;
-  final String? text;
-  final bool isLoading;
-
-  @override
-  Widget build(BuildContext context) {
-    return switch (provider) {
-      SocialProvider.google => _GoogleSignInButton(
-        onPressed: onPressed,
-        text: text ?? 'Continue with Google',
-        isLoading: isLoading,
-      ),
-      SocialProvider.apple => _AppleSignInButton(
-        onPressed: onPressed,
-        text: text ?? 'Continue with Apple',
-        isLoading: isLoading,
-      ),
-    };
-  }
-}
-
-class _GoogleSignInButton extends StatelessWidget {
-  const _GoogleSignInButton({
-    required this.onPressed,
-    required this.text,
-    required this.isLoading,
-  });
-
-  final VoidCallback? onPressed;
-  final String text;
+  final String label;
+  final Widget icon;
+  final Color? backgroundColor;
+  final Color? foregroundColor;
+  final Color? borderColor;
   final bool isLoading;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
     final colorScheme = theme.colorScheme;
 
-    // Per Google guidelines: white/light neutral background
-    final backgroundColor = isDark ? const Color(0xFF131314) : Colors.white;
-    final textColor = isDark ? Colors.white : const Color(0xFF1F1F1F);
-    final borderColor = isDark ? const Color(0xFF8E918F) : colorScheme.outline;
+    final effectiveBackgroundColor = backgroundColor ?? colorScheme.surface;
+    final effectiveForegroundColor = foregroundColor ?? colorScheme.primary;
+    final effectiveBorderColor = borderColor ?? colorScheme.outline;
 
     return SizedBox(
       width: double.infinity,
       height: AppSpacing.buttonHeight,
-      child: Material(
-        color: backgroundColor,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
-          side: BorderSide(color: borderColor),
-        ),
-        child: InkWell(
-          onTap: isLoading ? null : onPressed,
-          borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                if (isLoading)
-                  SizedBox(
-                    width: AppSpacing.iconSizeSmall,
-                    height: AppSpacing.iconSizeSmall,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation(textColor),
-                    ),
-                  )
-                else
-                  const SizedBox(
-                    width: AppSpacing.iconSizeSmall,
-                    height: AppSpacing.iconSizeSmall,
-                    child: _GoogleLogo(),
-                  ),
-                const SizedBox(width: AppSpacing.sm),
-                Text(
-                  isLoading ? 'Signing in...' : text,
-                  style: theme.textTheme.labelLarge?.copyWith(
-                    color: textColor,
-                    fontWeight: FontWeight.w500,
-                  ),
+      child: OutlinedButton.icon(
+        onPressed: isLoading ? null : onPressed,
+        icon: isLoading
+            ? SizedBox(
+                width: AppSpacing.iconSizeSmall,
+                height: AppSpacing.iconSizeSmall,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation(effectiveForegroundColor),
                 ),
-              ],
-            ),
+              )
+            : icon,
+        label: Text(
+          isLoading ? 'Signing in...' : label,
+          style: theme.textTheme.labelLarge?.copyWith(
+            color: effectiveForegroundColor,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        style: OutlinedButton.styleFrom(
+          backgroundColor: effectiveBackgroundColor,
+          foregroundColor: effectiveForegroundColor,
+          side: BorderSide(color: effectiveBorderColor),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
           ),
         ),
       ),
@@ -109,71 +67,8 @@ class _GoogleSignInButton extends StatelessWidget {
   }
 }
 
-class _AppleSignInButton extends StatelessWidget {
-  const _AppleSignInButton({
-    required this.onPressed,
-    required this.text,
-    required this.isLoading,
-  });
-
-  final VoidCallback? onPressed;
-  final String text;
-  final bool isLoading;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return SizedBox(
-      width: double.infinity,
-      height: AppSpacing.buttonHeight,
-      child: Material(
-        color: Colors.black,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
-        ),
-        child: InkWell(
-          onTap: isLoading ? null : onPressed,
-          borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                if (isLoading)
-                  const SizedBox(
-                    width: AppSpacing.iconSizeSmall,
-                    height: AppSpacing.iconSizeSmall,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation(Colors.white),
-                    ),
-                  )
-                else
-                  const Icon(
-                    Icons.apple,
-                    color: Colors.white,
-                    size: AppSpacing.iconSize,
-                  ),
-                const SizedBox(width: AppSpacing.sm),
-                Text(
-                  isLoading ? 'Signing in...' : text,
-                  style: theme.textTheme.labelLarge?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _GoogleLogo extends StatelessWidget {
-  const _GoogleLogo();
+class GoogleLogo extends StatelessWidget {
+  const GoogleLogo({super.key});
 
   @override
   Widget build(BuildContext context) {
