@@ -10,6 +10,8 @@ import '../../../core/widgets/app_segmented_button.dart';
 import '../../../core/widgets/inline_editable_header.dart';
 import '../../../core/widgets/app_snackbar.dart';
 import '../../../core/widgets/year_picker_sheet.dart';
+import '../../../core/widgets/weight_picker_sheet.dart';
+import '../../../core/widgets/height_picker_sheet.dart';
 import '../../../core/widgets/location_picker_sheet.dart';
 import 'widgets/gender_selection.dart';
 
@@ -118,7 +120,35 @@ class _ProfileScreenState extends State<ProfileScreen> {
       final totalInches = _heightCm! / 2.54;
       final feet = (totalInches / 12).floor();
       final inches = (totalInches % 12).round();
-      return "$feet'$inches\"";
+      return "$feet'$inches\""; // e.g. 5'10"
+    }
+  }
+
+  Future<void> _selectWeight() async {
+    final result = await WeightPickerSheet.show(
+      context: context,
+      initialWeight: _weightKg,
+      initialUnit: _isMetric ? WeightUnit.kg : WeightUnit.lbs,
+    );
+    if (result != null && mounted) {
+      setState(() => _weightKg = result.asKg);
+      talker.info(
+        'Weight set: ${result.value} ${result.unit.label} (${result.asKg.toStringAsFixed(1)} kg)',
+      );
+    }
+  }
+
+  Future<void> _selectHeight() async {
+    final result = await HeightPickerSheet.show(
+      context: context,
+      initialHeightCm: _heightCm,
+      initialUnit: _isMetric ? HeightUnit.cm : HeightUnit.ftIn,
+    );
+    if (result != null && mounted) {
+      setState(() => _heightCm = result.valueCm);
+      talker.info(
+        'Height set: ${result.toString()} (${result.valueCm.toInt()} cm)',
+      );
     }
   }
 
@@ -460,60 +490,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
       child: Column(
         children: [
-          _buildStepperRow(
+          _buildTappableRow(
             icon: Icons.monitor_weight_outlined,
             label: 'Weight',
-            value: _weightKg,
-            unit: _isMetric ? 'kg' : 'lbs',
-            displayValue: _formatWeight(),
+            value: _formatWeight(),
             colorScheme: colorScheme,
-            onIncrement: () {
-              setState(() => _weightKg = (_weightKg ?? 70) + 0.5);
-              talker.debug('Weight: $_weightKg kg');
-            },
-            onDecrement: () {
-              setState(() {
-                if (_weightKg != null && _weightKg! > 30) {
-                  _weightKg = _weightKg! - 0.5;
-                }
-              });
-              talker.debug('Weight: $_weightKg kg');
-            },
-            onClear: _weightKg != null
-                ? () {
-                    setState(() => _weightKg = null);
-                    talker.debug('Weight cleared');
-                  }
-                : null,
+            onTap: _selectWeight,
           ),
 
           _buildDivider(colorScheme),
 
-          _buildStepperRow(
+          _buildTappableRow(
             icon: Icons.height_outlined,
             label: 'Height',
-            value: _heightCm,
-            unit: _isMetric ? 'cm' : 'ft',
-            displayValue: _formatHeight(),
+            value: _formatHeight(),
             colorScheme: colorScheme,
-            onIncrement: () {
-              setState(() => _heightCm = (_heightCm ?? 170) + 1);
-              talker.debug('Height: $_heightCm cm');
-            },
-            onDecrement: () {
-              setState(() {
-                if (_heightCm != null && _heightCm! > 100) {
-                  _heightCm = _heightCm! - 1;
-                }
-              });
-              talker.debug('Height: $_heightCm cm');
-            },
-            onClear: _heightCm != null
-                ? () {
-                    setState(() => _heightCm = null);
-                    talker.debug('Height cleared');
-                  }
-                : null,
+            onTap: _selectHeight,
           ),
 
           _buildDivider(colorScheme),
@@ -780,6 +772,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     Color? labelColor,
     required VoidCallback onTap,
   }) {
+    final hasValue = value != null && value != 'Not Set';
+
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
@@ -797,144 +791,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             const SizedBox(width: AppSpacing.md),
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    label,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: labelColor ?? colorScheme.onSurface,
-                    ),
-                  ),
-                  if (value != null) ...[
-                    const SizedBox(height: AppSpacing.xxs),
-                    Text(
-                      value,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ],
+              child: Text(
+                label,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: labelColor ?? colorScheme.onSurface,
+                ),
               ),
             ),
+            if (value != null) ...[
+              Text(
+                value,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: hasValue
+                      ? colorScheme.primary
+                      : colorScheme.onSurfaceVariant,
+                  fontWeight: hasValue ? FontWeight.w600 : FontWeight.w400,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.xs),
+            ],
             Icon(
               Icons.chevron_right_rounded,
               size: AppSpacing.iconSizeSmall,
               color: colorScheme.onSurfaceVariant,
             ),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStepperRow({
-    required IconData icon,
-    required String label,
-    required double? value,
-    required String unit,
-    required String displayValue,
-    required ColorScheme colorScheme,
-    required VoidCallback onIncrement,
-    required VoidCallback onDecrement,
-    VoidCallback? onClear,
-  }) {
-    final isSet = value != null;
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.md,
-        vertical: AppSpacing.sm,
-      ),
-      child: Row(
-        children: [
-          Icon(
-            icon,
-            size: AppSpacing.iconSizeSmall,
-            color: colorScheme.primary,
-          ),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurface,
-                  ),
-                ),
-                Text(
-                  displayValue,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: isSet
-                        ? colorScheme.primary
-                        : colorScheme.onSurfaceVariant,
-                    fontWeight: isSet ? FontWeight.w600 : FontWeight.w400,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Container(
-            decoration: BoxDecoration(
-              color: colorScheme.surfaceContainerLow,
-              borderRadius: BorderRadius.circular(AppSpacing.xs),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _buildStepperButton(
-                  icon: Icons.remove,
-                  onTap: isSet ? onDecrement : null,
-                  colorScheme: colorScheme,
-                ),
-                Container(
-                  width: 1,
-                  height: AppSpacing.xl,
-                  color: colorScheme.outlineVariant,
-                ),
-                _buildStepperButton(
-                  icon: Icons.add,
-                  onTap: onIncrement,
-                  colorScheme: colorScheme,
-                ),
-              ],
-            ),
-          ),
-          if (onClear != null) ...[
-            const SizedBox(width: AppSpacing.xs),
-            GestureDetector(
-              onTap: onClear,
-              child: Icon(
-                Icons.close_rounded,
-                size: AppSpacing.iconSizeSmall,
-                color: colorScheme.onSurfaceVariant,
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStepperButton({
-    required IconData icon,
-    VoidCallback? onTap,
-    required ColorScheme colorScheme,
-  }) {
-    final isDisabled = onTap == null;
-    return GestureDetector(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.xs),
-        child: Icon(
-          icon,
-          size: AppSpacing.iconSizeSmall,
-          color: isDisabled
-              ? colorScheme.onSurfaceVariant.withValues(alpha: 0.3)
-              : colorScheme.primary,
         ),
       ),
     );
