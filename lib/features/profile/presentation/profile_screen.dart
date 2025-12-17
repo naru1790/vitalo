@@ -10,6 +10,7 @@ import '../../../core/widgets/app_segmented_button.dart';
 import '../../../core/widgets/inline_editable_header.dart';
 import '../../../core/widgets/app_snackbar.dart';
 import '../../../core/widgets/year_picker_sheet.dart';
+import '../../../core/widgets/location_picker_sheet.dart';
 import 'widgets/gender_selection.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -33,6 +34,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String? _gender;
   int? _birthYear;
   String? _country;
+  String? _state;
 
   // Health data - null means "Not Set"
   double? _weightKg;
@@ -142,6 +144,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (selectedYear != null) {
       setState(() => _birthYear = selectedYear);
       talker.info('Birth year set: $_birthYear');
+    }
+  }
+
+  String _formatLocation() {
+    if (_country == null) return 'Not Set';
+    if (_state != null) return '$_state, $_country';
+    return _country!;
+  }
+
+  Future<void> _selectLocation() async {
+    final result = await LocationPickerSheet.show(
+      context: context,
+      // Note: We store country name, but the picker now expects ISO codes
+      // For now, pass null for initial values until we store codes
+    );
+
+    if (result != null) {
+      setState(() {
+        _country = result.countryName;
+        _state = result.stateName;
+      });
+      talker.info('Location set: ${result.displayWithFlag}');
     }
   }
 
@@ -416,22 +440,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
           _buildDivider(colorScheme),
 
-          _buildChipSelector(
-            icon: Icons.public_outlined,
-            label: 'Country',
-            options: const [
-              '🇮🇳 India',
-              '🇺🇸 US',
-              '🇬🇧 UK',
-              '🇨🇦 Canada',
-              'Other',
-            ],
-            selected: _country,
+          _buildTappableRow(
+            icon: Icons.location_on_outlined,
+            label: 'Location',
+            value: _formatLocation(),
             colorScheme: colorScheme,
-            onSelected: (value) {
-              setState(() => _country = value);
-              talker.info('Country set: $value');
-            },
+            onTap: _selectLocation,
           ),
         ],
       ),

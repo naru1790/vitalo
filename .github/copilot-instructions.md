@@ -367,7 +367,7 @@ outlinedButtonBorder: colorScheme.outline
 textButtonFg: colorScheme.primary
 
 // Text fields
-inputFillColor: colorScheme.surfaceContainerHighest
+inputFillColor: colorScheme.surfaceContainerLow
 inputBorderColor: colorScheme.outline
 inputFocusedBorder: colorScheme.primary
 inputLabelColor: colorScheme.onSurfaceVariant
@@ -506,6 +506,20 @@ TextFormField(
     border: OutlineInputBorder(
       borderRadius: BorderRadius.circular(AppSpacing.inputRadius), // 12px
       borderSide: BorderSide(color: colorScheme.outline, width: 1.5),
+    ),
+  ),
+)
+
+// ✅ Search fields in bottom sheets/pickers - same fill color, no border
+TextField(
+  decoration: InputDecoration(
+    hintText: 'Search...',
+    prefixIcon: Icon(Icons.search_rounded, color: colorScheme.onSurfaceVariant),
+    filled: true,
+    fillColor: colorScheme.surfaceContainerLow, // SAME as form inputs
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
+      borderSide: BorderSide.none, // No border for search fields
     ),
   ),
 )
