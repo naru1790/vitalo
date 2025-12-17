@@ -223,6 +223,15 @@ class MyApp extends StatelessWidget {
 | **AlertDialog**     | Dialogs            | Use `icon:` property           |
 | **BottomSheet**     | Bottom sheets      | Use `showDragHandle: true`     |
 
+### Custom Reusable Components (in `core/widgets/`)
+
+| Component              | Use                       | Notes                                    |
+| :--------------------- | :------------------------ | :--------------------------------------- |
+| **SignInButton**       | OAuth/sign-in buttons     | OutlinedButton.icon with loading state   |
+| **LoadingButton**      | Primary CTAs with loading | FilledButton with spinner                |
+| **AppSegmentedButton** | Selection controls        | Wraps SegmentedButton with theme styling |
+| **GoogleLogo**         | Google branding           | CustomPaint official logo                |
+
 ### Spacing — STRICTLY use AppSpacing
 
 > ⚠️ **NEVER use magic numbers for spacing, sizing, or border radius. Always use `AppSpacing` constants.**
@@ -402,11 +411,31 @@ The theme automatically provides correct colors for all modes. Just use `Theme.o
 
 **Visual Guidelines:**
 
-- **Border Width**: Always 1px maximum for soft appearance
+- **Border Width by Component:**
+  - TextFormField: 1.5px (all states)
+  - OutlinedButton/SignInButton: 1.5px
+  - SegmentedButton: 1px (lighter for compact controls)
 - **Shadow Opacity**: Use subtle shadows (10-20% opacity) instead of harsh drops
 - **Card Elevation**: Rely on `surfaceContainer` variants, minimal use of `BoxShadow`
 - **Icon Treatment**: Use `onSurfaceVariant` for secondary icons (softer than `onSurface`)
 - **Dividers**: Use `outlineVariant` for softest possible separators
+
+**Border Radius Strategy:**
+
+| Component Type     | Radius | Constant          | Use Case                                   |
+| ------------------ | ------ | ----------------- | ------------------------------------------ |
+| **Action Buttons** | 28px   | `buttonRadius`    | FilledButton, OutlinedButton, SignInButton |
+| **Form Controls**  | 12px   | `inputRadius`     | TextFormField, SegmentedButton, chips      |
+| **Cards**          | 16px   | `cardRadius`      | Standard content containers                |
+| **Modals**         | 28px   | `cardRadiusLarge` | Bottom sheets, dialogs                     |
+
+**Button Text Guidelines:**
+
+- Font size: 16sp
+- Font weight: w600 (SemiBold)
+- Letter spacing: 0.2
+- Use consistent verb patterns: "Continue with [Provider]" for OAuth
+- Single action verbs for primary CTAs: "Send Code", "Continue", "Verify"
 
 **Spacing & Breathing Room:**
 
@@ -437,13 +466,26 @@ Column(
 **Component-Specific Guidelines:**
 
 ```dart
-// ✅ Soft buttons - no harsh elevations
+// ✅ Soft buttons - pill-shaped, no elevation
 FilledButton(
   style: FilledButton.styleFrom(
-    elevation: 0, // Flat design
-    backgroundColor: colorScheme.primary,
+    elevation: 0,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(AppSpacing.buttonRadius), // 28px pill
+    ),
   ),
   child: Text('Continue'),
+)
+
+// ✅ Outlined buttons - consistent 1.5px border
+OutlinedButton(
+  style: OutlinedButton.styleFrom(
+    side: BorderSide(color: colorScheme.outline, width: 1.5),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
+    ),
+  ),
+  child: Text('Cancel'),
 )
 
 // ✅ Soft cards - subtle border instead of shadow
@@ -455,16 +497,27 @@ Container(
   ),
 )
 
-// ✅ Soft inputs - light fill, subtle outline
+// ✅ Soft inputs - always floating label, consistent borders
 TextFormField(
   decoration: InputDecoration(
     filled: true,
     fillColor: colorScheme.surfaceContainerLow,
+    floatingLabelBehavior: FloatingLabelBehavior.always, // Prevents snappy animation
     border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
-      borderSide: BorderSide(color: colorScheme.outline, width: 1),
+      borderRadius: BorderRadius.circular(AppSpacing.inputRadius), // 12px
+      borderSide: BorderSide(color: colorScheme.outline, width: 1.5),
     ),
   ),
+)
+
+// ✅ SegmentedButton - use AppSegmentedButton wrapper
+AppSegmentedButton<String>(
+  segments: const [
+    ButtonSegment(value: 'Option1', label: Text('Option 1')),
+    ButtonSegment(value: 'Option2', label: Text('Option 2')),
+  ],
+  selected: {selectedValue},
+  onSelectionChanged: (selection) => ...,
 )
 ```
 

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme.dart';
+import '../../../../core/widgets/app_segmented_button.dart';
 
-/// Gender selection using styled SegmentedButton
+/// Gender selection using styled AppSegmentedButton
 /// Matches the Unit System toggle for visual consistency
 class GenderSelection extends StatelessWidget {
   final String? selectedGender;
@@ -37,8 +38,7 @@ class GenderSelection extends StatelessWidget {
             style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface),
           ),
           const Spacer(),
-          SegmentedButton<String>(
-            showSelectedIcon: false,
+          AppSegmentedButton<String>(
             segments: const [
               ButtonSegment(value: 'Male', label: Text('Male')),
               ButtonSegment(value: 'Female', label: Text('Female')),
@@ -49,10 +49,6 @@ class GenderSelection extends StatelessWidget {
             onSelectionChanged: (selection) {
               onGenderSelected(selection.isEmpty ? null : selection.first);
             },
-            style: ButtonStyle(
-              elevation: WidgetStateProperty.all(0),
-              shadowColor: WidgetStateProperty.all(Colors.transparent),
-            ),
           ),
         ],
       ),

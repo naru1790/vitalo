@@ -197,14 +197,13 @@ class _ActionsSectionState extends State<_ActionsSection> {
 
           // Email sign-in option
           SignInButton(
-            onPressed: _handleEmailFlow,
-            label: 'Sign in with Email',
+            onPressed: _isLoading ? null : _handleEmailFlow,
+            label: 'Continue with Email',
             icon: Icon(
               Icons.email_outlined,
               size: AppSpacing.iconSizeSmall,
               color: colorScheme.primary,
             ),
-            isLoading: _isLoading,
           ),
 
           const Spacer(),

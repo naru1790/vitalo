@@ -6,6 +6,7 @@ import '../../../main.dart';
 import '../../../core/router.dart';
 import '../../../core/services/auth_service.dart';
 import '../../../core/theme.dart';
+import '../../../core/widgets/app_segmented_button.dart';
 import '../../../core/widgets/inline_editable_header.dart';
 import '../../../core/widgets/app_snackbar.dart';
 import 'widgets/gender_selection.dart';
@@ -416,8 +417,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       padding: const EdgeInsets.only(left: AppSpacing.xxs),
       child: Text(
         title,
-        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-          color: colorScheme.onSurfaceVariant,
+        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+          color: colorScheme.onSurface,
           fontWeight: FontWeight.w600,
         ),
       ),
@@ -963,8 +964,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildSegmentedControl() {
-    return SegmentedButton<bool>(
-      showSelectedIcon: false,
+    return AppSegmentedButton<bool>(
       segments: const [
         ButtonSegment<bool>(value: true, label: Text('Metric')),
         ButtonSegment<bool>(value: false, label: Text('Imperial')),
@@ -974,10 +974,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         setState(() => _isMetric = newSelection.first);
         talker.info('Unit: ${_isMetric ? 'Metric' : 'Imperial'}');
       },
-      style: ButtonStyle(
-        elevation: WidgetStateProperty.all(0),
-        shadowColor: WidgetStateProperty.all(Colors.transparent),
-      ),
     );
   }
 }

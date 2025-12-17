@@ -471,6 +471,126 @@ class MaterialTheme {
     ),
     scaffoldBackgroundColor: colorScheme.surface,
     canvasColor: colorScheme.surface,
+    // ───── Input Decoration Theme ─────
+    inputDecorationTheme: InputDecorationTheme(
+      filled: true,
+      fillColor: colorScheme.surfaceContainerLow,
+      floatingLabelBehavior: FloatingLabelBehavior.always,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
+        borderSide: BorderSide(color: colorScheme.outline, width: 1.5),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
+        borderSide: BorderSide(color: colorScheme.outline, width: 1.5),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
+        borderSide: BorderSide(color: colorScheme.primary, width: 1.5),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
+        borderSide: BorderSide(color: colorScheme.error, width: 1.5),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
+        borderSide: BorderSide(color: colorScheme.error, width: 1.5),
+      ),
+      floatingLabelStyle: TextStyle(color: colorScheme.primary),
+      labelStyle: TextStyle(color: colorScheme.onSurfaceVariant),
+      hintStyle: TextStyle(color: colorScheme.onSurfaceVariant),
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.lg,
+      ),
+    ),
+    // ───── Filled Button Theme (Primary Actions) ─────
+    filledButtonTheme: FilledButtonThemeData(
+      style: ButtonStyle(
+        minimumSize: WidgetStateProperty.all(
+          const Size(double.infinity, AppSpacing.buttonHeight),
+        ),
+        padding: WidgetStateProperty.all(
+          const EdgeInsets.symmetric(
+            horizontal: AppSpacing.xl,
+            vertical: AppSpacing.md,
+          ),
+        ),
+        shape: WidgetStateProperty.all(
+          RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
+          ),
+        ),
+        elevation: WidgetStateProperty.all(0),
+        textStyle: WidgetStateProperty.all(
+          textTheme.labelLarge?.copyWith(
+            fontWeight: FontWeight.w600,
+            fontSize: 16,
+            letterSpacing: 0.2,
+          ),
+        ),
+      ),
+    ),
+    // ───── Outlined Button Theme (Secondary Actions) ─────
+    outlinedButtonTheme: OutlinedButtonThemeData(
+      style: ButtonStyle(
+        minimumSize: WidgetStateProperty.all(
+          const Size(double.infinity, AppSpacing.buttonHeight),
+        ),
+        padding: WidgetStateProperty.all(
+          const EdgeInsets.symmetric(
+            horizontal: AppSpacing.xl,
+            vertical: AppSpacing.md,
+          ),
+        ),
+        shape: WidgetStateProperty.all(
+          RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
+          ),
+        ),
+        side: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.pressed)) {
+            return BorderSide(color: colorScheme.primary, width: 1.5);
+          }
+          return BorderSide(color: colorScheme.outline, width: 1.5);
+        }),
+        foregroundColor: WidgetStateProperty.all(colorScheme.onSurface),
+        elevation: WidgetStateProperty.all(0),
+        textStyle: WidgetStateProperty.all(
+          textTheme.labelLarge?.copyWith(
+            fontWeight: FontWeight.w600,
+            fontSize: 16,
+            letterSpacing: 0.2,
+          ),
+        ),
+      ),
+    ),
+    // ───── Text Button Theme (Tertiary Actions) ─────
+    textButtonTheme: TextButtonThemeData(
+      style: ButtonStyle(
+        minimumSize: WidgetStateProperty.all(
+          const Size(48, AppSpacing.buttonHeightSmall),
+        ),
+        padding: WidgetStateProperty.all(
+          const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.sm,
+          ),
+        ),
+        shape: WidgetStateProperty.all(
+          RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
+          ),
+        ),
+        foregroundColor: WidgetStateProperty.all(colorScheme.primary),
+        textStyle: WidgetStateProperty.all(
+          textTheme.labelLarge?.copyWith(
+            fontWeight: FontWeight.w600,
+            fontSize: 15,
+          ),
+        ),
+      ),
+    ),
     // ───── Polished SegmentedButton Theme ─────
     segmentedButtonTheme: SegmentedButtonThemeData(
       style: ButtonStyle(
@@ -486,13 +606,13 @@ class MaterialTheme {
             color: states.contains(WidgetState.selected)
                 ? colorScheme.primary
                 : colorScheme.outline,
-            width: 1,
+            width: 0,
           );
         }),
-        // Full pill shape
+        // Rounded corners matching form controls
         shape: WidgetStateProperty.all(
           RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
+            borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
           ),
         ),
         // Background colors
@@ -597,7 +717,7 @@ class AppSpacing {
   static const double cardRadius = 16.0;
   static const double cardRadiusLarge = 28.0;
   static const double cardRadiusSmall = 12.0;
-  static const double buttonRadius = 12.0; // Modern rectangular, not pill
+  static const double buttonRadius = 28.0; // Pill-shaped (half of buttonHeight)
   static const double inputRadius = 12.0;
 
   // ───── Icon Sizes ─────

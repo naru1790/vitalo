@@ -242,7 +242,7 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
             Text(
               'Welcome Back',
               style: theme.textTheme.displaySmall?.copyWith(
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.w600,
                 color: colorScheme.onSurface,
               ),
             ),
@@ -267,39 +267,8 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
                   Icons.email_outlined,
                   color: colorScheme.primary,
                 ),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
-                  borderSide: BorderSide(
-                    color: colorScheme.outline,
-                    width: 1.5,
-                  ),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
-                  borderSide: BorderSide(
-                    color: colorScheme.outline,
-                    width: 1.5,
-                  ),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
-                  borderSide: BorderSide(color: colorScheme.primary, width: 2),
-                ),
-                errorBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
-                  borderSide: BorderSide(color: colorScheme.error, width: 1.5),
-                ),
-                focusedErrorBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
-                  borderSide: BorderSide(color: colorScheme.error, width: 2),
-                ),
                 filled: true,
                 fillColor: colorScheme.surfaceContainerLow,
-                floatingLabelBehavior: FloatingLabelBehavior.auto,
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.lg,
-                  vertical: AppSpacing.lg,
-                ),
               ),
               validator: (value) {
                 if (value == null || value.isEmpty) {
@@ -337,7 +306,7 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
           Text(
             'Verify it\'s you',
             style: theme.textTheme.displaySmall?.copyWith(
-              fontWeight: FontWeight.bold,
+              fontWeight: FontWeight.w600,
               color: colorScheme.onSurface,
             ),
           ),
@@ -387,7 +356,7 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
           const SizedBox(height: AppSpacing.xl),
           LoadingButton(
             onPressed: _verifyOtp,
-            label: 'Verify & Login',
+            label: 'Continue',
             isLoading: _isLoading,
             enabled: _otpController.text.length == 6,
           ),

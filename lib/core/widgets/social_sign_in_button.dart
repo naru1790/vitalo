@@ -29,7 +29,7 @@ class SignInButton extends StatelessWidget {
     final colorScheme = theme.colorScheme;
 
     final effectiveBackgroundColor = backgroundColor ?? colorScheme.surface;
-    final effectiveForegroundColor = foregroundColor ?? colorScheme.primary;
+    final effectiveForegroundColor = foregroundColor ?? colorScheme.onSurface;
     final effectiveBorderColor = borderColor ?? colorScheme.outline;
 
     return SizedBox(
@@ -51,13 +51,15 @@ class SignInButton extends StatelessWidget {
           isLoading ? 'Signing in...' : label,
           style: theme.textTheme.labelLarge?.copyWith(
             color: effectiveForegroundColor,
-            fontWeight: FontWeight.w500,
+            fontWeight: FontWeight.w600,
+            fontSize: 16,
+            letterSpacing: 0.2,
           ),
         ),
         style: OutlinedButton.styleFrom(
           backgroundColor: effectiveBackgroundColor,
           foregroundColor: effectiveForegroundColor,
-          side: BorderSide(color: effectiveBorderColor),
+          side: BorderSide(color: effectiveBorderColor, width: 1.5),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
           ),
