@@ -7,6 +7,7 @@ You are a **Senior Flutter Architect**. Produce production-grade, maintainable, 
 **Design Philosophy:**
 
 - **iOS-First**: Design for iOS aesthetics first, adapt gracefully for Android
+- **Liquid Glass**: Apple's iOS 26 design language — translucent glass surfaces with dynamic depth and vibrancy
 - **Clarity**: Content is paramount. Negative space, subtle depth, and precise typography
 - **Deference**: Fluid motion and crisp interface help users understand content without competing with it
 - **Depth**: Visual layers and realistic motion convey hierarchy and facilitate understanding
@@ -15,9 +16,10 @@ You are a **Senior Flutter Architect**. Produce production-grade, maintainable, 
 **Visual Identity:**
 
 - **Typography**: SF Pro (iOS) via system font, Inter for body on Android
-- **Color Palette**: Warm taupe base with monochromatic variations
+- **Color Palette**: Warm taupe base with monochromatic variations, glass-like translucency
 - **Iconography**: SF Symbols style - thin, elegant, consistent stroke weights
-- **Motion**: iOS spring animations, 0.3-0.5s durations, ease-in-out curves
+- **Motion**: Fluid spring animations, 0.3-0.5s durations, organic easing curves
+- **Materials**: Translucent glass panels with blur, vibrancy, and soft shadows
 
 Strictly adhere to these standards. If a request violates them (e.g., hardcoded colors, Material ripples on iOS, `print()`), correct it.
 
@@ -138,6 +140,137 @@ final authState = ref.watch(authProvider);
 
 > **Reference:** [Apple Human Interface Guidelines](https://developer.apple.com/design/human-interface-guidelines/)
 
+### Liquid Glass Design Language (iOS 26+)
+
+Apple's **Liquid Glass** design paradigm introduced at WWDC 2025 represents a significant evolution in iOS aesthetics. Embrace these principles:
+
+**Core Principles:**
+
+| Principle                 | Description                                       | Flutter Implementation                               |
+| ------------------------- | ------------------------------------------------- | ---------------------------------------------------- |
+| **Translucent Materials** | UI elements appear as floating glass panels       | `BackdropFilter` with blur + semi-transparent colors |
+| **Dynamic Depth**         | Layered translucency with content visible beneath | Multiple blur layers with varying opacity            |
+| **Vibrancy**              | Colors and content "bleed through" glass surfaces | `ImageFilter.blur()` with `BlendMode`                |
+| **Fluid Motion**          | Smoother, more organic spring animations          | `Curves.easeOutExpo`, spring physics                 |
+| **Floating Elements**     | Cards/sheets with soft shadows and glass edges    | Subtle `boxShadow` with blur radius                  |
+| **Reduced Chrome**        | Less visual weight, more content focus            | Thinner borders, subtle separators                   |
+
+**Implementing Liquid Glass in Flutter:**
+
+```dart
+// ✅ Liquid Glass card effect
+class LiquidGlassCard extends StatelessWidget {
+  final Widget child;
+  const LiquidGlassCard({super.key, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+        child: Container(
+          decoration: BoxDecoration(
+            // Glass tint - more transparent in dark mode
+            color: isDark
+                ? colorScheme.surface.withOpacity(0.3)
+                : colorScheme.surface.withOpacity(0.7),
+            borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
+            // Subtle inner glow/border for glass edge effect
+            border: Border.all(
+              color: colorScheme.outline.withOpacity(0.2),
+              width: 0.5,
+            ),
+            // Soft shadow for floating effect
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.08),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: child,
+        ),
+      ),
+    );
+  }
+}
+```
+
+**Liquid Glass Modal Sheet:**
+
+```dart
+// ✅ iOS 26-style modal with glass effect
+void showLiquidGlassSheet(BuildContext context, Widget content) {
+  showCupertinoModalPopup(
+    context: context,
+    builder: (context) => ClipRRect(
+      borderRadius: BorderRadius.vertical(
+        top: Radius.circular(AppSpacing.cardRadiusLarge),
+      ),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+        child: Container(
+          height: MediaQuery.of(context).size.height * 0.9,
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface.withOpacity(0.85),
+            borderRadius: BorderRadius.vertical(
+              top: Radius.circular(AppSpacing.cardRadiusLarge),
+            ),
+          ),
+          child: Column(
+            children: [
+              // Glass drag handle
+              Container(
+                margin: EdgeInsets.only(top: AppSpacing.sm),
+                width: 36,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(2.5),
+                ),
+              ),
+              Expanded(child: content),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
+}
+```
+
+**Vibrancy Text (content shows through):**
+
+```dart
+// ✅ Text with vibrancy effect - use with glass backgrounds
+Text(
+  'Settings',
+  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+    // Slightly reduce opacity for vibrancy effect on glass
+    color: colorScheme.onSurface.withOpacity(0.9),
+    fontWeight: FontWeight.w600,
+  ),
+)
+```
+
+**Liquid Glass Best Practices:**
+
+| Do                                        | Don't                                    |
+| ----------------------------------------- | ---------------------------------------- |
+| Use blur sigma 15-30 for glass effect     | Use blur sigma < 10 (not glassy enough)  |
+| Layer glass panels for depth              | Stack too many blur layers (performance) |
+| Add subtle 0.5px borders for glass edges  | Use thick borders (not glass-like)       |
+| Use soft, diffused shadows                | Use sharp drop shadows                   |
+| Keep glass tint at 30-70% opacity         | Make glass fully opaque                  |
+| Test on older devices (blur is expensive) | Ignore performance on low-end devices    |
+
+---
+
 ### Platform-First Approach
 
 **iOS is the PRIMARY design target.** Use Cupertino widgets and iOS patterns first, then ensure graceful degradation on Android.
@@ -176,27 +309,6 @@ color: CupertinoTheme.of(context).primaryColor
 // ✅ Typography via theme
 style: Theme.of(context).textTheme.headlineMedium
 style: Theme.of(context).textTheme.bodyLarge
-```
-
-### iOS-Inspired Color Palette
-
-```dart
-// iOS uses semantic colors that adapt to light/dark/high-contrast
-final colorScheme = Theme.of(context).colorScheme;
-
-// Primary surfaces - use very subtle grays
-colorScheme.surface              // #FFFFFF (light) / #000000 (dark)
-colorScheme.surfaceContainer     // Subtle elevation (iOS grouped background)
-colorScheme.surfaceContainerLow  // Input fields, recessed areas
-
-// Text hierarchy - iOS uses clear contrast
-colorScheme.onSurface            // Primary text (Label in iOS)
-colorScheme.onSurfaceVariant     // Secondary text (Secondary Label)
-
-// Semantic colors
-colorScheme.primary              // Tint color (accent)
-colorScheme.error                // Destructive red
-colorScheme.outline              // Separators (iOS separator color)
 ```
 
 ### iOS Widget Mapping
@@ -323,32 +435,18 @@ Text(
 
 ### iOS Color Semantics
 
-```dart
-final colorScheme = Theme.of(context).colorScheme;
-
-// Background colors (iOS Grouped Style)
-colorScheme.surface                    // System background
-colorScheme.surfaceContainer           // Secondary system background (grouped)
-colorScheme.surfaceContainerHigh       // Tertiary system background
-
-// Text colors
-colorScheme.onSurface                  // Label (primary text)
-colorScheme.onSurfaceVariant           // Secondary label
-// For tertiary/quaternary, use opacity
-
-// Fill colors (for buttons, controls)
-colorScheme.primary                    // Tint color
-colorScheme.primaryContainer           // Tint color with lower opacity
-
-// Separators
-colorScheme.outline                    // Separator color
-colorScheme.outlineVariant             // Opaque separator
-
-// Semantic colors
-colorScheme.error                      // System red (destructive)
-colorScheme.tertiary                   // System green (success)
-// System orange, yellow, etc. as needed
-```
+| Purpose         | ColorScheme Property  | iOS Equivalent       |
+| --------------- | --------------------- | -------------------- |
+| **Backgrounds** | `surface`             | System background    |
+|                 | `surfaceContainer`    | Grouped background   |
+|                 | `surfaceContainerLow` | Input fields         |
+| **Text**        | `onSurface`           | Primary label        |
+|                 | `onSurfaceVariant`    | Secondary label      |
+| **Accent**      | `primary`             | Tint color           |
+|                 | `primaryContainer`    | Tint (lower opacity) |
+| **Separators**  | `outline`             | Separator            |
+| **Semantic**    | `error`               | Destructive red      |
+|                 | `tertiary`            | Success green        |
 
 ### iOS-Specific Interaction Patterns
 
@@ -358,31 +456,13 @@ colorScheme.tertiary                   // System green (success)
 // ❌ Material ripple - not iOS native
 InkWell(onTap: ..., child: ...)
 
-// ✅ iOS highlight behavior
-CupertinoButton(
-  padding: EdgeInsets.zero,
-  onPressed: ...,
-  child: ...,
-)
-
-// ✅ Or use GestureDetector with custom feedback
-GestureDetector(
-  onTap: ...,
-  onTapDown: (_) => setState(() => _isPressed = true),
-  onTapUp: (_) => setState(() => _isPressed = false),
-  onTapCancel: () => setState(() => _isPressed = false),
-  child: AnimatedOpacity(
-    opacity: _isPressed ? 0.4 : 1.0,
-    duration: const Duration(milliseconds: 100),
-    child: ...,
-  ),
-)
+// ✅ iOS highlight behavior - use CupertinoButton or GestureDetector with opacity
+CupertinoButton(padding: EdgeInsets.zero, onPressed: ..., child: ...)
 ```
 
 **iOS Swipe Actions:**
 
 ```dart
-// ✅ iOS-style swipe to delete
 Dismissible(
   key: Key(item.id),
   direction: DismissDirection.endToStart,
@@ -400,32 +480,30 @@ Dismissible(
 **iOS Pull to Refresh:**
 
 ```dart
-// ✅ Use CustomScrollView with CupertinoSliverRefreshControl
 CustomScrollView(
   slivers: [
-    CupertinoSliverRefreshControl(
-      onRefresh: () async => await _refreshData(),
-    ),
+    CupertinoSliverRefreshControl(onRefresh: () async => await _refreshData()),
     SliverList(...),
   ],
 )
 ```
 
-### Soft Minimalistic Design Principles (iOS-Aligned)
+### Soft Minimalistic Design Principles (iOS-Aligned + Liquid Glass)
 
 **Color Philosophy:**
 
 - **Monochromatic Warmth**: All colors derived from warm taupe base (#B5917A)
 - **Gentle Contrast**: Avoid harsh blacks - use soft dark grays
-- **Subtle Depth**: Use blur and translucency over shadows
+- **Glass Translucency**: Surfaces at 30-70% opacity for Liquid Glass effect
 - **Muted States**: Even error states use desaturated tones
 
-**Visual Guidelines:**
+**Visual Guidelines (Liquid Glass Era):**
 
-- **Blur Effects**: Use `BackdropFilter` for iOS frosted glass effect
-- **Border Width**: 0.5px for separators (iOS standard), 1px for emphasized borders
-- **Shadow**: Minimal - prefer translucency and blur over drop shadows
-- **Icon Treatment**: Thin stroke weights, SF Symbols style
+- **Glass Materials**: Use `BackdropFilter` with blur sigma 15-30 for glass panels
+- **Border Width**: 0.5px for glass edges (creates subtle light refraction), 1px max for emphasis
+- **Shadows**: Soft, diffused (`blurRadius: 20`, low opacity) — never sharp drop shadows
+- **Depth Layering**: Stack translucent glass panels to create visual hierarchy
+- **Icon Treatment**: Thin stroke weights, SF Symbols style, slight opacity on glass surfaces
 
 **Border Radius Strategy (iOS):**
 
@@ -491,28 +569,6 @@ CupertinoTextField(
     borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
   ),
 )
-
-// ✅ For more control, use TextField with iOS styling
-TextField(
-  decoration: InputDecoration(
-    hintText: 'Email',
-    filled: true,
-    fillColor: colorScheme.surfaceContainerLow,
-    contentPadding: EdgeInsets.all(AppSpacing.md),
-    border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
-      borderSide: BorderSide.none,
-    ),
-    enabledBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
-      borderSide: BorderSide.none,
-    ),
-    focusedBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
-      borderSide: BorderSide(color: colorScheme.primary, width: 1),
-    ),
-  ),
-)
 ```
 
 **iOS Navigation Patterns:**
@@ -525,21 +581,6 @@ CupertinoSliverNavigationBar(
     padding: EdgeInsets.zero,
     child: const Text('Done'),
     onPressed: () => Navigator.pop(context),
-  ),
-)
-
-// ✅ iOS modal presentation (page sheet style)
-showCupertinoModalPopup(
-  context: context,
-  builder: (context) => Container(
-    height: MediaQuery.of(context).size.height * 0.9,
-    decoration: BoxDecoration(
-      color: colorScheme.surface,
-      borderRadius: BorderRadius.vertical(
-        top: Radius.circular(AppSpacing.cardRadiusLarge),
-      ),
-    ),
-    child: ...,
   ),
 )
 
@@ -567,22 +608,6 @@ showCupertinoModalPopup(
 )
 ```
 
-**iOS Blur/Frosted Glass Effect:**
-
-```dart
-// ✅ Frosted glass background
-ClipRRect(
-  borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-  child: BackdropFilter(
-    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-    child: Container(
-      color: colorScheme.surface.withOpacity(0.7),
-      child: ...,
-    ),
-  ),
-)
-```
-
 ---
 
 ## 4. Layout & Widgets
@@ -602,19 +627,6 @@ ClipRRect(
 | **Grid**                    | `GridView` with appropriate spacing                  |
 | **Scroll with refresh**     | `CustomScrollView` + `CupertinoSliverRefreshControl` |
 | **Tab layout**              | `CupertinoTabScaffold`                               |
-
-### Core Layout Widgets
-
-| Widget           | Use Case                                       |
-| ---------------- | ---------------------------------------------- |
-| `Row`            | Horizontal arrangement                         |
-| `Column`         | Vertical arrangement                           |
-| `Stack`          | Overlapping widgets                            |
-| `Expanded`       | Fill remaining space in Row/Column             |
-| `Flexible`       | Allow child to be smaller than available space |
-| `Wrap`           | Flow layout that wraps to next line            |
-| `SizedBox`       | Force dimensions or create spacing             |
-| `ConstrainedBox` | Apply min/max constraints                      |
 
 ### Avoiding Overflow
 
@@ -674,35 +686,6 @@ CupertinoListSection.insetGrouped(
     ),
   ],
 )
-
-// ✅ Use CachedNetworkImage for remote images
-CachedNetworkImage(
-  imageUrl: url,
-  placeholder: (_, __) => const CupertinoActivityIndicator(),
-  errorWidget: (_, __, ___) => const Icon(CupertinoIcons.exclamationmark_circle),
-)
-```
-
-### Debounce for Search
-
-```dart
-// ✅ Debounce search input to avoid excessive API calls
-class _SearchScreenState extends State<SearchScreen> {
-  Timer? _debounce;
-
-  void _onSearchChanged(String query) {
-    _debounce?.cancel();
-    _debounce = Timer(const Duration(milliseconds: 500), () {
-      ref.read(searchProvider.notifier).search(query);
-    });
-  }
-
-  @override
-  void dispose() {
-    _debounce?.cancel();
-    super.dispose();
-  }
-}
 ```
 
 ---
@@ -794,37 +777,15 @@ GestureDetector(
 )
 ```
 
-### Touch Targets
+### Touch Targets & Haptics
 
-**Minimum 44x44 points** (iOS Human Interface Guidelines)
-
-```dart
-CupertinoButton(
-  padding: EdgeInsets.zero,
-  minSize: AppSpacing.touchTargetMin, // 44.0
-  onPressed: () {},
-  child: Icon(CupertinoIcons.settings),
-)
-```
-
-### Haptic Feedback
+**Minimum 44x44 points** (iOS HIG). Use `AppSpacing.touchTargetMin`.
 
 ```dart
-import 'package:flutter/services.dart';
-
-// ✅ Light impact for selections
-HapticFeedback.selectionClick();
-
-// ✅ Medium impact for actions
-HapticFeedback.mediumImpact();
-
-// ✅ Heavy impact for significant events
-HapticFeedback.heavyImpact();
-
-// ✅ Notification feedback types
-HapticFeedback.lightImpact();   // Success
-HapticFeedback.mediumImpact();  // Warning
-HapticFeedback.heavyImpact();   // Error
+// Haptic feedback
+HapticFeedback.selectionClick();  // Selections (wheel pickers)
+HapticFeedback.mediumImpact();    // Actions (button taps)
+HapticFeedback.heavyImpact();     // Significant events (errors)
 ```
 
 ### Loading States in Buttons
@@ -892,108 +853,20 @@ final goRouter = GoRouter(
 );
 ```
 
-### iOS Modal Presentation
-
-```dart
-// ✅ Page sheet (default iOS 13+ modal)
-showCupertinoModalPopup(
-  context: context,
-  builder: (context) => Container(
-    height: MediaQuery.of(context).size.height * 0.9,
-    decoration: BoxDecoration(
-      color: Theme.of(context).colorScheme.surface,
-      borderRadius: BorderRadius.vertical(
-        top: Radius.circular(AppSpacing.cardRadiusLarge),
-      ),
-    ),
-    child: Column(
-      children: [
-        // Drag handle
-        Container(
-          margin: EdgeInsets.only(top: AppSpacing.sm),
-          width: 36,
-          height: 5,
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.outlineVariant,
-            borderRadius: BorderRadius.circular(2.5),
-          ),
-        ),
-        // Content...
-      ],
-    ),
-  ),
-)
-```
-
 ---
 
 ## 8. Animations
 
 > **Reference:** [Apple HIG - Motion](https://developer.apple.com/design/human-interface-guidelines/motion)
 
-### iOS Animation Principles
-
-- **Purpose**: Motion should be meaningful, not decorative
-- **Fluidity**: Spring-based animations feel natural
-- **Duration**: 0.3-0.5 seconds for most transitions
-- **Easing**: Ease-in-out curves (iOS uses spring physics)
-
-### Spring Animations (iOS-Native Feel)
+- **Duration**: 0.3-0.5s | **Curve**: `Curves.easeOutCubic` (iOS spring approximation)
+- **Implicit**: `AnimatedContainer`, `AnimatedOpacity`, `AnimatedSwitcher`, `AnimatedCrossFade`
 
 ```dart
-// ✅ Spring animation for natural iOS feel
 AnimatedContainer(
   duration: const Duration(milliseconds: 400),
-  curve: Curves.easeOutCubic,  // Approximates iOS spring
+  curve: Curves.easeOutCubic,
   width: _isExpanded ? 200 : 100,
-)
-
-// ✅ For more control, use explicit spring
-final controller = AnimationController(
-  duration: const Duration(milliseconds: 400),
-  vsync: this,
-);
-final animation = CurvedAnimation(
-  parent: controller,
-  curve: Curves.elasticOut,  // Spring-like
-);
-```
-
-### Implicit Animations
-
-```dart
-// ✅ AnimatedContainer handles transitions automatically
-AnimatedContainer(
-  duration: const Duration(milliseconds: 300),
-  curve: Curves.easeInOut,
-  transform: _isActive
-      ? Matrix4.identity()
-      : Matrix4.identity()..scale(0.95),
-  child: ...,
-)
-
-// Common implicit animation widgets:
-// AnimatedOpacity, AnimatedPadding, AnimatedPositioned,
-// AnimatedAlign, AnimatedSwitcher, AnimatedCrossFade
-```
-
-### Hero Animations
-
-```dart
-// Source screen
-Hero(tag: 'avatar-${user.id}', child: CircleAvatar(...))
-
-// Destination screen - same tag
-Hero(tag: 'avatar-${user.id}', child: CircleAvatar(radius: 80, ...))
-```
-
-### Reduce Motion Support
-
-```dart
-final reduceMotion = MediaQuery.of(context).disableAnimations;
-
-AnimatedContainer(
-  duration: reduceMotion ? Duration.zero : const Duration(milliseconds: 300),
 )
 ```
 
@@ -1026,71 +899,6 @@ ExcludeSemantics(child: DecorativeImage())
 **WCAG 2.1 minimums:** Normal text 4.5:1, Large text 3:1, UI components 3:1
 
 Verify colors: https://webaim.org/resources/contrastchecker/
-
-### Dynamic Type Support
-
-```dart
-// ✅ Use MediaQuery to respect user's text size preference
-final textScaleFactor = MediaQuery.textScaleFactorOf(context);
-
-// ✅ Allow text to scale, but set reasonable limits
-MediaQuery(
-  data: MediaQuery.of(context).copyWith(
-    textScaler: TextScaler.linear(
-      MediaQuery.textScaleFactorOf(context).clamp(0.8, 1.5),
-    ),
-  ),
-  child: MyApp(),
-)
-```
-
-### Focus Management
-
-```dart
-// ✅ Control focus programmatically
-final _emailFocus = FocusNode();
-final _passwordFocus = FocusNode();
-
-CupertinoTextField(
-  focusNode: _emailFocus,
-  textInputAction: TextInputAction.next,
-  onSubmitted: (_) => _passwordFocus.requestFocus(),
-)
-
-@override
-void initState() {
-  super.initState();
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-    _emailFocus.requestFocus();
-  });
-}
-
-@override
-void dispose() {
-  _emailFocus.dispose();
-  _passwordFocus.dispose();
-  super.dispose();
-}
-```
-
-### Testing Accessibility
-
-```dart
-// 1. Enable VoiceOver (iOS) or TalkBack (Android)
-// 2. Navigate app using only screen reader
-// 3. Verify all interactive elements are announced
-// 4. Check logical focus order
-// 5. Test with Dynamic Type at largest setting
-
-// Automated semantic testing
-testWidgets('button has semantic label', (tester) async {
-  await tester.pumpWidget(MyApp());
-  expect(
-    tester.getSemantics(find.byType(CupertinoButton)),
-    matchesSemantics(label: 'Submit', isButton: true),
-  );
-});
-```
 
 ---
 
@@ -1492,6 +1300,7 @@ testWidgets('Form shows validation error', (tester) async {
 | `google_sign_in`         | Google OAuth                    |
 | `google_fonts`           | Typography (Android fallback)   |
 | `shared_preferences`     | Non-sensitive local storage     |
+| `easy_localization`      | Internationalization (i18n)     |
 
 ---
 
@@ -1583,27 +1392,31 @@ flutter clean && flutter pub get && flutter run
 | Touch targets < 44pt          | Minimum 44x44 (iOS standard)                    |
 | AlertDialog on iOS            | `CupertinoAlertDialog`                          |
 | Material bottom sheet on iOS  | `CupertinoModalPopup`                           |
+| Sharp drop shadows            | Soft diffused shadows (`blurRadius: 20`)        |
+| Opaque cards                  | Liquid Glass (30-70% opacity + blur)            |
+| Blur sigma < 10               | Blur sigma 15-30 for glass effect               |
 | Forget to dispose             | Always dispose controllers, timers, focus nodes |
 
 ---
 
 ## iOS vs Android Quick Reference
 
-| Pattern             | iOS (Primary)                      | Android (Secondary)         |
-| ------------------- | ---------------------------------- | --------------------------- |
-| **Button**          | `CupertinoButton`                  | `FilledButton`              |
-| **Switch**          | `CupertinoSwitch`                  | `Switch.adaptive`           |
-| **Slider**          | `CupertinoSlider`                  | `Slider.adaptive`           |
-| **Alert**           | `CupertinoAlertDialog`             | `AlertDialog`               |
-| **Action Sheet**    | `CupertinoActionSheet`             | `BottomSheet` with actions  |
-| **Loading**         | `CupertinoActivityIndicator`       | `CircularProgressIndicator` |
-| **Segmented**       | `CupertinoSlidingSegmentedControl` | `SegmentedButton`           |
-| **Date Picker**     | `CupertinoDatePicker`              | `showDatePicker()`          |
-| **List Tile**       | `CupertinoListTile`                | `ListTile`                  |
-| **Navigation Bar**  | `CupertinoNavigationBar`           | `AppBar`                    |
-| **Tab Bar**         | `CupertinoTabBar`                  | `NavigationBar`             |
-| **Pull to Refresh** | `CupertinoSliverRefreshControl`    | `RefreshIndicator`          |
-| **Touch Target**    | 44x44 minimum                      | 48x48 minimum               |
-| **Border Radius**   | 10-14px (rounded rectangle)        | 12-28px (more rounded)      |
-| **Tap Feedback**    | Opacity change                     | Ripple effect               |
-| **Secure Storage**  | Keychain                           | EncryptedSharedPreferences  |
+| Pattern             | iOS (Primary)                       | Android (Secondary)         |
+| ------------------- | ----------------------------------- | --------------------------- |
+| **Button**          | `CupertinoButton`                   | `FilledButton`              |
+| **Switch**          | `CupertinoSwitch`                   | `Switch.adaptive`           |
+| **Slider**          | `CupertinoSlider`                   | `Slider.adaptive`           |
+| **Alert**           | `CupertinoAlertDialog`              | `AlertDialog`               |
+| **Action Sheet**    | `CupertinoActionSheet`              | `BottomSheet` with actions  |
+| **Loading**         | `CupertinoActivityIndicator`        | `CircularProgressIndicator` |
+| **Segmented**       | `CupertinoSlidingSegmentedControl`  | `SegmentedButton`           |
+| **Date Picker**     | `CupertinoDatePicker`               | `showDatePicker()`          |
+| **List Tile**       | `CupertinoListTile`                 | `ListTile`                  |
+| **Navigation Bar**  | `CupertinoNavigationBar`            | `AppBar`                    |
+| **Tab Bar**         | `CupertinoTabBar`                   | `NavigationBar`             |
+| **Pull to Refresh** | `CupertinoSliverRefreshControl`     | `RefreshIndicator`          |
+| **Touch Target**    | 44x44 minimum                       | 48x48 minimum               |
+| **Border Radius**   | 10-14px (rounded rectangle)         | 12-28px (more rounded)      |
+| **Tap Feedback**    | Opacity change                      | Ripple effect               |
+| **Glass Effects**   | Liquid Glass (blur 20, 60% opacity) | Solid surfaces preferred    |
+| **Secure Storage**  | Keychain                            | EncryptedSharedPreferences  |
