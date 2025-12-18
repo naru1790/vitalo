@@ -347,10 +347,10 @@ class _HeightPickerSheetState extends State<HeightPickerSheet>
               // CM wheel
               ListWheelScrollView.useDelegate(
                 controller: _cmController,
-                itemExtent: 50,
+                itemExtent: WheelConstants.itemExtent,
                 physics: const FixedExtentScrollPhysics(),
-                diameterRatio: 1.5,
-                perspective: 0.003,
+                diameterRatio: WheelConstants.diameterRatio,
+                perspective: WheelConstants.perspective,
                 onSelectedItemChanged: _onCmChanged,
                 childDelegate: ListWheelChildBuilderDelegate(
                   childCount: _maxCm - _minCm + 1,
@@ -393,7 +393,7 @@ class _HeightPickerSheetState extends State<HeightPickerSheet>
               ),
 
               // Gradient fades
-              _buildGradientOverlays(colorScheme),
+              const WheelGradientOverlay(),
             ],
           ),
         ),
@@ -452,10 +452,10 @@ class _HeightPickerSheetState extends State<HeightPickerSheet>
                     Expanded(
                       child: ListWheelScrollView.useDelegate(
                         controller: _feetController,
-                        itemExtent: 50,
+                        itemExtent: WheelConstants.itemExtent,
                         physics: const FixedExtentScrollPhysics(),
-                        diameterRatio: 1.5,
-                        perspective: 0.003,
+                        diameterRatio: WheelConstants.diameterRatio,
+                        perspective: WheelConstants.perspective,
                         onSelectedItemChanged: _onFeetChanged,
                         childDelegate: ListWheelChildBuilderDelegate(
                           childCount: _maxFeet - _minFeet + 1,
@@ -484,10 +484,10 @@ class _HeightPickerSheetState extends State<HeightPickerSheet>
                     Expanded(
                       child: ListWheelScrollView.useDelegate(
                         controller: _inchesController,
-                        itemExtent: 50,
+                        itemExtent: WheelConstants.itemExtent,
                         physics: const FixedExtentScrollPhysics(),
-                        diameterRatio: 1.5,
-                        perspective: 0.003,
+                        diameterRatio: WheelConstants.diameterRatio,
+                        perspective: WheelConstants.perspective,
                         onSelectedItemChanged: _onInchesChanged,
                         childDelegate: ListWheelChildBuilderDelegate(
                           childCount: 12, // 0-11 inches
@@ -533,59 +533,11 @@ class _HeightPickerSheetState extends State<HeightPickerSheet>
               ),
 
               // Gradient fades
-              _buildGradientOverlays(colorScheme),
+              const WheelGradientOverlay(),
             ],
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildGradientOverlays(ColorScheme colorScheme) {
-    return IgnorePointer(
-      child: Stack(
-        children: [
-          // Top gradient
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            height: 60,
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    colorScheme.surface,
-                    colorScheme.surface.withValues(alpha: 0),
-                  ],
-                ),
-              ),
-            ),
-          ),
-
-          // Bottom gradient
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: 60,
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    colorScheme.surface.withValues(alpha: 0),
-                    colorScheme.surface,
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

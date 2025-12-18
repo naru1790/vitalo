@@ -956,16 +956,16 @@ class _WaistPickerSheetState extends State<_WaistPickerSheet> {
 
             // Wheel picker
             SizedBox(
-              height: 200,
+              height: WheelConstants.defaultHeight,
               child: Stack(
                 children: [
                   // Value wheel
                   ListWheelScrollView.useDelegate(
                     controller: _controller,
-                    itemExtent: 50,
+                    itemExtent: WheelConstants.itemExtent,
                     physics: const FixedExtentScrollPhysics(),
-                    diameterRatio: 1.5,
-                    perspective: 0.003,
+                    diameterRatio: WheelConstants.diameterRatio,
+                    perspective: WheelConstants.perspective,
                     onSelectedItemChanged: _onValueChanged,
                     childDelegate: ListWheelChildBuilderDelegate(
                       childCount: itemCount,
@@ -1012,51 +1012,7 @@ class _WaistPickerSheetState extends State<_WaistPickerSheet> {
                   ),
 
                   // Gradient fades
-                  IgnorePointer(
-                    child: Stack(
-                      children: [
-                        // Top gradient
-                        Positioned(
-                          top: 0,
-                          left: 0,
-                          right: 0,
-                          height: 60,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                                colors: [
-                                  colorScheme.surface,
-                                  colorScheme.surface.withValues(alpha: 0),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-
-                        // Bottom gradient
-                        Positioned(
-                          bottom: 0,
-                          left: 0,
-                          right: 0,
-                          height: 60,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                                colors: [
-                                  colorScheme.surface.withValues(alpha: 0),
-                                  colorScheme.surface,
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  const WheelGradientOverlay(),
                 ],
               ),
             ),

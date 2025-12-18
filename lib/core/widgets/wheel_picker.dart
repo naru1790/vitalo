@@ -3,6 +3,190 @@ import 'package:flutter/services.dart';
 
 import '../theme.dart';
 
+// ─────────────────────────────────────────────────────────────────────────────
+// WHEEL PICKER CONSTANTS
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Shared constants for wheel pickers across the app.
+abstract final class WheelConstants {
+  /// Height of each wheel item.
+  static const double itemExtent = 50.0;
+
+  /// Diameter ratio for the wheel curvature.
+  static const double diameterRatio = 1.5;
+
+  /// Perspective value for 3D effect.
+  static const double perspective = 0.003;
+
+  /// Default wheel height.
+  static const double defaultHeight = 200.0;
+
+  /// Gradient overlay height at top and bottom.
+  static const double gradientHeight = 60.0;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// WHEEL GRADIENT OVERLAY
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Gradient fades at top and bottom of wheel pickers.
+/// Wrapped in IgnorePointer to allow touch pass-through.
+class WheelGradientOverlay extends StatelessWidget {
+  const WheelGradientOverlay({
+    super.key,
+    this.height = WheelConstants.gradientHeight,
+  });
+
+  final double height;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return IgnorePointer(
+      child: Stack(
+        children: [
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            height: height,
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    colorScheme.surface,
+                    colorScheme.surface.withValues(alpha: 0),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: height,
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    colorScheme.surface.withValues(alpha: 0),
+                    colorScheme.surface,
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SHEET HEADER
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Reusable header for bottom sheets with drag handle, title, subtitle,
+/// and optional Done button.
+class SheetHeader extends StatelessWidget {
+  const SheetHeader({
+    super.key,
+    required this.title,
+    this.subtitle,
+    this.onDone,
+    this.doneEnabled = true,
+  });
+
+  final String title;
+  final String? subtitle;
+  final VoidCallback? onDone;
+  final bool doneEnabled;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Drag handle
+        Padding(
+          padding: const EdgeInsets.only(top: AppSpacing.sm),
+          child: Container(
+            width: 32,
+            height: 4,
+            decoration: BoxDecoration(
+              color: colorScheme.outlineVariant,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+        ),
+
+        // Header content
+        Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.xl,
+            AppSpacing.lg,
+            AppSpacing.xl,
+            AppSpacing.sm,
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: colorScheme.onSurface,
+                      ),
+                    ),
+                    if (subtitle != null) ...[
+                      const SizedBox(height: AppSpacing.xxs),
+                      Text(
+                        subtitle!,
+                        style: textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              if (onDone != null)
+                FilledButton(
+                  onPressed: doneEnabled ? onDone : null,
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.lg,
+                      vertical: AppSpacing.sm,
+                    ),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  child: const Text('Done'),
+                ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ARROW INDICATOR
+// ─────────────────────────────────────────────────────────────────────────────
+
 /// Arrow indicator pointing direction.
 enum ArrowDirection { left, right }
 
@@ -62,6 +246,10 @@ class _ArrowPainter extends CustomPainter {
       oldDelegate.color != color || oldDelegate.direction != direction;
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// WHEEL UNIT CONFIGURATION
+// ─────────────────────────────────────────────────────────────────────────────
+
 /// Configuration for a measurement unit in the wheel picker.
 class WheelUnit {
   const WheelUnit({
@@ -118,8 +306,8 @@ class WheelPicker extends StatefulWidget {
     required this.value,
     required this.unit,
     required this.onChanged,
-    this.height = 200,
-    this.itemExtent = 50,
+    this.height = WheelConstants.defaultHeight,
+    this.itemExtent = WheelConstants.itemExtent,
   });
 
   /// Current value.
@@ -200,8 +388,8 @@ class _WheelPickerState extends State<WheelPicker> {
             controller: _controller,
             itemExtent: widget.itemExtent,
             physics: const FixedExtentScrollPhysics(),
-            diameterRatio: 1.5,
-            perspective: 0.003,
+            diameterRatio: WheelConstants.diameterRatio,
+            perspective: WheelConstants.perspective,
             onSelectedItemChanged: (index) {
               HapticFeedback.selectionClick();
               final newValue = widget.unit.valueAt(index);
@@ -248,48 +436,8 @@ class _WheelPickerState extends State<WheelPicker> {
             ),
           ),
 
-          // Gradient fades - IgnorePointer so touch passes through
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            height: widget.height * 0.3,
-            child: IgnorePointer(
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      colorScheme.surface,
-                      colorScheme.surface.withValues(alpha: 0),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: widget.height * 0.3,
-            child: IgnorePointer(
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      colorScheme.surface.withValues(alpha: 0),
-                      colorScheme.surface,
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
+          // Gradient fades
+          const WheelGradientOverlay(),
         ],
       ),
     );

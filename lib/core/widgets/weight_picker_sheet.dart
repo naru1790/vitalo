@@ -371,10 +371,10 @@ class _WeightPickerSheetState extends State<WeightPickerSheet>
                     Expanded(
                       child: ListWheelScrollView.useDelegate(
                         controller: _kgController,
-                        itemExtent: 50,
+                        itemExtent: WheelConstants.itemExtent,
                         physics: const FixedExtentScrollPhysics(),
-                        diameterRatio: 1.5,
-                        perspective: 0.003,
+                        diameterRatio: WheelConstants.diameterRatio,
+                        perspective: WheelConstants.perspective,
                         onSelectedItemChanged: _onKgChanged,
                         childDelegate: ListWheelChildBuilderDelegate(
                           childCount: _maxKg - _minKg + 1,
@@ -415,10 +415,10 @@ class _WeightPickerSheetState extends State<WeightPickerSheet>
                     Expanded(
                       child: ListWheelScrollView.useDelegate(
                         controller: _gramsController,
-                        itemExtent: 50,
+                        itemExtent: WheelConstants.itemExtent,
                         physics: const FixedExtentScrollPhysics(),
-                        diameterRatio: 1.5,
-                        perspective: 0.003,
+                        diameterRatio: WheelConstants.diameterRatio,
+                        perspective: WheelConstants.perspective,
                         onSelectedItemChanged: _onGramsChanged,
                         childDelegate: ListWheelChildBuilderDelegate(
                           childCount: 100, // 00-99
@@ -464,7 +464,7 @@ class _WeightPickerSheetState extends State<WeightPickerSheet>
               ),
 
               // Gradient fades
-              _buildGradientOverlays(colorScheme),
+              const WheelGradientOverlay(),
             ],
           ),
         ),
@@ -485,10 +485,10 @@ class _WeightPickerSheetState extends State<WeightPickerSheet>
               // Lbs wheel
               ListWheelScrollView.useDelegate(
                 controller: _lbsController,
-                itemExtent: 50,
+                itemExtent: WheelConstants.itemExtent,
                 physics: const FixedExtentScrollPhysics(),
-                diameterRatio: 1.5,
-                perspective: 0.003,
+                diameterRatio: WheelConstants.diameterRatio,
+                perspective: WheelConstants.perspective,
                 onSelectedItemChanged: _onLbsChanged,
                 childDelegate: ListWheelChildBuilderDelegate(
                   childCount: _maxLbs - _minLbs + 1,
@@ -531,59 +531,11 @@ class _WeightPickerSheetState extends State<WeightPickerSheet>
               ),
 
               // Gradient fades
-              _buildGradientOverlays(colorScheme),
+              const WheelGradientOverlay(),
             ],
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildGradientOverlays(ColorScheme colorScheme) {
-    return IgnorePointer(
-      child: Stack(
-        children: [
-          // Top gradient
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            height: 60,
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    colorScheme.surface,
-                    colorScheme.surface.withValues(alpha: 0),
-                  ],
-                ),
-              ),
-            ),
-          ),
-
-          // Bottom gradient
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: 60,
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    colorScheme.surface.withValues(alpha: 0),
-                    colorScheme.surface,
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

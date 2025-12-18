@@ -293,64 +293,12 @@ class _ActivityLevelSheetState extends State<_ActivityLevelSheet> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Drag handle
-            Padding(
-              padding: const EdgeInsets.only(top: AppSpacing.sm),
-              child: Container(
-                width: 32,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: colorScheme.outlineVariant,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-
-            // Header with Done button
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.xl,
-                AppSpacing.lg,
-                AppSpacing.xl,
-                AppSpacing.sm,
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Activity Level',
-                          style: textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: colorScheme.onSurface,
-                          ),
-                        ),
-                        const SizedBox(height: AppSpacing.xxs),
-                        Text(
-                          'Choose what best describes your typical day',
-                          style: textTheme.bodySmall?.copyWith(
-                            color: colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  FilledButton(
-                    onPressed: _selected != null ? _confirm : null,
-                    style: FilledButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.lg,
-                        vertical: AppSpacing.sm,
-                      ),
-                      minimumSize: Size.zero,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                    child: const Text('Done'),
-                  ),
-                ],
-              ),
+            // Header with drag handle and Done button
+            SheetHeader(
+              title: 'Activity Level',
+              subtitle: 'Choose what best describes your typical day',
+              onDone: _confirm,
+              doneEnabled: _selected != null,
             ),
 
             const SizedBox(height: AppSpacing.sm),
@@ -594,64 +542,11 @@ class _BedTimeSheetState extends State<_BedTimeSheet> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Drag handle
-            Padding(
-              padding: const EdgeInsets.only(top: AppSpacing.sm),
-              child: Container(
-                width: 32,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: colorScheme.outlineVariant,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-
-            // Header
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.xl,
-                AppSpacing.lg,
-                AppSpacing.xl,
-                AppSpacing.sm,
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Bed Time',
-                          style: textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: colorScheme.onSurface,
-                          ),
-                        ),
-                        const SizedBox(height: AppSpacing.xxs),
-                        Text(
-                          'When do you usually go to sleep?',
-                          style: textTheme.bodySmall?.copyWith(
-                            color: colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  FilledButton(
-                    onPressed: _confirm,
-                    style: FilledButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.lg,
-                        vertical: AppSpacing.sm,
-                      ),
-                      minimumSize: Size.zero,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                    child: const Text('Done'),
-                  ),
-                ],
-              ),
+            // Header with drag handle and Done button
+            SheetHeader(
+              title: 'Bed Time',
+              subtitle: 'When do you usually go to sleep?',
+              onDone: _confirm,
             ),
 
             const SizedBox(height: AppSpacing.lg),
@@ -717,7 +612,7 @@ class _BedTimeSheetState extends State<_BedTimeSheet> {
 
             // Time picker wheels with arrow indicators
             SizedBox(
-              height: 200,
+              height: WheelConstants.defaultHeight,
               child: Stack(
                 children: [
                   // Wheels row
@@ -731,10 +626,10 @@ class _BedTimeSheetState extends State<_BedTimeSheet> {
                         Expanded(
                           child: ListWheelScrollView.useDelegate(
                             controller: _hourController,
-                            itemExtent: 50,
+                            itemExtent: WheelConstants.itemExtent,
                             physics: const FixedExtentScrollPhysics(),
-                            diameterRatio: 1.5,
-                            perspective: 0.003,
+                            diameterRatio: WheelConstants.diameterRatio,
+                            perspective: WheelConstants.perspective,
                             onSelectedItemChanged: (index) {
                               HapticFeedback.selectionClick();
                               setState(() => _hour = index);
@@ -767,10 +662,10 @@ class _BedTimeSheetState extends State<_BedTimeSheet> {
                         Expanded(
                           child: ListWheelScrollView.useDelegate(
                             controller: _minuteController,
-                            itemExtent: 50,
+                            itemExtent: WheelConstants.itemExtent,
                             physics: const FixedExtentScrollPhysics(),
-                            diameterRatio: 1.5,
-                            perspective: 0.003,
+                            diameterRatio: WheelConstants.diameterRatio,
+                            perspective: WheelConstants.perspective,
                             onSelectedItemChanged: (index) {
                               HapticFeedback.selectionClick();
                               setState(() => _minute = index);
@@ -823,48 +718,7 @@ class _BedTimeSheetState extends State<_BedTimeSheet> {
                   ),
 
                   // Gradient fades
-                  IgnorePointer(
-                    child: Stack(
-                      children: [
-                        Positioned(
-                          top: 0,
-                          left: 0,
-                          right: 0,
-                          height: 60,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                                colors: [
-                                  colorScheme.surface,
-                                  colorScheme.surface.withValues(alpha: 0),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                        Positioned(
-                          bottom: 0,
-                          left: 0,
-                          right: 0,
-                          height: 60,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                                colors: [
-                                  colorScheme.surface.withValues(alpha: 0),
-                                  colorScheme.surface,
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  const WheelGradientOverlay(),
                 ],
               ),
             ),
@@ -968,64 +822,11 @@ class _SleepDurationSheetState extends State<_SleepDurationSheet> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Drag handle
-            Padding(
-              padding: const EdgeInsets.only(top: AppSpacing.sm),
-              child: Container(
-                width: 32,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: colorScheme.outlineVariant,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-
-            // Header
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.xl,
-                AppSpacing.lg,
-                AppSpacing.xl,
-                AppSpacing.sm,
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Sleep Duration',
-                          style: textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: colorScheme.onSurface,
-                          ),
-                        ),
-                        const SizedBox(height: AppSpacing.xxs),
-                        Text(
-                          'How long do you usually sleep?',
-                          style: textTheme.bodySmall?.copyWith(
-                            color: colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  FilledButton(
-                    onPressed: _confirm,
-                    style: FilledButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.lg,
-                        vertical: AppSpacing.sm,
-                      ),
-                      minimumSize: Size.zero,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                    child: const Text('Done'),
-                  ),
-                ],
-              ),
+            // Header with drag handle and Done button
+            SheetHeader(
+              title: 'Sleep Duration',
+              subtitle: 'How long do you usually sleep?',
+              onDone: _confirm,
             ),
 
             const SizedBox(height: AppSpacing.lg),
@@ -1079,7 +880,7 @@ class _SleepDurationSheetState extends State<_SleepDurationSheet> {
 
             // Duration picker wheels with arrow indicators
             SizedBox(
-              height: 200,
+              height: WheelConstants.defaultHeight,
               child: Stack(
                 children: [
                   // Wheels
@@ -1093,10 +894,10 @@ class _SleepDurationSheetState extends State<_SleepDurationSheet> {
                         Expanded(
                           child: ListWheelScrollView.useDelegate(
                             controller: _hoursController,
-                            itemExtent: 50,
+                            itemExtent: WheelConstants.itemExtent,
                             physics: const FixedExtentScrollPhysics(),
-                            diameterRatio: 1.5,
-                            perspective: 0.003,
+                            diameterRatio: WheelConstants.diameterRatio,
+                            perspective: WheelConstants.perspective,
                             onSelectedItemChanged: (index) {
                               HapticFeedback.selectionClick();
                               setState(() => _hours = index);
@@ -1127,10 +928,10 @@ class _SleepDurationSheetState extends State<_SleepDurationSheet> {
                         Expanded(
                           child: ListWheelScrollView.useDelegate(
                             controller: _minutesController,
-                            itemExtent: 50,
+                            itemExtent: WheelConstants.itemExtent,
                             physics: const FixedExtentScrollPhysics(),
-                            diameterRatio: 1.5,
-                            perspective: 0.003,
+                            diameterRatio: WheelConstants.diameterRatio,
+                            perspective: WheelConstants.perspective,
                             onSelectedItemChanged: (index) {
                               HapticFeedback.selectionClick();
                               setState(() => _minutes = index);
@@ -1183,48 +984,7 @@ class _SleepDurationSheetState extends State<_SleepDurationSheet> {
                   ),
 
                   // Gradient fades
-                  IgnorePointer(
-                    child: Stack(
-                      children: [
-                        Positioned(
-                          top: 0,
-                          left: 0,
-                          right: 0,
-                          height: 60,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                                colors: [
-                                  colorScheme.surface,
-                                  colorScheme.surface.withValues(alpha: 0),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                        Positioned(
-                          bottom: 0,
-                          left: 0,
-                          right: 0,
-                          height: 60,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                                colors: [
-                                  colorScheme.surface.withValues(alpha: 0),
-                                  colorScheme.surface,
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  const WheelGradientOverlay(),
                 ],
               ),
             ),
