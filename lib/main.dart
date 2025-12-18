@@ -6,6 +6,7 @@ import 'package:talker_flutter/talker_flutter.dart';
 
 import 'core/config.dart';
 import 'core/router.dart';
+import 'core/services/secure_storage_service.dart';
 import 'core/theme.dart';
 
 /// Global Talker instance for observability
@@ -40,13 +41,14 @@ Future<void> main() async {
     throw Exception('Missing Supabase configuration');
   }
 
-  // Initialize Supabase with environment variables
+  // Initialize Supabase with secure storage for JWT tokens
   try {
     await Supabase.initialize(
       url: AppConfig.supabaseUrl,
       anonKey: AppConfig.supabaseAnonKey,
+      authOptions: FlutterAuthClientOptions(localStorage: SecureLocalStorage()),
     );
-    talker.info('Supabase initialized successfully');
+    talker.info('Supabase initialized with secure storage');
   } catch (e, stack) {
     talker.error('Failed to initialize Supabase', e, stack);
     rethrow;
