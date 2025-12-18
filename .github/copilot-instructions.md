@@ -1,17 +1,25 @@
-# Flutter Material 3 Development Guidelines - Soft Minimalistic Design
+# Flutter iOS-First Development Guidelines - Soft Minimalistic Design
 
 ## Role & Objective
 
-You are a **Senior Flutter Architect**. Produce production-grade, maintainable, testable code following **Material 3** principles from [Flutter UI docs](https://docs.flutter.dev/ui) with a **Soft Minimalistic Design** aesthetic.
+You are a **Senior Flutter Architect**. Produce production-grade, maintainable, testable code following **Apple Human Interface Guidelines** as the primary design language with Android as secondary. Reference the [Apple HIG](https://developer.apple.com/design/human-interface-guidelines/) for all design decisions.
 
 **Design Philosophy:**
 
-- **Calm & Approachable**: Desaturated warm tones, gentle contrasts
-- **Clean & Uncluttered**: Generous whitespace, subtle elevations
-- **Monochromatic Palette**: Warm taupe variations for cohesive harmony
-- **Soft Typography**: Poppins for headings, Inter for body
+- **iOS-First**: Design for iOS aesthetics first, adapt gracefully for Android
+- **Clarity**: Content is paramount. Negative space, subtle depth, and precise typography
+- **Deference**: Fluid motion and crisp interface help users understand content without competing with it
+- **Depth**: Visual layers and realistic motion convey hierarchy and facilitate understanding
+- **Soft Minimalism**: Calm, approachable feel with desaturated warm tones and gentle contrasts
 
-Strictly adhere to these standards. If a request violates them (e.g., hardcoded colors, harsh contrasts, `print()`), correct it.
+**Visual Identity:**
+
+- **Typography**: SF Pro (iOS) via system font, Inter for body on Android
+- **Color Palette**: Warm taupe base with monochromatic variations
+- **Iconography**: SF Symbols style - thin, elegant, consistent stroke weights
+- **Motion**: iOS spring animations, 0.3-0.5s durations, ease-in-out curves
+
+Strictly adhere to these standards. If a request violates them (e.g., hardcoded colors, Material ripples on iOS, `print()`), correct it.
 
 ---
 
@@ -26,7 +34,7 @@ lib/
 │   ├── router.dart           # GoRouter with auth guards
 │   ├── config.dart           # Environment variables (--dart-define)
 │   ├── services/             # Business logic (AuthService)
-│   ├── theme.dart            # MaterialTheme (colors, typography, spacing)
+│   ├── theme.dart            # iOS-inspired theme (colors, typography, spacing)
 │   └── widgets/              # Reusable UI components
 └── features/{feature}/
     ├── presentation/         # Screens, Widgets, Providers (NO business logic)
@@ -82,7 +90,7 @@ state.user = newUser;
 // Use AsyncValue for loading/error/data
 ref.watch(healthDataProvider).when(
   data: (data) => HealthCard(data),
-  loading: () => const LoadingIndicator(),
+  loading: () => const CupertinoActivityIndicator(),
   error: (e, _) => ErrorWidget(e.toString()),
 );
 ```
@@ -108,7 +116,7 @@ Widget build(BuildContext context) {
 
 // ✅ Use ref.listen for side effects
 ref.listen(authProvider, (_, state) {
-  if (state.hasError) ScaffoldMessenger.of(context).showSnackBar(...);
+  if (state.hasError) _showErrorSheet(context, state.error);
 });
 ```
 
@@ -126,143 +134,135 @@ final authState = ref.watch(authProvider);
 
 ---
 
-## 3. Material 3 Design System
+## 3. iOS-First Design System
 
-> **Reference:** https://docs.flutter.dev/ui/design
+> **Reference:** [Apple Human Interface Guidelines](https://developer.apple.com/design/human-interface-guidelines/)
 
-### Theme Authority (Material Theme Builder Pattern)
+### Platform-First Approach
+
+**iOS is the PRIMARY design target.** Use Cupertino widgets and iOS patterns first, then ensure graceful degradation on Android.
+
+```dart
+// ✅ Use platform-adaptive patterns
+import 'dart:io' show Platform;
+
+// ✅ Prefer Cupertino for iOS-native feel
+if (Platform.isIOS) {
+  return CupertinoButton.filled(...);
+} else {
+  return FilledButton(...);
+}
+
+// ✅ Or use adaptive widgets
+Switch.adaptive(value: isOn, onChanged: ...)
+```
+
+### Theme Authority
 
 **Source of Truth:** `core/theme.dart`
-
-Use [Material Theme Builder](https://material-foundation.github.io/material-theme-builder/) to generate your theme, then integrate directly.
 
 ```dart
 // ❌ NEVER use hardcoded colors
 color: Colors.orange
+color: CupertinoColors.systemBlue
 
 // ✅ ALWAYS use Theme.of(context)
 color: Theme.of(context).colorScheme.primary
 color: Theme.of(context).colorScheme.onSurface
-color: Theme.of(context).colorScheme.surfaceContainerHigh
+
+// ✅ For iOS-specific colors when needed
+color: CupertinoTheme.of(context).primaryColor
 
 // ✅ Typography via theme
 style: Theme.of(context).textTheme.headlineMedium
 style: Theme.of(context).textTheme.bodyLarge
 ```
 
-### Theme Structure
+### iOS-Inspired Color Palette
 
 ```dart
-class MaterialTheme {
-  final TextTheme textTheme;
-  const MaterialTheme(this.textTheme);
+// iOS uses semantic colors that adapt to light/dark/high-contrast
+final colorScheme = Theme.of(context).colorScheme;
 
-  static ColorScheme lightScheme() => const ColorScheme(...);
-  static ColorScheme darkScheme() => const ColorScheme(...);
+// Primary surfaces - use very subtle grays
+colorScheme.surface              // #FFFFFF (light) / #000000 (dark)
+colorScheme.surfaceContainer     // Subtle elevation (iOS grouped background)
+colorScheme.surfaceContainerLow  // Input fields, recessed areas
 
-  ThemeData light() => theme(lightScheme());
-  ThemeData dark() => theme(darkScheme());
+// Text hierarchy - iOS uses clear contrast
+colorScheme.onSurface            // Primary text (Label in iOS)
+colorScheme.onSurfaceVariant     // Secondary text (Secondary Label)
 
-  ThemeData theme(ColorScheme colorScheme) => ThemeData(
-    useMaterial3: true,
-    colorScheme: colorScheme,
-    textTheme: textTheme.apply(
-      bodyColor: colorScheme.onSurface,
-      displayColor: colorScheme.onSurface,
-    ),
-    scaffoldBackgroundColor: colorScheme.surface,
-  );
-}
-
-TextTheme createTextTheme(BuildContext context, String bodyFont, String displayFont) {
-  final baseTextTheme = Theme.of(context).textTheme;
-  final bodyTextTheme = GoogleFonts.getTextTheme(bodyFont, baseTextTheme);
-  final displayTextTheme = GoogleFonts.getTextTheme(displayFont, baseTextTheme);
-  return displayTextTheme.copyWith(
-    bodyLarge: bodyTextTheme.bodyLarge,
-    bodyMedium: bodyTextTheme.bodyMedium,
-    bodySmall: bodyTextTheme.bodySmall,
-    labelLarge: bodyTextTheme.labelLarge,
-    labelMedium: bodyTextTheme.labelMedium,
-    labelSmall: bodyTextTheme.labelSmall,
-  );
-}
+// Semantic colors
+colorScheme.primary              // Tint color (accent)
+colorScheme.error                // Destructive red
+colorScheme.outline              // Separators (iOS separator color)
 ```
 
-### Usage in main.dart
+### iOS Widget Mapping
 
-```dart
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    final textTheme = createTextTheme(context, 'Inter', 'Poppins');
-    final theme = MaterialTheme(textTheme);
-
-    return MaterialApp(
-      theme: theme.light(),
-      darkTheme: theme.dark(),
-      themeMode: ThemeMode.system,
-    );
-  }
-}
-```
-
-### Material 3 Widgets (MANDATORY)
-
-| Component           | Use                | Notes                          |
-| :------------------ | :----------------- | :----------------------------- |
-| **NavigationBar**   | Bottom nav         | M3 pill-shaped indicator       |
-| **SegmentedButton** | Single choice      | Exclusive selection            |
-| **FilterChip**      | Multi-select       | Non-exclusive selection        |
-| **FilledButton**    | Primary actions    | High emphasis (Save, Submit)   |
-| **OutlinedButton**  | Secondary actions  | Medium emphasis (Cancel, Skip) |
-| **TextButton**      | Tertiary actions   | Low emphasis (Learn more)      |
-| **TextFormField**   | Inputs             | Use `filled: true`             |
-| **Switch.adaptive** | Toggles            | Native feel on iOS             |
-| **Card**            | Content containers | Use M3 surface tint            |
-| **AlertDialog**     | Dialogs            | Use `icon:` property           |
-| **BottomSheet**     | Bottom sheets      | Use `showDragHandle: true`     |
+| iOS Pattern            | Flutter Widget                     | Notes                            |
+| :--------------------- | :--------------------------------- | :------------------------------- |
+| **Navigation Bar**     | `CupertinoNavigationBar`           | Large title style preferred      |
+| **Tab Bar**            | `CupertinoTabBar`                  | Bottom tabs with icons           |
+| **Action Sheet**       | `CupertinoActionSheet`             | For destructive/multiple actions |
+| **Alert**              | `CupertinoAlertDialog`             | Simple confirmations             |
+| **Segmented Control**  | `CupertinoSlidingSegmentedControl` | Pill-shaped sliding control      |
+| **Switch**             | `CupertinoSwitch`                  | iOS-native toggle                |
+| **Slider**             | `CupertinoSlider`                  | iOS-native slider                |
+| **Activity Indicator** | `CupertinoActivityIndicator`       | Spinning wheel                   |
+| **Date Picker**        | `CupertinoDatePicker`              | Wheel-style picker               |
+| **Picker**             | `CupertinoPicker`                  | Wheel picker for any values      |
+| **Text Field**         | `CupertinoTextField`               | iOS-native input style           |
+| **Button**             | `CupertinoButton`                  | Subtle tap feedback (no ripple)  |
+| **List Tile**          | `CupertinoListTile`                | iOS Settings-style row           |
+| **Modal Sheet**        | `CupertinoModalPopupRoute`         | iOS bottom sheet behavior        |
+| **Context Menu**       | `CupertinoContextMenu`             | Long-press preview + actions     |
 
 ### Custom Reusable Components (in `core/widgets/`)
 
-| Component              | Use                       | Notes                                    |
-| :--------------------- | :------------------------ | :--------------------------------------- |
-| **SignInButton**       | OAuth/sign-in buttons     | OutlinedButton.icon with loading state   |
-| **LoadingButton**      | Primary CTAs with loading | FilledButton with spinner                |
-| **AppSegmentedButton** | Selection controls        | Wraps SegmentedButton with theme styling |
-| **GoogleLogo**         | Google branding           | CustomPaint official logo                |
+| Component               | Use                       | Notes                                  |
+| :---------------------- | :------------------------ | :------------------------------------- |
+| **SignInButton**        | OAuth/sign-in buttons     | iOS-style with subtle highlight        |
+| **LoadingButton**       | Primary CTAs with loading | CupertinoButton with spinner           |
+| **AppSegmentedControl** | Selection controls        | Wraps CupertinoSlidingSegmentedControl |
+| **AppleLogo**           | Apple branding            | SF Symbol or custom paint              |
+| **GoogleLogo**          | Google branding           | CustomPaint official logo              |
 
-### Spacing — STRICTLY use AppSpacing
+### Spacing — iOS Metrics (STRICTLY use AppSpacing)
 
 > ⚠️ **NEVER use magic numbers for spacing, sizing, or border radius. Always use `AppSpacing` constants.**
 
-#### AppSpacing Constants Reference
+iOS uses a 4pt/8pt grid system with specific margin guidelines.
 
-| Category          | Constant                | Value | Use Case                        |
-| ----------------- | ----------------------- | ----- | ------------------------------- |
-| **Base Scale**    | `xxs`                   | 4.0   | Minimal gaps, divider thickness |
-|                   | `xs`                    | 8.0   | Tight spacing, small gaps       |
-|                   | `sm`                    | 12.0  | Compact spacing, input padding  |
-|                   | `md`                    | 16.0  | Default spacing, standard gaps  |
-|                   | `lg`                    | 20.0  | Comfortable spacing             |
-|                   | `xl`                    | 24.0  | Section gaps, generous padding  |
-|                   | `xxl`                   | 32.0  | Large section breaks            |
-|                   | `xxxl`                  | 40.0  | Major section separators        |
-| **Page Layout**   | `pageHorizontalPadding` | 24.0  | Screen horizontal padding       |
-|                   | `pageVerticalPadding`   | 24.0  | Screen vertical padding         |
-|                   | `sectionSpacing`        | 32.0  | Between major sections          |
-| **Components**    | `buttonHeight`          | 56.0  | Primary button height           |
-|                   | `buttonHeightSmall`     | 40.0  | Secondary/compact buttons       |
-|                   | `inputHeight`           | 56.0  | Text field height               |
-|                   | `touchTargetMin`        | 48.0  | Minimum tappable area           |
-| **Border Radius** | `cardRadius`            | 16.0  | Standard card corners           |
-|                   | `cardRadiusLarge`       | 28.0  | Modal, bottom sheet corners     |
-|                   | `cardRadiusSmall`       | 12.0  | Chips, small cards              |
-|                   | `buttonRadius`          | 28.0  | Pill-shaped buttons             |
-|                   | `inputRadius`           | 12.0  | Text field corners              |
-| **Icon Sizes**    | `iconSizeSmall`         | 20.0  | Inline icons, badges            |
-|                   | `iconSize`              | 24.0  | Standard icons                  |
-|                   | `iconSizeLarge`         | 32.0  | Prominent icons                 |
+#### AppSpacing Constants Reference (iOS-Aligned)
+
+| Category          | Constant                | Value | iOS Reference                 |
+| ----------------- | ----------------------- | ----- | ----------------------------- |
+| **Base Scale**    | `xxs`                   | 4.0   | Minimum unit                  |
+|                   | `xs`                    | 8.0   | Tight spacing                 |
+|                   | `sm`                    | 12.0  | Compact spacing               |
+|                   | `md`                    | 16.0  | Standard margin (iOS default) |
+|                   | `lg`                    | 20.0  | Comfortable spacing           |
+|                   | `xl`                    | 24.0  | Section gaps                  |
+|                   | `xxl`                   | 32.0  | Large section breaks          |
+|                   | `xxxl`                  | 40.0  | Major section separators      |
+| **Page Layout**   | `pageHorizontalPadding` | 20.0  | iOS safe area inset           |
+|                   | `pageVerticalPadding`   | 20.0  | iOS safe area inset           |
+|                   | `sectionSpacing`        | 35.0  | iOS grouped list section gap  |
+| **Components**    | `buttonHeight`          | 50.0  | iOS standard button height    |
+|                   | `buttonHeightSmall`     | 36.0  | Compact buttons               |
+|                   | `inputHeight`           | 44.0  | iOS standard row height       |
+|                   | `touchTargetMin`        | 44.0  | iOS minimum touch target      |
+| **Border Radius** | `cardRadius`            | 14.0  | iOS card/grouped style        |
+|                   | `cardRadiusLarge`       | 20.0  | Modal corners                 |
+|                   | `cardRadiusSmall`       | 10.0  | Chips, small cards            |
+|                   | `buttonRadius`          | 14.0  | iOS button corners            |
+|                   | `buttonRadiusPill`      | 25.0  | Pill-shaped buttons           |
+|                   | `inputRadius`           | 10.0  | Text field corners            |
+| **Icon Sizes**    | `iconSizeSmall`         | 17.0  | SF Symbol small               |
+|                   | `iconSize`              | 22.0  | SF Symbol default             |
+|                   | `iconSizeLarge`         | 28.0  | SF Symbol large               |
 
 #### Usage Guidelines
 
@@ -275,7 +275,7 @@ BorderRadius.circular(12)
 // ✅ ALWAYS use AppSpacing
 const SizedBox(height: AppSpacing.md)
 EdgeInsets.all(AppSpacing.xl)
-BorderRadius.circular(AppSpacing.cardRadiusSmall)
+BorderRadius.circular(AppSpacing.cardRadius)
 
 // ✅ Page layout
 Padding(
@@ -283,255 +283,303 @@ Padding(
   child: Column(...),
 )
 
-// ✅ Component sizing
-SizedBox(
-  height: AppSpacing.buttonHeight,
-  child: FilledButton(...),
-)
+// ✅ iOS-style list section spacing
+const SizedBox(height: AppSpacing.sectionSpacing)  // 35.0
 
-// ✅ Icon sizing
-Icon(Icons.check, size: AppSpacing.iconSize)
-
-// ✅ Touch targets - minimum 48x48
+// ✅ Touch targets - minimum 44x44 (iOS standard)
 SizedBox(
   width: AppSpacing.touchTargetMin,
   height: AppSpacing.touchTargetMin,
-  child: IconButton(...),
+  child: CupertinoButton(padding: EdgeInsets.zero, ...),
 )
 ```
 
-### Theme Color Usage Guide
+### iOS Typography
 
-**Always access colors via `Theme.of(context).colorScheme`** — this automatically handles light/dark mode and all contrast levels.
+iOS uses SF Pro with specific weights and sizes. Map to Flutter's text theme:
 
 ```dart
-// ✅ Pattern for accessing colors
-final colorScheme = Theme.of(context).colorScheme;
+// iOS Text Styles mapped to Flutter
+// Large Title: 34pt Bold → displaySmall
+// Title 1: 28pt Bold → headlineLarge
+// Title 2: 22pt Bold → headlineMedium
+// Title 3: 20pt Semibold → headlineSmall
+// Headline: 17pt Semibold → titleMedium
+// Body: 17pt Regular → bodyLarge
+// Callout: 16pt Regular → bodyMedium
+// Subhead: 15pt Regular → bodySmall
+// Footnote: 13pt Regular → labelLarge
+// Caption 1: 12pt Regular → labelMedium
+// Caption 2: 11pt Regular → labelSmall
 
-Container(
-  color: colorScheme.surfaceContainer,
-  child: Text('Hello', style: TextStyle(color: colorScheme.onSurface)),
+// ✅ Use semantic text styles
+Text(
+  'Welcome',
+  style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+    fontWeight: FontWeight.bold,
+  ),
 )
 ```
 
-#### Color Selection by Component Type
-
-| Component Type                          | Color Role                                    | Usage                       |
-| --------------------------------------- | --------------------------------------------- | --------------------------- |
-| **Primary actions** (FAB, FilledButton) | `primary` / `onPrimary`                       | Main CTA buttons            |
-| **Secondary actions** (OutlinedButton)  | `secondary` / `onSecondary`                   | Secondary buttons           |
-| **Tertiary/Accent**                     | `tertiary` / `onTertiary`                     | Highlights, badges          |
-| **Page background**                     | `surface`                                     | Scaffold background         |
-| **Text on backgrounds**                 | `onSurface`                                   | Body text, titles           |
-| **Muted/secondary text**                | `onSurfaceVariant`                            | Captions, hints, icons      |
-| **Borders/dividers**                    | `outline`                                     | TextField borders, dividers |
-| **Subtle borders**                      | `outlineVariant`                              | Card borders, separators    |
-| **Error states**                        | `error` / `onError`                           | Validation errors           |
-| **Containers/chips**                    | `primaryContainer` / `onPrimaryContainer`     | Selected states, chips      |
-| **Secondary containers**                | `secondaryContainer` / `onSecondaryContainer` | Nav indicator, tags         |
-
-#### Surface Elevation (M3 Tonal System)
-
-```dart
-// Use surfaceContainer variants for elevation hierarchy
-colorScheme.surface                    // Level 0 - Page background
-colorScheme.surfaceContainerLowest     // Level 1 - Deeply recessed
-colorScheme.surfaceContainerLow        // Level 2 - Recessed content
-colorScheme.surfaceContainer           // Level 3 - Default cards
-colorScheme.surfaceContainerHigh       // Level 4 - Raised cards, dialogs
-colorScheme.surfaceContainerHighest    // Level 5 - Highest elevation, menus
-```
-
-#### Common Component Color Mappings
+### iOS Color Semantics
 
 ```dart
 final colorScheme = Theme.of(context).colorScheme;
 
-// Shimmer loading
-shimmerBaseColor: colorScheme.surfaceContainerHighest
-shimmerHighlightColor: colorScheme.surface
+// Background colors (iOS Grouped Style)
+colorScheme.surface                    // System background
+colorScheme.surfaceContainer           // Secondary system background (grouped)
+colorScheme.surfaceContainerHigh       // Tertiary system background
 
-// Cards
-cardColor: colorScheme.surfaceContainer
-cardBorderColor: colorScheme.outlineVariant
+// Text colors
+colorScheme.onSurface                  // Label (primary text)
+colorScheme.onSurfaceVariant           // Secondary label
+// For tertiary/quaternary, use opacity
 
-// Icons
-primaryIcon: colorScheme.primary
-secondaryIcon: colorScheme.onSurfaceVariant
-disabledIcon: colorScheme.onSurface.withValues(alpha: 0.38)
+// Fill colors (for buttons, controls)
+colorScheme.primary                    // Tint color
+colorScheme.primaryContainer           // Tint color with lower opacity
 
-// Buttons
-filledButtonBg: colorScheme.primary
-filledButtonFg: colorScheme.onPrimary
-outlinedButtonBorder: colorScheme.outline
-textButtonFg: colorScheme.primary
+// Separators
+colorScheme.outline                    // Separator color
+colorScheme.outlineVariant             // Opaque separator
 
-// Text fields
-inputFillColor: colorScheme.surfaceContainerLow
-inputBorderColor: colorScheme.outline
-inputFocusedBorder: colorScheme.primary
-inputLabelColor: colorScheme.onSurfaceVariant
-inputErrorColor: colorScheme.error
-
-// Dividers
-dividerColor: colorScheme.outlineVariant
-
-// Navigation
-navBarBg: colorScheme.surfaceContainer
-navBarSelectedIcon: colorScheme.primary
-navBarUnselectedIcon: colorScheme.onSurfaceVariant
-navBarIndicator: colorScheme.secondaryContainer
-
-// App bar
-appBarBg: colorScheme.surface
-appBarFg: colorScheme.onSurface
+// Semantic colors
+colorScheme.error                      // System red (destructive)
+colorScheme.tertiary                   // System green (success)
+// System orange, yellow, etc. as needed
 ```
 
-#### Automatic Light/Dark/Contrast Support
+### iOS-Specific Interaction Patterns
 
-The theme automatically provides correct colors for all modes. Just use `Theme.of(context).colorScheme`:
+**No Material Ripples on iOS:**
 
-| User Setting            | ColorScheme Used              |
-| ----------------------- | ----------------------------- |
-| Light mode              | `lightScheme()`               |
-| Dark mode               | `darkScheme()`                |
-| Light + Medium Contrast | `lightMediumContrastScheme()` |
-| Light + High Contrast   | `lightHighContrastScheme()`   |
-| Dark + Medium Contrast  | `darkMediumContrastScheme()`  |
-| Dark + High Contrast    | `darkHighContrastScheme()`    |
+```dart
+// ❌ Material ripple - not iOS native
+InkWell(onTap: ..., child: ...)
 
-### Soft Minimalistic Design Principles
+// ✅ iOS highlight behavior
+CupertinoButton(
+  padding: EdgeInsets.zero,
+  onPressed: ...,
+  child: ...,
+)
+
+// ✅ Or use GestureDetector with custom feedback
+GestureDetector(
+  onTap: ...,
+  onTapDown: (_) => setState(() => _isPressed = true),
+  onTapUp: (_) => setState(() => _isPressed = false),
+  onTapCancel: () => setState(() => _isPressed = false),
+  child: AnimatedOpacity(
+    opacity: _isPressed ? 0.4 : 1.0,
+    duration: const Duration(milliseconds: 100),
+    child: ...,
+  ),
+)
+```
+
+**iOS Swipe Actions:**
+
+```dart
+// ✅ iOS-style swipe to delete
+Dismissible(
+  key: Key(item.id),
+  direction: DismissDirection.endToStart,
+  background: Container(
+    color: colorScheme.error,
+    alignment: Alignment.centerRight,
+    padding: EdgeInsets.only(right: AppSpacing.lg),
+    child: Icon(CupertinoIcons.delete, color: Colors.white),
+  ),
+  onDismissed: (_) => _deleteItem(item),
+  child: ListTile(...),
+)
+```
+
+**iOS Pull to Refresh:**
+
+```dart
+// ✅ Use CustomScrollView with CupertinoSliverRefreshControl
+CustomScrollView(
+  slivers: [
+    CupertinoSliverRefreshControl(
+      onRefresh: () async => await _refreshData(),
+    ),
+    SliverList(...),
+  ],
+)
+```
+
+### Soft Minimalistic Design Principles (iOS-Aligned)
 
 **Color Philosophy:**
 
 - **Monochromatic Warmth**: All colors derived from warm taupe base (#B5917A)
-- **Gentle Contrast**: No harsh blacks or pure whites - use soft browns
-- **Subtle Elevations**: Surface containers create depth through tone, not shadow
-- **Muted Errors**: Even error states use desaturated terracotta tones
+- **Gentle Contrast**: Avoid harsh blacks - use soft dark grays
+- **Subtle Depth**: Use blur and translucency over shadows
+- **Muted States**: Even error states use desaturated tones
 
 **Visual Guidelines:**
 
-- **Border Width by Component:**
-  - TextFormField: 1.5px (all states)
-  - OutlinedButton/SignInButton: 1.5px
-  - SegmentedButton: 1px (lighter for compact controls)
-- **Shadow Opacity**: Use subtle shadows (10-20% opacity) instead of harsh drops
-- **Card Elevation**: Rely on `surfaceContainer` variants, minimal use of `BoxShadow`
-- **Icon Treatment**: Use `onSurfaceVariant` for secondary icons (softer than `onSurface`)
-- **Dividers**: Use `outlineVariant` for softest possible separators
+- **Blur Effects**: Use `BackdropFilter` for iOS frosted glass effect
+- **Border Width**: 0.5px for separators (iOS standard), 1px for emphasized borders
+- **Shadow**: Minimal - prefer translucency and blur over drop shadows
+- **Icon Treatment**: Thin stroke weights, SF Symbols style
 
-**Border Radius Strategy:**
+**Border Radius Strategy (iOS):**
 
-| Component Type     | Radius | Constant          | Use Case                                   |
-| ------------------ | ------ | ----------------- | ------------------------------------------ |
-| **Action Buttons** | 28px   | `buttonRadius`    | FilledButton, OutlinedButton, SignInButton |
-| **Form Controls**  | 12px   | `inputRadius`     | TextFormField, SegmentedButton, chips      |
-| **Cards**          | 16px   | `cardRadius`      | Standard content containers                |
-| **Modals**         | 28px   | `cardRadiusLarge` | Bottom sheets, dialogs                     |
+| Component Type    | Radius | Constant           | Notes                       |
+| ----------------- | ------ | ------------------ | --------------------------- |
+| **Cards/Grouped** | 14px   | `cardRadius`       | iOS rounded rectangle       |
+| **Modals/Sheets** | 20px   | `cardRadiusLarge`  | Bottom sheets, modals       |
+| **Buttons**       | 14px   | `buttonRadius`     | Standard iOS button         |
+| **Pill Buttons**  | 25px   | `buttonRadiusPill` | Capsule-shaped              |
+| **Form Controls** | 10px   | `inputRadius`      | Text fields, small controls |
+| **Chips**         | 10px   | `cardRadiusSmall`  | Tags, small cards           |
 
-**Button Text Guidelines:**
-
-- Font size: 16sp
-- Font weight: w600 (SemiBold)
-- Letter spacing: 0.2
-- Use consistent verb patterns: "Continue with [Provider]" for OAuth
-- Single action verbs for primary CTAs: "Send Code", "Continue", "Verify"
-
-**Spacing & Breathing Room:**
+**Button Styles (iOS):**
 
 ```dart
-// ✅ Generous padding for minimalism
-Padding(
-  padding: const EdgeInsets.all(AppSpacing.lg), // 20.0
-  child: Card(...),
+// ✅ Primary action - filled button
+CupertinoButton.filled(
+  onPressed: _handleSubmit,
+  borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
+  child: const Text('Continue'),
 )
 
-// ✅ Section spacing for uncluttered layout
-Column(
-  children: [
-    Section1(),
-    const SizedBox(height: AppSpacing.sectionSpacing), // 32.0
-    Section2(),
-  ],
+// ✅ Secondary action - outlined/ghost
+CupertinoButton(
+  onPressed: _handleCancel,
+  child: Text('Cancel', style: TextStyle(color: colorScheme.primary)),
+)
+
+// ✅ Destructive action
+CupertinoButton(
+  onPressed: _handleDelete,
+  child: Text('Delete', style: TextStyle(color: colorScheme.error)),
+)
+
+// ✅ Custom styled button (when Cupertino isn't enough)
+Container(
+  height: AppSpacing.buttonHeight,
+  decoration: BoxDecoration(
+    color: colorScheme.primary,
+    borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
+  ),
+  child: CupertinoButton(
+    padding: EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+    onPressed: _handleSubmit,
+    child: Text('Continue', style: TextStyle(
+      color: colorScheme.onPrimary,
+      fontWeight: FontWeight.w600,
+      fontSize: 17,
+    )),
+  ),
 )
 ```
 
-**Typography Softness:**
-
-- Use `fontWeight: FontWeight.w400` (Regular) for body text
-- Use `fontWeight: FontWeight.w600` (SemiBold) for headings - avoid Bold (w700)
-- Prefer `onSurfaceVariant` for secondary text instead of reducing opacity
-- Line height: Use default or 1.5x for comfortable reading
-
-**Component-Specific Guidelines:**
+**Input Fields (iOS Style):**
 
 ```dart
-// ✅ Soft buttons - pill-shaped, no elevation
-FilledButton(
-  style: FilledButton.styleFrom(
-    elevation: 0,
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(AppSpacing.buttonRadius), // 28px pill
-    ),
-  ),
-  child: Text('Continue'),
-)
-
-// ✅ Outlined buttons - consistent 1.5px border
-OutlinedButton(
-  style: OutlinedButton.styleFrom(
-    side: BorderSide(color: colorScheme.outline, width: 1.5),
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
-    ),
-  ),
-  child: Text('Cancel'),
-)
-
-// ✅ Soft cards - subtle border instead of shadow
-Container(
+// ✅ iOS-style text field
+CupertinoTextField(
+  placeholder: 'Email',
+  padding: EdgeInsets.all(AppSpacing.md),
   decoration: BoxDecoration(
-    color: colorScheme.surfaceContainer,
-    borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-    border: Border.all(color: colorScheme.outlineVariant, width: 1),
+    color: colorScheme.surfaceContainerLow,
+    borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
   ),
 )
 
-// ✅ Soft inputs - always floating label, consistent borders
-TextFormField(
-  decoration: InputDecoration(
-    filled: true,
-    fillColor: colorScheme.surfaceContainerLow,
-    floatingLabelBehavior: FloatingLabelBehavior.always, // Prevents snappy animation
-    border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(AppSpacing.inputRadius), // 12px
-      borderSide: BorderSide(color: colorScheme.outline, width: 1.5),
-    ),
-  ),
-)
-
-// ✅ Search fields in bottom sheets/pickers - same fill color, no border
+// ✅ For more control, use TextField with iOS styling
 TextField(
   decoration: InputDecoration(
-    hintText: 'Search...',
-    prefixIcon: Icon(Icons.search_rounded, color: colorScheme.onSurfaceVariant),
+    hintText: 'Email',
     filled: true,
-    fillColor: colorScheme.surfaceContainerLow, // SAME as form inputs
+    fillColor: colorScheme.surfaceContainerLow,
+    contentPadding: EdgeInsets.all(AppSpacing.md),
     border: OutlineInputBorder(
       borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
-      borderSide: BorderSide.none, // No border for search fields
+      borderSide: BorderSide.none,
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
+      borderSide: BorderSide.none,
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
+      borderSide: BorderSide(color: colorScheme.primary, width: 1),
     ),
   ),
 )
+```
 
-// ✅ SegmentedButton - use AppSegmentedButton wrapper
-AppSegmentedButton<String>(
-  segments: const [
-    ButtonSegment(value: 'Option1', label: Text('Option 1')),
-    ButtonSegment(value: 'Option2', label: Text('Option 2')),
-  ],
-  selected: {selectedValue},
-  onSelectionChanged: (selection) => ...,
+**iOS Navigation Patterns:**
+
+```dart
+// ✅ iOS large title navigation bar
+CupertinoSliverNavigationBar(
+  largeTitle: const Text('Profile'),
+  trailing: CupertinoButton(
+    padding: EdgeInsets.zero,
+    child: const Text('Done'),
+    onPressed: () => Navigator.pop(context),
+  ),
+)
+
+// ✅ iOS modal presentation (page sheet style)
+showCupertinoModalPopup(
+  context: context,
+  builder: (context) => Container(
+    height: MediaQuery.of(context).size.height * 0.9,
+    decoration: BoxDecoration(
+      color: colorScheme.surface,
+      borderRadius: BorderRadius.vertical(
+        top: Radius.circular(AppSpacing.cardRadiusLarge),
+      ),
+    ),
+    child: ...,
+  ),
+)
+
+// ✅ iOS action sheet
+showCupertinoModalPopup(
+  context: context,
+  builder: (context) => CupertinoActionSheet(
+    title: const Text('Choose Option'),
+    actions: [
+      CupertinoActionSheetAction(
+        onPressed: () => Navigator.pop(context, 'option1'),
+        child: const Text('Option 1'),
+      ),
+      CupertinoActionSheetAction(
+        isDestructiveAction: true,
+        onPressed: () => Navigator.pop(context, 'delete'),
+        child: const Text('Delete'),
+      ),
+    ],
+    cancelButton: CupertinoActionSheetAction(
+      onPressed: () => Navigator.pop(context),
+      child: const Text('Cancel'),
+    ),
+  ),
+)
+```
+
+**iOS Blur/Frosted Glass Effect:**
+
+```dart
+// ✅ Frosted glass background
+ClipRRect(
+  borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
+  child: BackdropFilter(
+    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+    child: Container(
+      color: colorScheme.surface.withOpacity(0.7),
+      child: ...,
+    ),
+  ),
 )
 ```
 
@@ -539,11 +587,21 @@ AppSegmentedButton<String>(
 
 ## 4. Layout & Widgets
 
-> **Reference:** https://docs.flutter.dev/ui/layout
+> **Reference:** [Apple HIG - Layout](https://developer.apple.com/design/human-interface-guidelines/layout)
 
 ### The Layout Golden Rule
 
 **Constraints go down. Sizes go up. Parent sets position.**
+
+### iOS Layout Patterns
+
+| Pattern                     | Implementation                                       |
+| --------------------------- | ---------------------------------------------------- |
+| **Full-width list**         | `ListView` with `CupertinoListTile`                  |
+| **Grouped list (Settings)** | `CupertinoListSection.insetGrouped()`                |
+| **Grid**                    | `GridView` with appropriate spacing                  |
+| **Scroll with refresh**     | `CustomScrollView` + `CupertinoSliverRefreshControl` |
+| **Tab layout**              | `CupertinoTabScaffold`                               |
 
 ### Core Layout Widgets
 
@@ -557,18 +615,17 @@ AppSegmentedButton<String>(
 | `Wrap`           | Flow layout that wraps to next line            |
 | `SizedBox`       | Force dimensions or create spacing             |
 | `ConstrainedBox` | Apply min/max constraints                      |
-| `FittedBox`      | Scale child to fit available space             |
 
 ### Avoiding Overflow
 
 ```dart
 // ❌ Text will overflow
-Row(children: [Text('Very long text...'), Icon(Icons.star)])
+Row(children: [Text('Very long text...'), Icon(CupertinoIcons.star)])
 
 // ✅ Use Expanded with ellipsis
 Row(children: [
   Expanded(child: Text('Very long text...', overflow: TextOverflow.ellipsis)),
-  Icon(Icons.star),
+  Icon(CupertinoIcons.star),
 ])
 ```
 
@@ -577,7 +634,7 @@ Row(children: [
 ```dart
 // ✅ Use const constructors - prevents unnecessary rebuilds
 const SizedBox(height: AppSpacing.md)
-const Icon(Icons.check)
+const Icon(CupertinoIcons.checkmark)
 
 // ✅ Extract static widgets to avoid rebuilds
 class MyScreen extends StatelessWidget {
@@ -601,14 +658,28 @@ ListView.builder(
   itemBuilder: (context, index) => ItemTile(items[index]),
 )
 
-// ✅ Add itemExtent for fixed-height items (improves scroll performance)
-ListView.builder(itemExtent: 72.0, ...)
+// ✅ iOS grouped list style
+CupertinoListSection.insetGrouped(
+  header: const Text('SETTINGS'),
+  children: [
+    CupertinoListTile(
+      title: const Text('Notifications'),
+      trailing: const CupertinoListTileChevron(),
+      onTap: () => ...,
+    ),
+    CupertinoListTile(
+      title: const Text('Privacy'),
+      trailing: const CupertinoListTileChevron(),
+      onTap: () => ...,
+    ),
+  ],
+)
 
 // ✅ Use CachedNetworkImage for remote images
 CachedNetworkImage(
   imageUrl: url,
-  placeholder: (_, __) => const CircularProgressIndicator(),
-  errorWidget: (_, __, ___) => const Icon(Icons.error),
+  placeholder: (_, __) => const CupertinoActivityIndicator(),
+  errorWidget: (_, __, ___) => const Icon(CupertinoIcons.exclamationmark_circle),
 )
 ```
 
@@ -634,35 +705,21 @@ class _SearchScreenState extends State<SearchScreen> {
 }
 ```
 
-### Pagination / Infinite Scroll
-
-```dart
-// ✅ Infinite scroll with NotificationListener
-NotificationListener<ScrollNotification>(
-  onNotification: (notification) {
-    if (notification is ScrollEndNotification) {
-      final metrics = notification.metrics;
-      if (metrics.pixels >= metrics.maxScrollExtent - 200) {
-        ref.read(itemsProvider.notifier).loadNextPage();
-      }
-    }
-    return false;
-  },
-  child: ListView.builder(...),
-)
-```
-
 ---
 
 ## 5. Responsive & Adaptive Design
 
-> **Reference:** https://docs.flutter.dev/ui/adaptive-responsive
+> **Reference:** [Apple HIG - Responsive Design](https://developer.apple.com/design/human-interface-guidelines/layout#Best-practices)
 
 ### SafeArea
 
 ```dart
-// ALWAYS wrap screens to avoid notches/status bar
+// ALWAYS wrap screens to respect notches, Dynamic Island, home indicator
 Scaffold(body: SafeArea(child: Column(...)))
+
+// Or use MediaQuery for precise control
+final topPadding = MediaQuery.paddingOf(context).top;
+final bottomPadding = MediaQuery.paddingOf(context).bottom;
 ```
 
 ### MediaQuery (Efficient Usage)
@@ -677,77 +734,107 @@ final padding = MediaQuery.paddingOf(context);
 final mq = MediaQuery.of(context);
 ```
 
-### Material 3 Breakpoints
+### iOS Size Classes
 
-| Window Class | Width     | Columns | Use Case                  |
-| ------------ | --------- | ------- | ------------------------- |
-| Compact      | < 600dp   | 4       | Phone                     |
-| Medium       | 600-839dp | 8       | Tablet portrait, foldable |
-| Expanded     | ≥ 840dp   | 12      | Tablet landscape, desktop |
+| Size Class | Width   | Device                 |
+| ---------- | ------- | ---------------------- |
+| Compact    | < 600pt | iPhone portrait        |
+| Regular    | ≥ 600pt | iPad, iPhone landscape |
 
 ```dart
 // Responsive layout pattern
 final width = MediaQuery.sizeOf(context).width;
-if (width >= 840) return DesktopLayout();
 if (width >= 600) return TabletLayout();
-return MobileLayout();
+return PhoneLayout();
 ```
 
 ### Platform Adaptive
 
 ```dart
-// Use .adaptive constructors for native feel
+// ✅ Use .adaptive constructors for native feel
 Switch.adaptive(value: isOn, onChanged: ...)
 Slider.adaptive(value: volume, onChanged: ...)
 CircularProgressIndicator.adaptive()
 
-// Check platform when needed
-if (Platform.isIOS) { /* iOS-specific */ }
+// ✅ Platform-specific widgets when needed
+if (Platform.isIOS) {
+  return CupertinoAlertDialog(...);
+} else {
+  return AlertDialog(...);
+}
 ```
 
 ---
 
 ## 6. Interactivity & Touch
 
-> **Reference:** https://docs.flutter.dev/ui/interactivity
+> **Reference:** [Apple HIG - Gestures](https://developer.apple.com/design/human-interface-guidelines/gestures)
 
-### Touch Feedback
+### iOS Touch Feedback
 
 ```dart
-// ✅ Use InkWell for Material ripple effect
-InkWell(
-  onTap: () => _handleTap(),
-  borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-  child: Padding(
-    padding: EdgeInsets.all(AppSpacing.md),
-    child: Text('Tap me'),
+// ✅ Use CupertinoButton for iOS-native feedback (opacity change, no ripple)
+CupertinoButton(
+  padding: EdgeInsets.all(AppSpacing.md),
+  onPressed: () => _handleTap(),
+  child: Text('Tap me'),
+)
+
+// ✅ For custom containers, use opacity feedback
+GestureDetector(
+  onTapDown: (_) => setState(() => _isPressed = true),
+  onTapUp: (_) => setState(() => _isPressed = false),
+  onTapCancel: () => setState(() => _isPressed = false),
+  onTap: _handleTap,
+  child: AnimatedOpacity(
+    opacity: _isPressed ? 0.5 : 1.0,
+    duration: const Duration(milliseconds: 100),
+    child: Container(...),
   ),
 )
 ```
 
 ### Touch Targets
 
-**Minimum 48x48 logical pixels** (Material accessibility guideline)
+**Minimum 44x44 points** (iOS Human Interface Guidelines)
 
 ```dart
-IconButton(
+CupertinoButton(
+  padding: EdgeInsets.zero,
+  minSize: AppSpacing.touchTargetMin, // 44.0
   onPressed: () {},
-  icon: Icon(Icons.settings),  // Default padding ensures 48x48
+  child: Icon(CupertinoIcons.settings),
 )
+```
+
+### Haptic Feedback
+
+```dart
+import 'package:flutter/services.dart';
+
+// ✅ Light impact for selections
+HapticFeedback.selectionClick();
+
+// ✅ Medium impact for actions
+HapticFeedback.mediumImpact();
+
+// ✅ Heavy impact for significant events
+HapticFeedback.heavyImpact();
+
+// ✅ Notification feedback types
+HapticFeedback.lightImpact();   // Success
+HapticFeedback.mediumImpact();  // Warning
+HapticFeedback.heavyImpact();   // Error
 ```
 
 ### Loading States in Buttons
 
 ```dart
-// ✅ Use loading state pattern
-FilledButton(
+// ✅ Use loading state pattern with CupertinoActivityIndicator
+CupertinoButton.filled(
   onPressed: _isLoading ? null : _handleSubmit,
   child: _isLoading
-      ? const SizedBox(
-          width: 20,
-          height: 20,
-          child: CircularProgressIndicator(strokeWidth: 2),
-        )
+      ? const CupertinoActivityIndicator(color: CupertinoColors.white)
       : const Text('Submit'),
 )
 ```
@@ -756,14 +843,22 @@ FilledButton(
 
 ## 7. Navigation (GoRouter)
 
-> **Reference:** https://docs.flutter.dev/ui/navigation
+> **Reference:** [Apple HIG - Navigation](https://developer.apple.com/design/human-interface-guidelines/navigation)
+
+### iOS Navigation Patterns
+
+| Pattern          | Use Case                | Implementation                    |
+| ---------------- | ----------------------- | --------------------------------- |
+| **Hierarchical** | Drill down into content | `context.push()` with back button |
+| **Flat**         | Peer content sections   | Tab bar (`CupertinoTabBar`)       |
+| **Modal**        | Self-contained task     | `showCupertinoModalPopup()`       |
 
 ### Navigation Methods
 
 ```dart
 context.go('/dashboard');    // REPLACE stack (can't go back)
-context.push('/settings');   // ADD to stack (back button works)
-context.pop();               // Go back
+context.push('/settings');   // ADD to stack (iOS push transition)
+context.pop();               // Go back (iOS swipe back gesture enabled)
 context.pop(result);         // Go back with result
 
 // Named routes with parameters
@@ -797,23 +892,84 @@ final goRouter = GoRouter(
 );
 ```
 
+### iOS Modal Presentation
+
+```dart
+// ✅ Page sheet (default iOS 13+ modal)
+showCupertinoModalPopup(
+  context: context,
+  builder: (context) => Container(
+    height: MediaQuery.of(context).size.height * 0.9,
+    decoration: BoxDecoration(
+      color: Theme.of(context).colorScheme.surface,
+      borderRadius: BorderRadius.vertical(
+        top: Radius.circular(AppSpacing.cardRadiusLarge),
+      ),
+    ),
+    child: Column(
+      children: [
+        // Drag handle
+        Container(
+          margin: EdgeInsets.only(top: AppSpacing.sm),
+          width: 36,
+          height: 5,
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.outlineVariant,
+            borderRadius: BorderRadius.circular(2.5),
+          ),
+        ),
+        // Content...
+      ],
+    ),
+  ),
+)
+```
+
 ---
 
 ## 8. Animations
 
-> **Reference:** https://docs.flutter.dev/ui/animations
+> **Reference:** [Apple HIG - Motion](https://developer.apple.com/design/human-interface-guidelines/motion)
 
-### Prefer Implicit Animations
+### iOS Animation Principles
+
+- **Purpose**: Motion should be meaningful, not decorative
+- **Fluidity**: Spring-based animations feel natural
+- **Duration**: 0.3-0.5 seconds for most transitions
+- **Easing**: Ease-in-out curves (iOS uses spring physics)
+
+### Spring Animations (iOS-Native Feel)
+
+```dart
+// ✅ Spring animation for natural iOS feel
+AnimatedContainer(
+  duration: const Duration(milliseconds: 400),
+  curve: Curves.easeOutCubic,  // Approximates iOS spring
+  width: _isExpanded ? 200 : 100,
+)
+
+// ✅ For more control, use explicit spring
+final controller = AnimationController(
+  duration: const Duration(milliseconds: 400),
+  vsync: this,
+);
+final animation = CurvedAnimation(
+  parent: controller,
+  curve: Curves.elasticOut,  // Spring-like
+);
+```
+
+### Implicit Animations
 
 ```dart
 // ✅ AnimatedContainer handles transitions automatically
 AnimatedContainer(
   duration: const Duration(milliseconds: 300),
   curve: Curves.easeInOut,
-  width: _isExpanded ? 200 : 100,
-  color: _isActive
-      ? Theme.of(context).colorScheme.primary
-      : Theme.of(context).colorScheme.surface,
+  transform: _isActive
+      ? Matrix4.identity()
+      : Matrix4.identity()..scale(0.95),
+  child: ...,
 )
 
 // Common implicit animation widgets:
@@ -845,7 +1001,7 @@ AnimatedContainer(
 
 ## 9. Accessibility
 
-> **Reference:** https://docs.flutter.dev/ui/accessibility-and-internationalization/accessibility
+> **Reference:** [Apple HIG - Accessibility](https://developer.apple.com/design/human-interface-guidelines/accessibility)
 
 ### Semantic Labels
 
@@ -854,11 +1010,11 @@ AnimatedContainer(
 Image.network(url, semanticLabel: 'User profile photo')
 
 // ✅ Meaningful icons need labels
-Icon(Icons.favorite, semanticLabel: 'Add to favorites')
+Icon(CupertinoIcons.heart_fill, semanticLabel: 'Add to favorites')
 
 // ✅ Group related content
 MergeSemantics(
-  child: Row(children: [Icon(Icons.calendar), Text('March 15')]),
+  child: Row(children: [Icon(CupertinoIcons.calendar), Text('March 15')]),
 )
 
 // ✅ Exclude decorative elements
@@ -871,6 +1027,23 @@ ExcludeSemantics(child: DecorativeImage())
 
 Verify colors: https://webaim.org/resources/contrastchecker/
 
+### Dynamic Type Support
+
+```dart
+// ✅ Use MediaQuery to respect user's text size preference
+final textScaleFactor = MediaQuery.textScaleFactorOf(context);
+
+// ✅ Allow text to scale, but set reasonable limits
+MediaQuery(
+  data: MediaQuery.of(context).copyWith(
+    textScaler: TextScaler.linear(
+      MediaQuery.textScaleFactorOf(context).clamp(0.8, 1.5),
+    ),
+  ),
+  child: MyApp(),
+)
+```
+
 ### Focus Management
 
 ```dart
@@ -878,10 +1051,10 @@ Verify colors: https://webaim.org/resources/contrastchecker/
 final _emailFocus = FocusNode();
 final _passwordFocus = FocusNode();
 
-TextFormField(
+CupertinoTextField(
   focusNode: _emailFocus,
   textInputAction: TextInputAction.next,
-  onFieldSubmitted: (_) => _passwordFocus.requestFocus(),
+  onSubmitted: (_) => _passwordFocus.requestFocus(),
 )
 
 @override
@@ -900,39 +1073,20 @@ void dispose() {
 }
 ```
 
-### Keyboard Navigation
-
-```dart
-// ✅ Handle keyboard shortcuts
-Shortcuts(
-  shortcuts: {
-    LogicalKeySet(LogicalKeyboardKey.escape): const DismissIntent(),
-  },
-  child: Actions(
-    actions: {
-      DismissIntent: CallbackAction<DismissIntent>(
-        onInvoke: (_) => Navigator.pop(context),
-      ),
-    },
-    child: Dialog(...),
-  ),
-)
-```
-
 ### Testing Accessibility
 
 ```dart
-// 1. Enable TalkBack (Android) or VoiceOver (iOS)
+// 1. Enable VoiceOver (iOS) or TalkBack (Android)
 // 2. Navigate app using only screen reader
 // 3. Verify all interactive elements are announced
 // 4. Check logical focus order
-// 5. Test with keyboard only (desktop/web)
+// 5. Test with Dynamic Type at largest setting
 
 // Automated semantic testing
 testWidgets('button has semantic label', (tester) async {
   await tester.pumpWidget(MyApp());
   expect(
-    tester.getSemantics(find.byType(FilledButton)),
+    tester.getSemantics(find.byType(CupertinoButton)),
     matchesSemantics(label: 'Submit', isButton: true),
   );
 });
@@ -1019,12 +1173,6 @@ GoRoute(
   path: '/dev/logs',
   builder: (context, state) => TalkerScreen(talker: talker),
 ),
-
-// Shake to open logs (optional)
-TalkerWrapper(
-  talker: talker,
-  child: MaterialApp(...),
-),
 ```
 
 ### What to Log
@@ -1100,8 +1248,28 @@ Future<AuthResult<User>> signIn(String email) async {
 // UI pattern matches on result
 switch (result) {
   case AuthSuccess(:final data): context.go('/dashboard');
-  case AuthFailure(:final message): ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(content: Text(message)),
+  case AuthFailure(:final message): _showErrorAlert(context, message);
+}
+```
+
+### iOS-Style Error Presentation
+
+```dart
+// ✅ Use iOS alert for errors
+void _showErrorAlert(BuildContext context, String message) {
+  showCupertinoDialog(
+    context: context,
+    builder: (context) => CupertinoAlertDialog(
+      title: const Text('Error'),
+      content: Text(message),
+      actions: [
+        CupertinoDialogAction(
+          isDefaultAction: true,
+          onPressed: () => Navigator.pop(context),
+          child: const Text('OK'),
+        ),
+      ],
+    ),
   );
 }
 ```
@@ -1112,78 +1280,35 @@ switch (result) {
 // ❌ NEVER store tokens in SharedPreferences
 await prefs.setString('auth_token', token);  // INSECURE!
 
-// ✅ Use flutter_secure_storage
+// ✅ Use flutter_secure_storage (uses iOS Keychain)
 final storage = FlutterSecureStorage();
 await storage.write(key: 'auth_token', value: token);
 await storage.read(key: 'auth_token');
 await storage.delete(key: 'auth_token');
 ```
 
-### Error Boundary Widget
-
-```dart
-/// Catches errors in widget subtree and shows fallback UI
-class ErrorBoundary extends StatefulWidget {
-  final Widget child;
-  final Widget Function(Object error)? fallbackBuilder;
-
-  const ErrorBoundary({super.key, required this.child, this.fallbackBuilder});
-
-  @override
-  State<ErrorBoundary> createState() => _ErrorBoundaryState();
-}
-
-class _ErrorBoundaryState extends State<ErrorBoundary> {
-  Object? _error;
-
-  @override
-  void initState() {
-    super.initState();
-    FlutterError.onError = (details) {
-      setState(() => _error = details.exception);
-      talker.error('ErrorBoundary caught', details.exception, details.stack);
-    };
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (_error != null) {
-      return widget.fallbackBuilder?.call(_error!) ??
-          Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.error_outline, size: AppSpacing.touchTargetMin),
-                const SizedBox(height: AppSpacing.md),
-                const Text('Something went wrong'),
-                TextButton(
-                  onPressed: () => setState(() => _error = null),
-                  child: const Text('Try again'),
-                ),
-              ],
-            ),
-          );
-    }
-    return widget.child;
-  }
-}
-
-// Usage: Wrap screens or sections that might fail
-ErrorBoundary(
-  child: ComplexFeatureWidget(),
-  fallbackBuilder: (error) => ErrorCard(message: error.toString()),
-)
-```
-
 ---
 
 ## 12. Auth Flow
 
-| Method | Implementation                                               |
-| ------ | ------------------------------------------------------------ |
-| OAuth  | Apple (iOS), Google → `AuthService.signInWithApple/Google()` |
-| OTP    | Email magic code → `sendOtpToEmail()` + `verifyOtp()`        |
-| Guest  | Anonymous → `signInAnonymously()`, check `isAnonymous`       |
+| Method | Implementation                                                        |
+| ------ | --------------------------------------------------------------------- |
+| OAuth  | Apple (iOS priority), Google → `AuthService.signInWithApple/Google()` |
+| OTP    | Email magic code → `sendOtpToEmail()` + `verifyOtp()`                 |
+| Guest  | Anonymous → `signInAnonymously()`, check `isAnonymous`                |
+
+### Sign in with Apple (Required for iOS)
+
+If your app offers any third-party sign-in, **Apple requires Sign in with Apple** on iOS.
+
+```dart
+// ✅ Sign in with Apple should be prominent on iOS
+if (Platform.isIOS) {
+  SignInWithAppleButton(
+    onPressed: () => authService.signInWithApple(),
+  ),
+}
+```
 
 ### Auth State Listener
 
@@ -1255,33 +1380,10 @@ void _handleSubmit() {}
 // Check if user is null
 if (user == null) return;
 
-// ❌ WRONG — Comment instead of proper naming
-// Get the data
-final d = await repo.fetch();
-
-// ✅ CORRECT — Self-documenting with proper names
-final userData = await userRepository.fetchProfile();
-if (userData == null) return;
-
 // ✅ CORRECT — Comment explains WHY when necessary
 // Guest users don't have profile data yet, skip personalization
 if (user == null) return;
 ```
-
-**When to Use Comments:**
-
-- Explain business logic rationale
-- Document workarounds for known issues
-- Clarify non-obvious algorithm choices
-- Add TODO/FIXME with ticket references
-- Explain regex patterns or complex calculations
-
-**When NOT to Use Comments:**
-
-- Describing what code does (use better names instead)
-- Repeating variable/function names
-- Obvious flow control logic
-- Type information (Dart has strong typing)
 
 ### Key Rules
 
@@ -1294,7 +1396,7 @@ if (user == null) return;
 
 ## 14. Form Handling
 
-### Validation Pattern
+### iOS-Style Validation Pattern
 
 ```dart
 final _formKey = GlobalKey<FormState>();
@@ -1303,20 +1405,17 @@ Form(
   key: _formKey,
   child: Column(
     children: [
-      TextFormField(
-        decoration: const InputDecoration(
-          labelText: 'Email',
-          filled: true,
+      CupertinoTextField(
+        placeholder: 'Email',
+        keyboardType: TextInputType.emailAddress,
+        textInputAction: TextInputAction.next,
+        decoration: BoxDecoration(
+          color: colorScheme.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
         ),
-        validator: (value) {
-          if (value == null || value.isEmpty) return 'Email is required';
-          if (!value.contains('@')) return 'Enter a valid email';
-          return null;
-        },
-        onSaved: (value) => _email = value!,
       ),
       const SizedBox(height: AppSpacing.md),
-      FilledButton(
+      CupertinoButton.filled(
         onPressed: _isLoading ? null : () {
           if (_formKey.currentState!.validate()) {
             _formKey.currentState!.save();
@@ -1324,7 +1423,7 @@ Form(
           }
         },
         child: _isLoading
-            ? const CircularProgressIndicator()
+            ? const CupertinoActivityIndicator(color: CupertinoColors.white)
             : const Text('Submit'),
       ),
     ],
@@ -1352,19 +1451,19 @@ test('AuthService returns failure on invalid OTP', () async {
 ### Widget Tests (UI Components)
 
 ```dart
-testWidgets('FilledButton shows loading state', (tester) async {
+testWidgets('CupertinoButton shows loading state', (tester) async {
   await tester.pumpWidget(
-    ProviderScope(child: MaterialApp(home: LoginScreen())),
+    ProviderScope(child: CupertinoApp(home: LoginScreen())),
   );
 
   await tester.tap(find.text('Login'));
   await tester.pump();
 
-  expect(find.byType(CircularProgressIndicator), findsOneWidget);
+  expect(find.byType(CupertinoActivityIndicator), findsOneWidget);
 });
 
 testWidgets('Form shows validation error', (tester) async {
-  await tester.pumpWidget(MaterialApp(home: SignupScreen()));
+  await tester.pumpWidget(CupertinoApp(home: SignupScreen()));
 
   await tester.tap(find.text('Submit'));
   await tester.pumpAndSettle();
@@ -1377,22 +1476,22 @@ testWidgets('Form shows validation error', (tester) async {
 
 ## 16. Dependencies
 
-| Package                  | Purpose                       |
-| ------------------------ | ----------------------------- |
-| `supabase_flutter`       | Auth, database, realtime      |
-| `go_router`              | Declarative routing           |
-| `flutter_riverpod`       | State management              |
-| `talker_flutter`         | Logging, error tracking       |
-| `talker_dio_logger`      | HTTP request/response logging |
-| `dio`                    | HTTP client                   |
-| `freezed`                | Immutable state classes       |
-| `flutter_secure_storage` | Secure token storage          |
-| `cached_network_image`   | Cached remote images          |
-| `pinput`                 | OTP input widget              |
-| `sign_in_with_apple`     | Apple OAuth                   |
-| `google_sign_in`         | Google OAuth                  |
-| `google_fonts`           | Typography                    |
-| `shared_preferences`     | Non-sensitive local storage   |
+| Package                  | Purpose                         |
+| ------------------------ | ------------------------------- |
+| `supabase_flutter`       | Auth, database, realtime        |
+| `go_router`              | Declarative routing             |
+| `flutter_riverpod`       | State management                |
+| `talker_flutter`         | Logging, error tracking         |
+| `talker_dio_logger`      | HTTP request/response logging   |
+| `dio`                    | HTTP client                     |
+| `freezed`                | Immutable state classes         |
+| `flutter_secure_storage` | Secure token storage (Keychain) |
+| `cached_network_image`   | Cached remote images            |
+| `pinput`                 | OTP input widget                |
+| `sign_in_with_apple`     | Apple OAuth (REQUIRED for iOS)  |
+| `google_sign_in`         | Google OAuth                    |
+| `google_fonts`           | Typography (Android fallback)   |
+| `shared_preferences`     | Non-sensitive local storage     |
 
 ---
 
@@ -1433,8 +1532,9 @@ Text('Welcome to the app')
 # Launch Android emulator
 flutter emulators --launch Medium_Phone_API_36.1
 
-# Run on specific emulator
-flutter run -d emulator-5554
+# Run on specific emulator/device
+flutter run -d emulator-5554  # Android
+flutter run -d "iPhone 15 Pro" # iOS Simulator
 
 # Force stop app on emulator (PowerShell)
 $env:ANDROID_HOME = "$env:LOCALAPPDATA\Android\Sdk"
@@ -1467,9 +1567,10 @@ flutter clean && flutter pub get && flutter run
 | ----------------------------- | ----------------------------------------------- |
 | `print()` / `debugPrint()`    | `talker.info/debug/error()`                     |
 | `Colors.red`                  | `Theme.of(context).colorScheme.error`           |
-| Magic numbers (16, 24, 48)    | `AppSpacing.*` constants                        |
+| Magic numbers (16, 24, 44)    | `AppSpacing.*` constants                        |
+| Material ripple on iOS        | `CupertinoButton` with opacity feedback         |
 | Throw in services             | Return `Result<T>` sealed class                 |
-| Tokens in SharedPreferences   | `flutter_secure_storage`                        |
+| Tokens in SharedPreferences   | `flutter_secure_storage` (Keychain)             |
 | Business logic in widgets     | Move to Notifiers/Services                      |
 | Side effects in `build()`     | `ref.listen`, callbacks                         |
 | `await` without mounted check | `if (!mounted) return;`                         |
@@ -1479,4 +1580,30 @@ flutter clean && flutter pub get && flutter run
 | Extend widgets                | Compose widgets                                 |
 | Mutable state objects         | Use `freezed` immutable classes                 |
 | Hardcoded strings             | Use localization                                |
+| Touch targets < 44pt          | Minimum 44x44 (iOS standard)                    |
+| AlertDialog on iOS            | `CupertinoAlertDialog`                          |
+| Material bottom sheet on iOS  | `CupertinoModalPopup`                           |
 | Forget to dispose             | Always dispose controllers, timers, focus nodes |
+
+---
+
+## iOS vs Android Quick Reference
+
+| Pattern             | iOS (Primary)                      | Android (Secondary)         |
+| ------------------- | ---------------------------------- | --------------------------- |
+| **Button**          | `CupertinoButton`                  | `FilledButton`              |
+| **Switch**          | `CupertinoSwitch`                  | `Switch.adaptive`           |
+| **Slider**          | `CupertinoSlider`                  | `Slider.adaptive`           |
+| **Alert**           | `CupertinoAlertDialog`             | `AlertDialog`               |
+| **Action Sheet**    | `CupertinoActionSheet`             | `BottomSheet` with actions  |
+| **Loading**         | `CupertinoActivityIndicator`       | `CircularProgressIndicator` |
+| **Segmented**       | `CupertinoSlidingSegmentedControl` | `SegmentedButton`           |
+| **Date Picker**     | `CupertinoDatePicker`              | `showDatePicker()`          |
+| **List Tile**       | `CupertinoListTile`                | `ListTile`                  |
+| **Navigation Bar**  | `CupertinoNavigationBar`           | `AppBar`                    |
+| **Tab Bar**         | `CupertinoTabBar`                  | `NavigationBar`             |
+| **Pull to Refresh** | `CupertinoSliverRefreshControl`    | `RefreshIndicator`          |
+| **Touch Target**    | 44x44 minimum                      | 48x48 minimum               |
+| **Border Radius**   | 10-14px (rounded rectangle)        | 12-28px (more rounded)      |
+| **Tap Feedback**    | Opacity change                     | Ripple effect               |
+| **Secure Storage**  | Keychain                           | EncryptedSharedPreferences  |
