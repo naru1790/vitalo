@@ -227,6 +227,25 @@ abstract class VitaloColors {
         color: Color(0xFFFEF2F2), // Red 50
         darkColor: Color(0xFF991B1B), // Red 800
       );
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // LABEL COLORS (Text - Apple HIG)
+  // ─────────────────────────────────────────────────────────────────────────
+
+  /// Primary label — Main text content
+  static const CupertinoDynamicColor label = CupertinoColors.label;
+
+  /// Secondary label — Subtitles, descriptions
+  static const CupertinoDynamicColor labelSecondary =
+      CupertinoColors.secondaryLabel;
+
+  /// Tertiary label — Placeholder text, disabled text
+  static const CupertinoDynamicColor labelTertiary =
+      CupertinoColors.tertiaryLabel;
+
+  /// Quaternary label — Watermarks, very subtle text
+  static const CupertinoDynamicColor labelQuaternary =
+      CupertinoColors.quaternaryLabel;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════

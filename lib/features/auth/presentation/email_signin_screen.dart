@@ -3,13 +3,13 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../main.dart';
 import '../../../core/router.dart';
 import '../../../core/services/auth_service.dart';
 import '../../../core/theme.dart';
+import '../../../core/widgets/app_snackbar.dart';
 import '../../../core/widgets/loading_button.dart';
 import '../../../core/widgets/otp_input.dart';
-import '../../../core/widgets/app_snackbar.dart';
+import '../../../main.dart';
 
 class EmailSignInScreen extends StatefulWidget {
   const EmailSignInScreen({super.key});
@@ -23,12 +23,12 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
   final _pageController = PageController();
   final _emailController = TextEditingController();
   final _otpController = TextEditingController();
-  final _formKey = GlobalKey<FormState>();
 
   bool _isLoading = false;
   bool _isStep2 = false;
   int _resendCountdown = 0;
   Timer? _resendTimer;
+  String? _emailError;
 
   @override
   void initState() {
@@ -58,11 +58,34 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
     });
   }
 
+  String? _validateEmail(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter your email';
+    }
+    final emailRegex = RegExp(
+      r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+    );
+    if (!emailRegex.hasMatch(value)) {
+      return 'Please enter a valid email';
+    }
+    return null;
+  }
+
+  void _clearEmailError() {
+    if (_emailError != null) {
+      setState(() => _emailError = null);
+    }
+  }
+
   Future<void> _sendCode() async {
-    if (!_formKey.currentState!.validate()) {
-      talker.debug('Email validation failed');
+    final validationError = _validateEmail(_emailController.text.trim());
+    if (validationError != null) {
+      talker.debug('Email validation failed: $validationError');
+      setState(() => _emailError = validationError);
       return;
     }
+
+    setState(() => _emailError = null);
 
     talker.info(
       'Send OTP code requested for email: ${_emailController.text.trim()}',
@@ -206,7 +229,11 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
         leading: CupertinoButton(
           padding: EdgeInsets.zero,
           onPressed: _goBack,
-          child: Icon(CupertinoIcons.back, color: primaryColor),
+          child: Icon(
+            CupertinoIcons.chevron_back,
+            color: primaryColor,
+            size: 20,
+          ),
         ),
         backgroundColor: surfaceColor,
         border: null,
@@ -230,60 +257,88 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(AppSpacing.pageHorizontalPadding),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const SizedBox(height: AppSpacing.xl),
-            Text('Welcome Back', style: AppleTextStyles.largeTitle(context)),
-            const SizedBox(height: AppSpacing.md),
-            Text(
-              'Enter your email to access your health vault.',
-              style: AppleTextStyles.bodySecondary(context),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const SizedBox(height: AppSpacing.xl),
+          Text('Welcome Back', style: AppleTextStyles.largeTitle(context)),
+          const SizedBox(height: AppSpacing.md),
+          Text(
+            'Enter your email to access your health vault.',
+            style: AppleTextStyles.bodySecondary(context),
+          ),
+          const SizedBox(height: AppSpacing.xxl),
+          // iOS-style text field with proper height
+          Container(
+            height: AppSpacing.inputHeight,
+            decoration: BoxDecoration(
+              color: fillColor,
+              borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
+              border: _emailError != null
+                  ? Border.all(
+                      color: VitaloColors.destructive.resolveFrom(context),
+                      width: 1,
+                    )
+                  : null,
             ),
-            const SizedBox(height: AppSpacing.xxl),
-            CupertinoTextFormFieldRow(
+            child: CupertinoTextField(
               controller: _emailController,
               keyboardType: TextInputType.emailAddress,
               textInputAction: TextInputAction.done,
               enabled: !_isLoading,
-              padding: EdgeInsets.zero,
               placeholder: 'you@example.com',
+              placeholderStyle: AppleTextStyles.body(context).copyWith(
+                color: CupertinoColors.placeholderText.resolveFrom(context),
+              ),
+              style: AppleTextStyles.body(context),
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.md,
+                vertical: AppSpacing.sm,
+              ),
               prefix: Padding(
-                padding: const EdgeInsets.only(right: AppSpacing.sm),
+                padding: const EdgeInsets.only(left: AppSpacing.md),
                 child: Icon(
                   CupertinoIcons.mail,
-                  color: primaryColor,
+                  color: _emailError != null
+                      ? VitaloColors.destructive.resolveFrom(context)
+                      : primaryColor,
                   size: AppSpacing.iconSizeSmall,
                 ),
               ),
-              decoration: BoxDecoration(
-                color: fillColor,
-                borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter your email';
-                }
-                final emailRegex = RegExp(
-                  r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
-                );
-                if (!emailRegex.hasMatch(value)) {
-                  return 'Please enter a valid email';
-                }
-                return null;
-              },
-              onFieldSubmitted: (_) => _sendCode(),
+              decoration: null,
+              onChanged: (_) => _clearEmailError(),
+              onSubmitted: (_) => _sendCode(),
             ),
-            const SizedBox(height: AppSpacing.xxl),
-            LoadingButton(
-              onPressed: _sendCode,
-              label: 'Send Code',
-              isLoading: _isLoading,
+          ),
+          // Inline validation error (iOS HIG pattern)
+          if (_emailError != null) ...[
+            const SizedBox(height: AppSpacing.xs),
+            Row(
+              children: [
+                Icon(
+                  CupertinoIcons.exclamationmark_circle_fill,
+                  color: VitaloColors.destructive.resolveFrom(context),
+                  size: 14,
+                ),
+                const SizedBox(width: AppSpacing.xxs),
+                Expanded(
+                  child: Text(
+                    _emailError!,
+                    style: AppleTextStyles.footnote(context).copyWith(
+                      color: VitaloColors.destructive.resolveFrom(context),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
-        ),
+          const SizedBox(height: AppSpacing.xxl),
+          LoadingButton(
+            onPressed: _sendCode,
+            label: 'Send Code',
+            isLoading: _isLoading,
+          ),
+        ],
       ),
     );
   }

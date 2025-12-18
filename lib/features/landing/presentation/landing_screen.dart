@@ -194,7 +194,7 @@ class _ActionsSectionState extends State<_ActionsSection> {
             onPressed: _isLoading ? null : _handleEmailFlow,
             label: 'Continue with Email',
             icon: Icon(
-              Icons.email_outlined,
+              CupertinoIcons.mail,
               size: AppSpacing.iconSizeSmall,
               color: primaryColor,
             ),
@@ -230,7 +230,7 @@ class _ActionsSectionState extends State<_ActionsSection> {
                           ),
                           const SizedBox(width: AppSpacing.xxs),
                           Icon(
-                            Icons.open_in_new,
+                            CupertinoIcons.arrow_up_right_square,
                             size: AppSpacing.sm,
                             color: primaryColor,
                           ),
@@ -261,7 +261,7 @@ class _ActionsSectionState extends State<_ActionsSection> {
                           ),
                           const SizedBox(width: AppSpacing.xxs),
                           Icon(
-                            Icons.open_in_new,
+                            CupertinoIcons.arrow_up_right_square,
                             size: AppSpacing.sm,
                             color: primaryColor,
                           ),

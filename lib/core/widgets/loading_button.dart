@@ -21,8 +21,9 @@ class LoadingButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final primaryColor = CupertinoTheme.of(context).primaryColor;
-    final isDisabled = isLoading || !enabled;
+    final isDisabled = !enabled;
 
+    // Button stays visually active during loading, but ignores taps
     return SizedBox(
       width: double.infinity,
       height: height,
@@ -30,7 +31,8 @@ class LoadingButton extends StatelessWidget {
         padding: EdgeInsets.zero,
         borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
         color: isDisabled ? primaryColor.withValues(alpha: 0.5) : primaryColor,
-        onPressed: isDisabled ? null : onPressed,
+        // When loading, provide empty callback to keep button styled but unresponsive
+        onPressed: isDisabled ? null : (isLoading ? () {} : onPressed),
         child: isLoading
             ? const CupertinoActivityIndicator(color: CupertinoColors.white)
             : Text(
