@@ -328,8 +328,11 @@ class _LocationPickerSheetState extends State<LocationPickerSheet>
                 ? CupertinoButton(
                     key: const ValueKey('back'),
                     padding: EdgeInsets.zero,
-                    minSize: AppSpacing.touchTargetMin,
                     onPressed: _onBack,
+                    minimumSize: const Size(
+                      AppSpacing.touchTargetMin,
+                      AppSpacing.touchTargetMin,
+                    ),
                     child: Icon(CupertinoIcons.back, color: primaryColor),
                   )
                 : const SizedBox(
@@ -440,11 +443,11 @@ class _LocationPickerSheetState extends State<LocationPickerSheet>
         suffix: _searchQuery.isNotEmpty
             ? CupertinoButton(
                 padding: const EdgeInsets.only(right: AppSpacing.xs),
-                minSize: 0,
                 onPressed: () {
                   _searchController.clear();
                   setState(() => _searchQuery = '');
                 },
+                minimumSize: const Size(0, 0),
                 child: Icon(
                   CupertinoIcons.xmark_circle_fill,
                   color: secondaryLabel,

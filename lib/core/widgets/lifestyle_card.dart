@@ -732,7 +732,7 @@ class _BedTimeSheetState extends State<_BedTimeSheet> {
                       ),
 
                       // Arrow indicators - outer edges
-                      Positioned(
+                      const Positioned(
                         left: AppSpacing.lg,
                         top: 0,
                         bottom: 0,
@@ -742,7 +742,7 @@ class _BedTimeSheetState extends State<_BedTimeSheet> {
                           ),
                         ),
                       ),
-                      Positioned(
+                      const Positioned(
                         right: AppSpacing.lg,
                         top: 0,
                         bottom: 0,
@@ -1024,7 +1024,7 @@ class _SleepDurationSheetState extends State<_SleepDurationSheet> {
                       ),
 
                       // Arrow indicators - outer edges
-                      Positioned(
+                      const Positioned(
                         left: AppSpacing.lg,
                         top: 0,
                         bottom: 0,
@@ -1034,7 +1034,7 @@ class _SleepDurationSheetState extends State<_SleepDurationSheet> {
                           ),
                         ),
                       ),
-                      Positioned(
+                      const Positioned(
                         right: AppSpacing.lg,
                         top: 0,
                         bottom: 0,

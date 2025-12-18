@@ -318,7 +318,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             child: Stack(
               alignment: Alignment.center,
               children: [
-                SizedBox(
+                const SizedBox(
                   width: AppSpacing.cardHeightSmall,
                   height: AppSpacing.cardHeightSmall,
                   child: CupertinoActivityIndicator.partiallyRevealed(
@@ -328,7 +328,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
                 // Custom circular progress
                 CustomPaint(
-                  size: Size(
+                  size: const Size(
                     AppSpacing.cardHeightSmall,
                     AppSpacing.cardHeightSmall,
                   ),

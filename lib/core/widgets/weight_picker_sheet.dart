@@ -469,7 +469,7 @@ class _WeightPickerSheetState extends State<WeightPickerSheet>
               ),
 
               // Arrow indicators - outer edges only
-              Positioned(
+              const Positioned(
                 left: AppSpacing.lg,
                 top: 0,
                 bottom: 0,
@@ -477,7 +477,7 @@ class _WeightPickerSheetState extends State<WeightPickerSheet>
                   child: WheelArrowIndicator(direction: ArrowDirection.right),
                 ),
               ),
-              Positioned(
+              const Positioned(
                 right: AppSpacing.lg,
                 top: 0,
                 bottom: 0,
@@ -538,7 +538,7 @@ class _WeightPickerSheetState extends State<WeightPickerSheet>
               ),
 
               // Arrow indicators on both sides
-              Positioned(
+              const Positioned(
                 left: AppSpacing.lg,
                 top: 0,
                 bottom: 0,
@@ -546,7 +546,7 @@ class _WeightPickerSheetState extends State<WeightPickerSheet>
                   child: WheelArrowIndicator(direction: ArrowDirection.right),
                 ),
               ),
-              Positioned(
+              const Positioned(
                 right: AppSpacing.lg,
                 top: 0,
                 bottom: 0,

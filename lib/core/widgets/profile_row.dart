@@ -256,7 +256,7 @@ class ProfileRowDivider extends StatelessWidget {
     final separatorColor = CupertinoColors.separator.resolveFrom(context);
     return Container(
       height: LiquidGlass.borderWidth,
-      margin: EdgeInsets.only(
+      margin: const EdgeInsets.only(
         left: AppSpacing.md + AppSpacing.iconSizeSmall + AppSpacing.md,
       ),
       color: separatorColor,

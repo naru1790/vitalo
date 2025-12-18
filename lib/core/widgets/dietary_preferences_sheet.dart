@@ -837,11 +837,11 @@ class _DietaryPreferencesSheetState extends State<DietaryPreferencesSheet> {
                   const SizedBox(width: AppSpacing.xs),
                   CupertinoButton(
                     padding: const EdgeInsets.all(AppSpacing.xs),
-                    minSize: 0,
                     onPressed: () {
                       _lifestyleController.clear();
                       setState(() => _showLifestyleInput = false);
                     },
+                    minimumSize: const Size(0, 0),
                     child: Icon(
                       CupertinoIcons.xmark_circle_fill,
                       color: secondaryLabel,
@@ -850,8 +850,8 @@ class _DietaryPreferencesSheetState extends State<DietaryPreferencesSheet> {
                   ),
                   CupertinoButton(
                     padding: const EdgeInsets.all(AppSpacing.xs),
-                    minSize: 0,
                     onPressed: _submitLifestyleInput,
+                    minimumSize: const Size(0, 0),
                     child: Icon(
                       CupertinoIcons.checkmark_circle_fill,
                       color: primaryColor,
@@ -957,11 +957,11 @@ class _DietaryPreferencesSheetState extends State<DietaryPreferencesSheet> {
                   const SizedBox(width: AppSpacing.xs),
                   CupertinoButton(
                     padding: const EdgeInsets.all(AppSpacing.xs),
-                    minSize: 0,
                     onPressed: () {
                       _allergyController.clear();
                       setState(() => _showAllergyInput = false);
                     },
+                    minimumSize: const Size(0, 0),
                     child: Icon(
                       CupertinoIcons.xmark_circle_fill,
                       color: secondaryLabel,
@@ -970,8 +970,8 @@ class _DietaryPreferencesSheetState extends State<DietaryPreferencesSheet> {
                   ),
                   CupertinoButton(
                     padding: const EdgeInsets.all(AppSpacing.xs),
-                    minSize: 0,
                     onPressed: _submitAllergyInput,
+                    minimumSize: const Size(0, 0),
                     child: Icon(
                       CupertinoIcons.checkmark_circle_fill,
                       color: primaryColor,

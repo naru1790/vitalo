@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:talker_flutter/talker_flutter.dart';
@@ -67,48 +66,49 @@ class VitaloApp extends StatelessWidget {
   Widget build(BuildContext context) {
     // Get system brightness for Cupertino theme
     final brightness = MediaQuery.platformBrightnessOf(context);
-    final isDark = brightness == Brightness.dark;
-
-    // Select color scheme based on brightness (iOS 26 Liquid Glass)
-    final colorScheme = isDark
-        ? VitaloTheme.darkScheme()
-        : VitaloTheme.lightScheme();
 
     return CupertinoApp.router(
       title: 'Vitalo',
       debugShowCheckedModeBanner: false,
-      // iOS 26 Liquid Glass theme
+      // iOS 26 Liquid Glass theme — Pure Cupertino
       theme: CupertinoThemeData(
         brightness: brightness,
-        primaryColor: colorScheme.primary,
-        primaryContrastingColor: colorScheme.onPrimary,
-        scaffoldBackgroundColor: colorScheme.surface,
-        barBackgroundColor: colorScheme.surface.withValues(alpha: 0.85),
-        textTheme: CupertinoTextThemeData(
-          primaryColor: colorScheme.primary,
+        // Brand accent color (vibrant orange)
+        primaryColor: VitaloColors.accent,
+        primaryContrastingColor: CupertinoColors.white,
+        // Background colors from VitaloColors
+        scaffoldBackgroundColor: VitaloColors.background,
+        barBackgroundColor: VitaloColors.background.withAlpha(
+          (LiquidGlass.opacityNavBar * 255).round(),
+        ),
+        // Typography — Apple HIG SF Pro scale
+        textTheme: const CupertinoTextThemeData(
+          primaryColor: VitaloColors.accent,
           textStyle: TextStyle(
             fontSize: 17,
             fontWeight: FontWeight.w400,
             letterSpacing: -0.41,
-            color: CupertinoColors.label.resolveFrom(context),
+            height: 1.3,
+            color: CupertinoColors.label,
           ),
           navTitleTextStyle: TextStyle(
             fontSize: 17,
             fontWeight: FontWeight.w600,
             letterSpacing: -0.41,
-            color: CupertinoColors.label.resolveFrom(context),
+            color: CupertinoColors.label,
           ),
           navLargeTitleTextStyle: TextStyle(
             fontSize: 34,
             fontWeight: FontWeight.bold,
             letterSpacing: 0.37,
-            color: CupertinoColors.label.resolveFrom(context),
+            height: 1.2,
+            color: CupertinoColors.label,
           ),
           actionTextStyle: TextStyle(
             fontSize: 17,
             fontWeight: FontWeight.w400,
             letterSpacing: -0.41,
-            color: colorScheme.primary,
+            color: VitaloColors.accent,
           ),
         ),
       ),

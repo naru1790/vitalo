@@ -62,8 +62,8 @@ class AppSnackBar {
 
     // iOS-style glass background
     final backgroundColor = isDark
-        ? const Color(0xFF2C2C2E).withOpacity(0.9) // iOS dark elevated
-        : const Color(0xFFFFFFFF).withOpacity(0.9); // iOS light
+        ? const Color(0xFF2C2C2E).withValues(alpha: 0.9) // iOS dark elevated
+        : const Color(0xFFFFFFFF).withValues(alpha: 0.9); // iOS light
     final textColor = isDark ? CupertinoColors.white : CupertinoColors.black;
 
     ScaffoldMessenger.of(context).clearSnackBars();

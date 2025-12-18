@@ -181,7 +181,7 @@ class _YearPickerSheetState extends State<YearPickerSheet> {
                       ),
 
                       // Arrow indicators
-                      Positioned(
+                      const Positioned(
                         left: AppSpacing.lg,
                         top: 0,
                         bottom: 0,
@@ -191,7 +191,7 @@ class _YearPickerSheetState extends State<YearPickerSheet> {
                           ),
                         ),
                       ),
-                      Positioned(
+                      const Positioned(
                         right: AppSpacing.lg,
                         top: 0,
                         bottom: 0,

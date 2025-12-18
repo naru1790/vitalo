@@ -339,7 +339,9 @@ class _HeightPickerSheetState extends State<HeightPickerSheet>
     return Column(
       children: [
         // Spacer to match ft/in header height
-        SizedBox(height: AppSpacing.xs + 20), // labelMedium height + spacing
+        const SizedBox(
+          height: AppSpacing.xs + 20,
+        ), // labelMedium height + spacing
         // Wheel with arrows
         Expanded(
           child: Stack(
@@ -378,7 +380,7 @@ class _HeightPickerSheetState extends State<HeightPickerSheet>
               ),
 
               // Arrow indicators on both sides
-              Positioned(
+              const Positioned(
                 left: AppSpacing.lg,
                 top: 0,
                 bottom: 0,
@@ -386,7 +388,7 @@ class _HeightPickerSheetState extends State<HeightPickerSheet>
                   child: WheelArrowIndicator(direction: ArrowDirection.right),
                 ),
               ),
-              Positioned(
+              const Positioned(
                 right: AppSpacing.lg,
                 top: 0,
                 bottom: 0,
@@ -528,7 +530,7 @@ class _HeightPickerSheetState extends State<HeightPickerSheet>
               ),
 
               // Arrow indicators - outer edges only
-              Positioned(
+              const Positioned(
                 left: AppSpacing.lg,
                 top: 0,
                 bottom: 0,
@@ -536,7 +538,7 @@ class _HeightPickerSheetState extends State<HeightPickerSheet>
                   child: WheelArrowIndicator(direction: ArrowDirection.right),
                 ),
               ),
-              Positioned(
+              const Positioned(
                 right: AppSpacing.lg,
                 top: 0,
                 bottom: 0,

@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 
@@ -418,7 +416,7 @@ class _WheelPickerState extends State<WheelPicker> {
           ),
 
           // Arrow indicators on both sides
-          Positioned(
+          const Positioned(
             left: AppSpacing.lg,
             top: 0,
             bottom: 0,
@@ -426,7 +424,7 @@ class _WheelPickerState extends State<WheelPicker> {
               child: WheelArrowIndicator(direction: ArrowDirection.right),
             ),
           ),
-          Positioned(
+          const Positioned(
             right: AppSpacing.lg,
             top: 0,
             bottom: 0,

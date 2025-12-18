@@ -2,11 +2,11 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Secure storage adapter for Supabase Auth tokens.
-/// Uses the device's secure enclave (Keychain on iOS, EncryptedSharedPreferences on Android).
+/// Uses the device's secure enclave (Keychain on iOS, custom ciphers on Android).
 class SecureLocalStorage extends LocalStorage {
   SecureLocalStorage()
     : _storage = const FlutterSecureStorage(
-        aOptions: AndroidOptions(encryptedSharedPreferences: true),
+        aOptions: AndroidOptions(),
         iOptions: IOSOptions(
           accessibility: KeychainAccessibility.first_unlock_this_device,
         ),

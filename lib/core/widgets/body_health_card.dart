@@ -1033,7 +1033,7 @@ class _WaistPickerSheetState extends State<_WaistPickerSheet> {
                   ),
 
                   // Arrow indicators
-                  Positioned(
+                  const Positioned(
                     left: AppSpacing.lg,
                     top: 0,
                     bottom: 0,
@@ -1043,7 +1043,7 @@ class _WaistPickerSheetState extends State<_WaistPickerSheet> {
                       ),
                     ),
                   ),
-                  Positioned(
+                  const Positioned(
                     right: AppSpacing.lg,
                     top: 0,
                     bottom: 0,
