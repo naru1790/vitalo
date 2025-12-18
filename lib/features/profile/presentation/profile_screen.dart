@@ -11,10 +11,10 @@ import '../../../core/widgets/app_segmented_button.dart';
 import '../../../core/widgets/inline_editable_header.dart';
 import '../../../core/widgets/app_snackbar.dart';
 import '../../../core/widgets/year_picker_sheet.dart';
-import '../../../core/widgets/weight_picker_sheet.dart';
-import '../../../core/widgets/height_picker_sheet.dart';
 import '../../../core/widgets/location_picker_sheet.dart';
 import '../../../core/widgets/dietary_preferences_sheet.dart';
+import '../../../core/widgets/body_health_card.dart';
+import '../../../core/widgets/profile_row.dart';
 import 'widgets/gender_selection.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -31,7 +31,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String? _displayName;
 
   // User preferences
-  bool _isMetric = true;
   bool _notificationsEnabled = true;
 
   // Personal info
@@ -40,15 +39,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String? _country;
   String? _state;
 
-  // Health data - null means "Not Set"
-  double? _weightKg;
-  double? _heightCm;
+  // Body & Health data
+  BodyHealthData _bodyHealthData = const BodyHealthData();
   DietaryPreferencesResult? _dietaryPref;
 
   // Health integrations
   bool _healthConnected = false;
-  bool _fitbitConnected = false;
-  bool _garminConnected = false;
 
   @override
   void initState() {
@@ -104,55 +100,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   String _getUserEmail() {
     return _authService.currentUser?.email ?? 'Not signed in';
-  }
-
-  String _formatWeight() {
-    if (_weightKg == null) return 'Not Set';
-    if (_isMetric) {
-      return '${_weightKg!.toStringAsFixed(1)} kg';
-    } else {
-      return '${(_weightKg! * 2.205).toStringAsFixed(1)} lbs';
-    }
-  }
-
-  String _formatHeight() {
-    if (_heightCm == null) return 'Not Set';
-    if (_isMetric) {
-      return '${_heightCm!.toInt()} cm';
-    } else {
-      final totalInches = _heightCm! / 2.54;
-      final feet = (totalInches / 12).floor();
-      final inches = (totalInches % 12).round();
-      return "$feet'$inches\""; // e.g. 5'10"
-    }
-  }
-
-  Future<void> _selectWeight() async {
-    final result = await WeightPickerSheet.show(
-      context: context,
-      initialWeight: _weightKg,
-      initialUnit: _isMetric ? WeightUnit.kg : WeightUnit.lbs,
-    );
-    if (result != null && mounted) {
-      setState(() => _weightKg = result.asKg);
-      talker.info(
-        'Weight set: ${result.value} ${result.unit.label} (${result.asKg.toStringAsFixed(1)} kg)',
-      );
-    }
-  }
-
-  Future<void> _selectHeight() async {
-    final result = await HeightPickerSheet.show(
-      context: context,
-      initialHeightCm: _heightCm,
-      initialUnit: _isMetric ? HeightUnit.cm : HeightUnit.ftIn,
-    );
-    if (result != null && mounted) {
-      setState(() => _heightCm = result.valueCm);
-      talker.info(
-        'Height set: ${result.toString()} (${result.valueCm.toInt()} cm)',
-      );
-    }
   }
 
   String _formatBirthYear() {
@@ -386,9 +333,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                 const SizedBox(height: AppSpacing.xl),
 
-                _buildSectionTitle('Body Metrics', colorScheme),
-                const SizedBox(height: AppSpacing.sm),
-                _buildBodyMetricsCard(colorScheme),
+                // Body & Health - new consolidated card
+                BodyHealthCard(
+                  data: _bodyHealthData,
+                  onDataChanged: (data) {
+                    setState(() => _bodyHealthData = data);
+                    talker.info('Body health data updated');
+                  },
+                  isFemale: _gender?.toLowerCase() == 'female',
+                ),
 
                 const SizedBox(height: AppSpacing.xl),
 
@@ -495,11 +448,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildPersonalInfoCard(ColorScheme colorScheme) {
-    return Container(
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-      ),
+    return ProfileCard(
       child: Column(
         children: [
           GenderSelection(
@@ -510,82 +459,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
             },
           ),
 
-          _buildDivider(colorScheme),
+          const ProfileRowDivider(),
 
-          _buildTappableRow(
+          ProfileTappableRow(
             icon: Icons.cake_outlined,
             label: 'Birth Year',
             value: _formatBirthYear(),
-            colorScheme: colorScheme,
             onTap: _selectBirthYear,
           ),
 
-          _buildDivider(colorScheme),
+          const ProfileRowDivider(),
 
-          _buildTappableRow(
+          ProfileTappableRow(
             icon: Icons.location_on_outlined,
             label: 'Location',
             value: _formatLocation(),
-            colorScheme: colorScheme,
             onTap: _selectLocation,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBodyMetricsCard(ColorScheme colorScheme) {
-    return Container(
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-      ),
-      child: Column(
-        children: [
-          _buildTappableRow(
-            icon: Icons.monitor_weight_outlined,
-            label: 'Weight',
-            value: _formatWeight(),
-            colorScheme: colorScheme,
-            onTap: _selectWeight,
-          ),
-
-          _buildDivider(colorScheme),
-
-          _buildTappableRow(
-            icon: Icons.height_outlined,
-            label: 'Height',
-            value: _formatHeight(),
-            colorScheme: colorScheme,
-            onTap: _selectHeight,
-          ),
-
-          _buildDivider(colorScheme),
-
-          Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.md,
-              vertical: AppSpacing.sm,
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.straighten_outlined,
-                  size: AppSpacing.iconSizeSmall,
-                  color: colorScheme.primary,
-                ),
-                const SizedBox(width: AppSpacing.md),
-                Expanded(
-                  child: Text(
-                    'Unit System',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: colorScheme.onSurface,
-                    ),
-                  ),
-                ),
-                _buildSegmentedControl(),
-              ],
-            ),
           ),
         ],
       ),
@@ -594,108 +483,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildDietaryPreferenceCard(ColorScheme colorScheme) {
     final hasValue = _dietaryPref != null;
-    return Container(
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: _selectDietaryPreference,
-          borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.md),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.restaurant_menu_rounded,
-                  size: AppSpacing.iconSizeSmall,
-                  color: colorScheme.primary,
-                ),
-                const SizedBox(width: AppSpacing.md),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Dietary Preferences',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: colorScheme.onSurface,
-                        ),
-                      ),
-                      if (hasValue) ...[
-                        const SizedBox(height: AppSpacing.xxs),
-                        Text(
-                          _formatDietaryPreference(),
-                          style: Theme.of(context).textTheme.bodySmall
-                              ?.copyWith(
-                                color: colorScheme.primary,
-                                fontWeight: FontWeight.w500,
-                              ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-                if (!hasValue)
-                  Text(
-                    'Set up',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                const SizedBox(width: AppSpacing.xs),
-                Icon(
-                  Icons.chevron_right_rounded,
-                  size: AppSpacing.iconSize,
-                  color: colorScheme.onSurfaceVariant,
-                ),
-              ],
-            ),
-          ),
-        ),
+    return ProfileCard(
+      child: ProfileTappableRow(
+        icon: Icons.restaurant_menu_rounded,
+        label: 'Dietary Preferences',
+        value: hasValue ? null : 'Set up',
+        subtitle: hasValue ? _formatDietaryPreference() : null,
+        onTap: _selectDietaryPreference,
       ),
     );
   }
 
   Widget _buildPreferencesCard(ColorScheme colorScheme) {
-    return Container(
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.md,
-          vertical: AppSpacing.sm,
-        ),
-        child: Row(
-          children: [
-            Icon(
-              Icons.notifications_outlined,
-              size: AppSpacing.iconSizeSmall,
-              color: colorScheme.primary,
-            ),
-            const SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: Text(
-                'Notifications',
-                style: Theme.of(
-                  context,
-                ).textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface),
-              ),
-            ),
-            Switch.adaptive(
-              value: _notificationsEnabled,
-              activeTrackColor: colorScheme.primary,
-              onChanged: (value) {
-                setState(() => _notificationsEnabled = value);
-                talker.info('Notifications: $value');
-              },
-            ),
-          ],
-        ),
+    return ProfileCard(
+      child: ProfileSwitchRow(
+        icon: Icons.notifications_outlined,
+        label: 'Notifications',
+        value: _notificationsEnabled,
+        onChanged: (value) {
+          setState(() => _notificationsEnabled = value);
+          talker.info('Notifications: $value');
+        },
       ),
     );
   }
@@ -708,139 +516,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ? const Color(0xFFFF2D55)
         : const Color(0xFF4285F4);
 
-    return Container(
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-      ),
-      child: Column(
-        children: [
-          // Platform Health App (Apple Health / Health Connect)
-          _buildIntegrationRow(
-            icon: healthIcon,
-            iconColor: healthIconColor,
-            name: healthAppName,
-            subtitle: 'Recommended • Syncs with 100+ apps',
-            isConnected: _healthConnected,
-            colorScheme: colorScheme,
-            onChanged: (value) {
-              setState(() => _healthConnected = value);
-              talker.info(
-                '$healthAppName: ${value ? 'Connected' : 'Disconnected'}',
-              );
-              if (value) {
-                _showHealthPermissionsInfo(healthAppName);
-              }
-            },
-          ),
-          _buildDivider(colorScheme),
-          // Fitbit
-          _buildIntegrationRow(
-            icon: Icons.watch_rounded,
-            iconColor: const Color(0xFF00B0B9), // Fitbit teal
-            name: 'Fitbit',
-            subtitle: 'Steps, sleep & heart rate',
-            isConnected: _fitbitConnected,
-            colorScheme: colorScheme,
-            onChanged: (value) {
-              setState(() => _fitbitConnected = value);
-              talker.info('Fitbit: ${value ? 'Connected' : 'Disconnected'}');
-              if (value) {
-                _showComingSoonDialog('Fitbit');
-                setState(() => _fitbitConnected = false);
-              }
-            },
-          ),
-          _buildDivider(colorScheme),
-          // Garmin
-          _buildIntegrationRow(
-            icon: Icons.watch_rounded,
-            iconColor: const Color(0xFF007CC3), // Garmin blue
-            name: 'Garmin',
-            subtitle: 'Activities & fitness data',
-            isConnected: _garminConnected,
-            colorScheme: colorScheme,
-            onChanged: (value) {
-              setState(() => _garminConnected = value);
-              talker.info('Garmin: ${value ? 'Connected' : 'Disconnected'}');
-              if (value) {
-                _showComingSoonDialog('Garmin');
-                setState(() => _garminConnected = false);
-              }
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildIntegrationRow({
-    required IconData icon,
-    required Color iconColor,
-    required String name,
-    required String subtitle,
-    required bool isConnected,
-    required ColorScheme colorScheme,
-    required ValueChanged<bool> onChanged,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.md,
-        vertical: AppSpacing.sm,
-      ),
-      child: Row(
-        children: [
-          Icon(icon, size: AppSpacing.iconSizeSmall, color: iconColor),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  name,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurface,
-                  ),
-                ),
-                Text(
-                  isConnected ? 'Connected' : subtitle,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: isConnected
-                        ? colorScheme.primary
-                        : colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Switch.adaptive(
-            value: isConnected,
-            activeTrackColor: colorScheme.primary,
-            onChanged: onChanged,
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showComingSoonDialog(String serviceName) {
-    final colorScheme = Theme.of(context).colorScheme;
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        icon: Icon(Icons.construction_rounded, color: colorScheme.tertiary),
-        title: const Text('Coming Soon'),
-        content: Text(
-          '$serviceName integration is coming in a future update!\n\n'
-          'For now, you can sync $serviceName data through '
-          '${Platform.isIOS ? 'Apple Health' : 'Health Connect'} instead.',
-        ),
-        actions: [
-          FilledButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Got it'),
-          ),
-        ],
+    return ProfileCard(
+      child: ProfileSwitchRow(
+        icon: healthIcon,
+        iconColor: healthIconColor,
+        label: healthAppName,
+        subtitle: 'Recommended • Syncs with 100+ apps',
+        value: _healthConnected,
+        onChanged: (value) {
+          setState(() => _healthConnected = value);
+          talker.info(
+            '$healthAppName: ${value ? 'Connected' : 'Disconnected'}',
+          );
+          if (value) {
+            _showHealthPermissionsInfo(healthAppName);
+          }
+        },
       ),
     );
   }
@@ -871,189 +562,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildAccountCard(ColorScheme colorScheme) {
-    return Container(
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-      ),
+    return ProfileCard(
       child: Column(
         children: [
-          _buildTappableRow(
+          ProfileTappableRow(
             icon: Icons.privacy_tip_outlined,
             label: 'Privacy Policy',
-            colorScheme: colorScheme,
             onTap: () => context.push(AppRoutes.privacy),
           ),
-          _buildDivider(colorScheme),
-          _buildTappableRow(
+          const ProfileRowDivider(),
+          ProfileTappableRow(
             icon: Icons.description_outlined,
             label: 'Terms of Service',
-            colorScheme: colorScheme,
             onTap: () => context.push(AppRoutes.terms),
           ),
-          _buildDivider(colorScheme),
-          _buildTappableRow(
+          const ProfileRowDivider(),
+          ProfileTappableRow(
             icon: Icons.logout_rounded,
             label: 'Sign Out',
-            colorScheme: colorScheme,
             iconColor: colorScheme.error,
             labelColor: colorScheme.error,
             onTap: _handleSignOut,
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildDivider(ColorScheme colorScheme) {
-    return Divider(
-      height: 1,
-      indent: AppSpacing.touchTargetMin + AppSpacing.xxs,
-      color: colorScheme.outlineVariant,
-    );
-  }
-
-  Widget _buildChipSelector({
-    required IconData icon,
-    required String label,
-    required List<String> options,
-    required String? selected,
-    required ColorScheme colorScheme,
-    required ValueChanged<String> onSelected,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.md,
-        vertical: AppSpacing.sm,
-      ),
-      child: Row(
-        children: [
-          Icon(
-            icon,
-            size: AppSpacing.iconSizeSmall,
-            color: colorScheme.primary,
-          ),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                children: options.map((option) {
-                  final isSelected = selected == option;
-                  return Padding(
-                    padding: const EdgeInsets.only(right: AppSpacing.xs),
-                    child: GestureDetector(
-                      onTap: () => onSelected(option),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 150),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.sm,
-                          vertical: AppSpacing.xs,
-                        ),
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? colorScheme.primary
-                              : Colors.transparent,
-                          borderRadius: BorderRadius.circular(AppSpacing.md),
-                          border: Border.all(
-                            color: isSelected
-                                ? Colors.transparent
-                                : colorScheme.outlineVariant,
-                          ),
-                        ),
-                        child: Text(
-                          option,
-                          style: Theme.of(context).textTheme.labelMedium
-                              ?.copyWith(
-                                color: isSelected
-                                    ? colorScheme.onPrimary
-                                    : colorScheme.onSurface,
-                                fontWeight: isSelected
-                                    ? FontWeight.w600
-                                    : FontWeight.w400,
-                              ),
-                        ),
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTappableRow({
-    required IconData icon,
-    required String label,
-    String? value,
-    required ColorScheme colorScheme,
-    Color? iconColor,
-    Color? labelColor,
-    required VoidCallback onTap,
-  }) {
-    final hasValue = value != null && value != 'Not Set';
-
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.md,
-          vertical: AppSpacing.md,
-        ),
-        child: Row(
-          children: [
-            Icon(
-              icon,
-              size: AppSpacing.iconSizeSmall,
-              color: iconColor ?? colorScheme.primary,
-            ),
-            const SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: Text(
-                label,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: labelColor ?? colorScheme.onSurface,
-                ),
-              ),
-            ),
-            if (value != null) ...[
-              Text(
-                value,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: hasValue
-                      ? colorScheme.primary
-                      : colorScheme.onSurfaceVariant,
-                  fontWeight: hasValue ? FontWeight.w600 : FontWeight.w400,
-                ),
-              ),
-              const SizedBox(width: AppSpacing.xs),
-            ],
-            Icon(
-              Icons.chevron_right_rounded,
-              size: AppSpacing.iconSizeSmall,
-              color: colorScheme.onSurfaceVariant,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSegmentedControl() {
-    return AppSegmentedButton<bool>(
-      segments: const [
-        ButtonSegment<bool>(value: true, label: Text('Metric')),
-        ButtonSegment<bool>(value: false, label: Text('Imperial')),
-      ],
-      selected: {_isMetric},
-      onSelectionChanged: (Set<bool> newSelection) {
-        setState(() => _isMetric = newSelection.first);
-        talker.info('Unit: ${_isMetric ? 'Metric' : 'Imperial'}');
-      },
     );
   }
 }
