@@ -69,6 +69,15 @@ class OtpInput extends StatelessWidget {
       enabled: enabled,
       onCompleted: onCompleted,
       hapticFeedbackType: HapticFeedbackType.lightImpact,
+      // Enable clipboard paste support
+      onClipboardFound: (value) {
+        // Auto-paste if clipboard contains valid OTP (digits only, correct length)
+        final digits = value.replaceAll(RegExp(r'[^0-9]'), '');
+        if (digits.length >= length) {
+          controller.text = digits.substring(0, length);
+          onCompleted?.call(controller.text);
+        }
+      },
     );
   }
 }
