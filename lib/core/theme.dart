@@ -821,6 +821,63 @@ class DietColors {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// HEALTH GOAL COLORS - Motivation themes
+// ═══════════════════════════════════════════════════════════════════════════
+
+/// Semantic colors for health goal categories
+class GoalColors {
+  GoalColors._();
+
+  /// Lose Weight - Blue (calm, trust, control)
+  static const Color loseWeight = Color(0xFF42A5F5);
+
+  /// Build Muscle - Red (power, strength)
+  static const Color buildMuscle = Color(0xFFEF5350);
+
+  /// Improve Sleep - Indigo (night, tranquility)
+  static const Color improveSleep = Color(0xFF5C6BC0);
+
+  /// Manage Stress - Teal (calm, balance)
+  static const Color manageStress = Color(0xFF26A69A);
+
+  /// Boost Stamina - Orange (energy, vitality)
+  static const Color boostStamina = Color(0xFFFF9800);
+
+  /// Maintain Weight - Green (stability, balance)
+  static const Color maintainWeight = Color(0xFF66BB6A);
+
+  /// Gain Weight - Purple (growth, abundance)
+  static const Color gainWeight = Color(0xFFAB47BC);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// COACHING STYLE COLORS - Personality themes
+// ═══════════════════════════════════════════════════════════════════════════
+
+/// Semantic colors for AI coach personality styles
+class CoachColors {
+  CoachColors._();
+
+  /// Supportive Friend - Warm Pink (nurturing, caring)
+  static const Color supportiveFriend = Color(0xFFEC407A);
+
+  /// Tough Coach - Deep Red (intensity, discipline)
+  static const Color toughCoach = Color(0xFFD32F2F);
+
+  /// Calm Mentor - Sage Green (wisdom, patience)
+  static const Color calmMentor = Color(0xFF66BB6A);
+
+  /// Energetic Hype - Bright Orange (energy, excitement)
+  static const Color energeticHype = Color(0xFFFF9800);
+
+  /// Data Analyst - Cool Blue (logic, precision)
+  static const Color dataAnalyst = Color(0xFF42A5F5);
+
+  /// Mindful Guide - Soft Purple (spirituality, balance)
+  static const Color mindfulGuide = Color(0xFF9575CD);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // BRAND & INTEGRATION COLORS - Third-party services
 // ═══════════════════════════════════════════════════════════════════════════
 

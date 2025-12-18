@@ -13,6 +13,7 @@ import '../../../core/widgets/year_picker_sheet.dart';
 import '../../../core/widgets/location_picker_sheet.dart';
 import '../../../core/widgets/body_health_card.dart';
 import '../../../core/widgets/lifestyle_card.dart';
+import '../../../core/widgets/coaching_card.dart';
 import '../../../core/widgets/profile_row.dart';
 import 'widgets/gender_selection.dart';
 
@@ -43,6 +44,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   // Lifestyle data (activity, sleep, diet)
   LifestyleData _lifestyleData = const LifestyleData();
+
+  // Coaching data (goal, coach style)
+  CoachingData _coachingData = const CoachingData();
 
   // Health integrations
   bool _healthConnected = false;
@@ -335,6 +339,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   onDataChanged: (data) {
                     setState(() => _lifestyleData = data);
                     talker.info('Lifestyle data updated');
+                  },
+                ),
+
+                const SizedBox(height: AppSpacing.xl),
+
+                // Coaching - goal and coach personality
+                CoachingCard(
+                  data: _coachingData,
+                  onDataChanged: (data) {
+                    setState(() => _coachingData = data);
+                    talker.info('Coaching data updated');
                   },
                 ),
 
