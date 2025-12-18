@@ -169,7 +169,7 @@ class _BodyHealthCardState extends State<BodyHealthCard> {
     final result = await showModalBottomSheet<double?>(
       context: context,
       isScrollControlled: true,
-      enableDrag: false,
+      enableDrag: true,
       backgroundColor: colorScheme.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(

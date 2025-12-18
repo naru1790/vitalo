@@ -354,20 +354,7 @@ class _HealthGoalSheetState extends State<_HealthGoalSheet> {
               ),
             ),
 
-            const SizedBox(height: AppSpacing.sm),
-
-            // Selected goal display
-            if (_selected != null)
-              Padding(
-                padding: const EdgeInsets.only(bottom: AppSpacing.lg),
-                child: Text(
-                  _selected!.label,
-                  style: textTheme.headlineMedium?.copyWith(
-                    color: colorScheme.primary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
+            const SizedBox(height: AppSpacing.lg),
 
             // Goal options as cards
             Padding(
@@ -616,20 +603,7 @@ class _CoachingStyleSheetState extends State<_CoachingStyleSheet> {
               ),
             ),
 
-            const SizedBox(height: AppSpacing.sm),
-
-            // Selected style display
-            if (_selected != null)
-              Padding(
-                padding: const EdgeInsets.only(bottom: AppSpacing.lg),
-                child: Text(
-                  _selected!.label,
-                  style: textTheme.headlineMedium?.copyWith(
-                    color: colorScheme.primary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
+            const SizedBox(height: AppSpacing.lg),
 
             // Coaching style options - scrollable
             Flexible(

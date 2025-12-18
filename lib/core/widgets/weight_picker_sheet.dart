@@ -56,7 +56,7 @@ class WeightPickerSheet extends StatefulWidget {
     return showModalBottomSheet<WeightResult>(
       context: context,
       isScrollControlled: true,
-      enableDrag: false,
+      enableDrag: true,
       backgroundColor: Colors.transparent,
       builder: (context) => WeightPickerSheet(
         initialWeight: effectiveWeight,

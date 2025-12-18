@@ -62,7 +62,7 @@ class HeightPickerSheet extends StatefulWidget {
     return showModalBottomSheet<HeightResult>(
       context: context,
       isScrollControlled: true,
-      enableDrag: false,
+      enableDrag: true,
       backgroundColor: Colors.transparent,
       builder: (context) => HeightPickerSheet(
         initialHeightCm: effectiveHeight,

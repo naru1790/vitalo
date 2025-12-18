@@ -246,7 +246,7 @@ class _ActivityLevelSheet extends StatefulWidget {
     return showModalBottomSheet<ActivityLevel>(
       context: context,
       isScrollControlled: true,
-      enableDrag: false,
+      enableDrag: true,
       backgroundColor: Theme.of(context).colorScheme.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
@@ -301,20 +301,7 @@ class _ActivityLevelSheetState extends State<_ActivityLevelSheet> {
               doneEnabled: _selected != null,
             ),
 
-            const SizedBox(height: AppSpacing.sm),
-
-            // Selected activity display
-            if (_selected != null)
-              Padding(
-                padding: const EdgeInsets.only(bottom: AppSpacing.lg),
-                child: Text(
-                  _selected!.label,
-                  style: textTheme.headlineMedium?.copyWith(
-                    color: colorScheme.primary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
+            const SizedBox(height: AppSpacing.lg),
 
             // Activity level options as cards
             Padding(
@@ -458,7 +445,7 @@ class _BedTimeSheet extends StatefulWidget {
     return showModalBottomSheet<TimeOfDay>(
       context: context,
       isScrollControlled: true,
-      enableDrag: false,
+      enableDrag: true,
       backgroundColor: Colors.transparent,
       builder: (context) => _BedTimeSheet(initialTime: initialTime),
     );
@@ -747,7 +734,7 @@ class _SleepDurationSheet extends StatefulWidget {
     return showModalBottomSheet<int>(
       context: context,
       isScrollControlled: true,
-      enableDrag: false,
+      enableDrag: true,
       backgroundColor: Colors.transparent,
       builder: (context) => _SleepDurationSheet(initialMinutes: initialMinutes),
     );
@@ -768,9 +755,9 @@ class _SleepDurationSheetState extends State<_SleepDurationSheet> {
   static const _defaultHours = 8;
   static const _defaultMinutes = 0;
 
-  // Range: 0-24 hours
+  // Range: 0-23 hours
   static const _minHours = 0;
-  static const _maxHours = 24;
+  static const _maxHours = 23;
 
   @override
   void initState() {
@@ -890,7 +877,7 @@ class _SleepDurationSheetState extends State<_SleepDurationSheet> {
                     ),
                     child: Row(
                       children: [
-                        // Hours wheel (00-24)
+                        // Hours wheel (00-23)
                         Expanded(
                           child: ListWheelScrollView.useDelegate(
                             controller: _hoursController,
@@ -903,7 +890,7 @@ class _SleepDurationSheetState extends State<_SleepDurationSheet> {
                               setState(() => _hours = index);
                             },
                             childDelegate: ListWheelChildBuilderDelegate(
-                              childCount: _maxHours + 1, // 0-24
+                              childCount: _maxHours + 1, // 0-23
                               builder: (context, index) {
                                 final isSelected = index == _hours;
                                 return Center(

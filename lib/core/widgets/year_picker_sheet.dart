@@ -45,7 +45,7 @@ class YearPickerSheet extends StatefulWidget {
     return showModalBottomSheet<int>(
       context: context,
       isScrollControlled: true,
-      enableDrag: false,
+      enableDrag: true,
       backgroundColor: Colors.transparent,
       builder: (context) => YearPickerSheet(
         initialYear: effectiveInitialYear,
