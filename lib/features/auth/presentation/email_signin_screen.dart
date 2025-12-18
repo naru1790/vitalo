@@ -225,8 +225,6 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
   }
 
   Widget _buildEmailStep() {
-    final labelColor = CupertinoColors.label.resolveFrom(context);
-    final secondaryLabel = CupertinoColors.secondaryLabel.resolveFrom(context);
     final fillColor = CupertinoColors.tertiarySystemFill.resolveFrom(context);
     final primaryColor = CupertinoTheme.of(context).primaryColor;
 
@@ -291,7 +289,6 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
   }
 
   Widget _buildOtpStep() {
-    final labelColor = CupertinoColors.label.resolveFrom(context);
     final secondaryLabel = CupertinoColors.secondaryLabel.resolveFrom(context);
     final primaryColor = CupertinoTheme.of(context).primaryColor;
 

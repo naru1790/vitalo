@@ -44,7 +44,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = CupertinoTheme.of(context).primaryColor;
     final surfaceColor = CupertinoColors.systemBackground.resolveFrom(context);
 
     return CupertinoPageScaffold(
@@ -71,7 +70,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildHeader(BuildContext context) {
-    final labelColor = CupertinoColors.label.resolveFrom(context);
     final secondaryLabel = CupertinoColors.secondaryLabel.resolveFrom(context);
 
     return Padding(
@@ -114,7 +112,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final primaryColor = CupertinoTheme.of(context).primaryColor;
     final surfaceColor = CupertinoColors.systemBackground.resolveFrom(context);
     final separatorColor = CupertinoColors.separator.resolveFrom(context);
-    final labelColor = CupertinoColors.label.resolveFrom(context);
 
     return Container(
       padding: const EdgeInsets.symmetric(
@@ -281,7 +278,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final primaryColor = CupertinoTheme.of(context).primaryColor;
     final surfaceColor = CupertinoColors.systemBackground.resolveFrom(context);
     final separatorColor = CupertinoColors.separator.resolveFrom(context);
-    final labelColor = CupertinoColors.label.resolveFrom(context);
     final secondaryLabel = CupertinoColors.secondaryLabel.resolveFrom(context);
     final tertiaryFill = CupertinoColors.tertiarySystemFill.resolveFrom(
       context,
@@ -640,7 +636,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildBottomNav(BuildContext context) {
-    final primaryColor = CupertinoTheme.of(context).primaryColor;
     final surfaceColor = CupertinoColors.systemBackground.resolveFrom(context);
     final separatorColor = CupertinoColors.separator.resolveFrom(context);
 

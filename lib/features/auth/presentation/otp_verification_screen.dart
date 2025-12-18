@@ -176,7 +176,6 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
   @override
   Widget build(BuildContext context) {
     final primaryColor = CupertinoTheme.of(context).primaryColor;
-    final labelColor = CupertinoColors.label.resolveFrom(context);
     final secondaryLabel = CupertinoColors.secondaryLabel.resolveFrom(context);
     final surfaceColor = CupertinoColors.systemBackground.resolveFrom(context);
     final errorColor = CupertinoColors.systemRed.resolveFrom(context);

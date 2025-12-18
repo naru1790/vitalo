@@ -2,14 +2,13 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart' show Icons;
 import 'package:go_router/go_router.dart';
 
-import '../../../core/widgets/social_sign_in_button.dart';
-
-import '../../../main.dart';
 import '../../../core/router.dart';
-import '../../../core/theme.dart';
-import '../../../core/widgets/flux_mascot.dart';
 import '../../../core/services/auth_service.dart';
+import '../../../core/theme.dart';
 import '../../../core/widgets/app_snackbar.dart';
+import '../../../core/widgets/flux_mascot.dart';
+import '../../../core/widgets/social_sign_in_button.dart';
+import '../../../main.dart';
 
 class LandingScreen extends StatelessWidget {
   const LandingScreen({super.key});
@@ -139,7 +138,6 @@ class _ActionsSectionState extends State<_ActionsSection> {
   @override
   Widget build(BuildContext context) {
     final primaryColor = CupertinoTheme.of(context).primaryColor;
-    final secondaryLabel = CupertinoColors.secondaryLabel.resolveFrom(context);
     final isDark = CupertinoTheme.of(context).brightness == Brightness.dark;
     final outlineColor = CupertinoColors.separator.resolveFrom(context);
 
@@ -196,7 +194,7 @@ class _ActionsSectionState extends State<_ActionsSection> {
             onPressed: _isLoading ? null : _handleEmailFlow,
             label: 'Continue with Email',
             icon: Icon(
-              CupertinoIcons.mail,
+              Icons.email_outlined,
               size: AppSpacing.iconSizeSmall,
               color: primaryColor,
             ),
@@ -232,7 +230,7 @@ class _ActionsSectionState extends State<_ActionsSection> {
                           ),
                           const SizedBox(width: AppSpacing.xxs),
                           Icon(
-                            CupertinoIcons.arrow_up_right_square,
+                            Icons.open_in_new,
                             size: AppSpacing.sm,
                             color: primaryColor,
                           ),
@@ -263,7 +261,7 @@ class _ActionsSectionState extends State<_ActionsSection> {
                           ),
                           const SizedBox(width: AppSpacing.xxs),
                           Icon(
-                            CupertinoIcons.arrow_up_right_square,
+                            Icons.open_in_new,
                             size: AppSpacing.sm,
                             color: primaryColor,
                           ),
