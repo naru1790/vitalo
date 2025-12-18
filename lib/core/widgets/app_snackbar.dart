@@ -1,60 +1,124 @@
+import 'dart:ui';
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../theme.dart';
 
+/// iOS-style toast notifications with Liquid Glass design.
+/// Uses floating snackbar on Android, could be extended to use
+/// overlay banners on iOS for more native feel.
 class AppSnackBar {
   AppSnackBar._();
 
+  /// Success notification (green checkmark)
   static void showSuccess(BuildContext context, String message) {
-    _show(context, message, Icons.check_circle_outline);
-  }
-
-  static void showError(BuildContext context, String message) {
-    final colorScheme = Theme.of(context).colorScheme;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            Icon(Icons.error_outline, color: colorScheme.onError),
-            const SizedBox(width: AppSpacing.sm),
-            Expanded(child: Text(message)),
-          ],
-        ),
-        backgroundColor: colorScheme.error,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.cardRadiusSmall),
-        ),
-        margin: const EdgeInsets.all(AppSpacing.md),
-      ),
+    _show(
+      context,
+      message,
+      CupertinoIcons.checkmark_circle,
+      const Color(0xFF34C759), // iOS system green
     );
   }
 
+  /// Error notification (red exclamation)
+  static void showError(BuildContext context, String message) {
+    _show(
+      context,
+      message,
+      CupertinoIcons.exclamationmark_circle,
+      const Color(0xFFFF3B30), // iOS system red
+    );
+  }
+
+  /// Info notification (blue info)
   static void showInfo(BuildContext context, String message) {
-    _show(context, message, Icons.info_outline);
+    _show(
+      context,
+      message,
+      CupertinoIcons.info_circle,
+      const Color(0xFF007AFF), // iOS system blue
+    );
   }
 
+  /// Warning notification (orange warning)
   static void showWarning(BuildContext context, String message) {
-    _show(context, message, Icons.warning_amber_outlined);
+    _show(
+      context,
+      message,
+      CupertinoIcons.exclamationmark_triangle,
+      const Color(0xFFFF9500), // iOS system orange
+    );
   }
 
-  static void _show(BuildContext context, String message, IconData icon) {
-    final colorScheme = Theme.of(context).colorScheme;
+  static void _show(
+    BuildContext context,
+    String message,
+    IconData icon,
+    Color accentColor,
+  ) {
+    final brightness = MediaQuery.platformBrightnessOf(context);
+    final isDark = brightness == Brightness.dark;
+
+    // iOS-style glass background
+    final backgroundColor = isDark
+        ? const Color(0xFF2C2C2E).withOpacity(0.9) // iOS dark elevated
+        : const Color(0xFFFFFFFF).withOpacity(0.9); // iOS light
+    final textColor = isDark ? CupertinoColors.white : CupertinoColors.black;
+
+    ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Row(
-          children: [
-            Icon(icon, color: colorScheme.onInverseSurface),
-            const SizedBox(width: AppSpacing.sm),
-            Expanded(child: Text(message)),
-          ],
+        content: ClipRRect(
+          borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(
+              sigmaX: LiquidGlass.blurMedium,
+              sigmaY: LiquidGlass.blurMedium,
+            ),
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.md,
+                vertical: AppSpacing.sm,
+              ),
+              decoration: BoxDecoration(
+                color: backgroundColor,
+                borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
+                border: Border.all(
+                  color: isDark
+                      ? const Color(0xFF38383A)
+                      : const Color(0xFFD1D1D6),
+                  width: LiquidGlass.borderWidth,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(icon, color: accentColor, size: AppSpacing.iconSize),
+                  const SizedBox(width: AppSpacing.sm),
+                  Expanded(
+                    child: Text(
+                      message,
+                      style: TextStyle(
+                        color: textColor,
+                        fontSize: 15, // iOS Subhead
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
-        backgroundColor: colorScheme.inverseSurface,
+        backgroundColor: CupertinoColors.transparent,
+        elevation: 0,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.cardRadiusSmall),
+        padding: EdgeInsets.zero,
+        margin: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.pageHorizontalPadding,
+          vertical: AppSpacing.md,
         ),
-        margin: const EdgeInsets.all(AppSpacing.md),
+        duration: const Duration(seconds: 3),
       ),
     );
   }

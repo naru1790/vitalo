@@ -1,45 +1,54 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 
-/// A reusable segmented button component with consistent styling.
-/// Uses inputRadius (12px) for form control aesthetic.
+import '../theme.dart';
+
+/// iOS-style sliding segmented control following Apple HIG.
+/// Thin wrapper around CupertinoSlidingSegmentedControl.
+///
+/// Features:
+/// - Native iOS pill-shaped sliding thumb animation
+/// - Built-in dark/light mode support
+/// - iOS 26 Liquid Glass design
 class AppSegmentedButton<T extends Object> extends StatelessWidget {
   const AppSegmentedButton({
     super.key,
-    required this.segments,
-    required this.selected,
-    required this.onSelectionChanged,
-    this.emptySelectionAllowed = false,
-    this.multiSelectionEnabled = false,
+    required this.children,
+    required this.groupValue,
+    required this.onValueChanged,
+    this.padding,
   });
 
-  /// The segments to display in the button.
-  final List<ButtonSegment<T>> segments;
+  /// Map of segment values to their widget labels.
+  /// Example: {0: Text('Day'), 1: Text('Week'), 2: Text('Month')}
+  final Map<T, Widget> children;
 
-  /// The currently selected value(s).
-  final Set<T> selected;
+  /// The currently selected value.
+  final T groupValue;
 
   /// Callback when selection changes.
-  final ValueChanged<Set<T>> onSelectionChanged;
+  final ValueChanged<T?> onValueChanged;
 
-  /// Whether empty selection is allowed.
-  final bool emptySelectionAllowed;
-
-  /// Whether multiple segments can be selected.
-  final bool multiSelectionEnabled;
+  /// Padding around the control. Defaults to iOS standard.
+  final EdgeInsetsGeometry? padding;
 
   @override
   Widget build(BuildContext context) {
-    return SegmentedButton<T>(
-      showSelectedIcon: false,
-      segments: segments,
-      selected: selected,
-      emptySelectionAllowed: emptySelectionAllowed,
-      multiSelectionEnabled: multiSelectionEnabled,
-      onSelectionChanged: onSelectionChanged,
-      // Style is handled by theme - just ensure no elevation
-      style: ButtonStyle(
-        elevation: WidgetStateProperty.all(0),
-        shadowColor: WidgetStateProperty.all(Colors.transparent),
+    // CupertinoSlidingSegmentedControl handles all styling natively
+    return CupertinoSlidingSegmentedControl<T>(
+      groupValue: groupValue,
+      onValueChanged: onValueChanged,
+      padding: padding ?? const EdgeInsets.all(AppSpacing.xxs),
+      children: children.map(
+        (key, widget) => MapEntry(
+          key,
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.sm,
+              vertical: AppSpacing.xxs,
+            ),
+            child: widget,
+          ),
+        ),
       ),
     );
   }

@@ -1,4 +1,6 @@
-import 'package:flutter/material.dart';
+import 'dart:ui';
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 
 import '../theme.dart';
@@ -13,25 +15,25 @@ enum DietIdentity {
   vegan(
     'Vegan',
     'Plant-based diet, no dairy or meat',
-    Icons.eco_rounded,
+    CupertinoIcons.tree,
     DietColors.vegan,
   ),
   vegetarian(
     'Vegetarian',
     'No meat or fish, dairy is fine',
-    Icons.spa_rounded,
+    CupertinoIcons.leaf_arrow_circlepath,
     DietColors.vegetarian,
   ),
   eggetarian(
     'Eggetarian',
     'Vegetarian diet that includes eggs',
-    Icons.egg_rounded,
+    CupertinoIcons.circle_fill,
     DietColors.eggetarian,
   ),
   omnivore(
     'Omnivore',
     'Flexible diet, eats all food types',
-    Icons.restaurant_rounded,
+    CupertinoIcons.square_grid_2x2_fill,
     DietColors.omnivore,
   );
 
@@ -168,11 +170,8 @@ class DietaryPreferencesSheet extends StatefulWidget {
     required BuildContext context,
     DietaryPreferencesResult? initialResult,
   }) async {
-    return showModalBottomSheet<DietaryPreferencesResult>(
+    return showCupertinoModalPopup<DietaryPreferencesResult>(
       context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      backgroundColor: Colors.transparent,
       builder: (context) => DietaryPreferencesSheet(
         initialResult: initialResult,
         onSaved: (result) => Navigator.pop(context, result),
@@ -352,188 +351,217 @@ class _DietaryPreferencesSheetState extends State<DietaryPreferencesSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
+    final surfaceColor = CupertinoColors.systemBackground.resolveFrom(context);
+    final labelColor = CupertinoColors.label.resolveFrom(context);
+    final secondaryLabel = CupertinoColors.secondaryLabel.resolveFrom(context);
+    final separatorColor = CupertinoColors.separator.resolveFrom(context);
+    final isDark = CupertinoTheme.brightnessOf(context) == Brightness.dark;
 
-    return Container(
-      constraints: BoxConstraints(
-        maxHeight: MediaQuery.sizeOf(context).height * 0.9,
+    return ClipRRect(
+      borderRadius: const BorderRadius.vertical(
+        top: Radius.circular(AppSpacing.cardRadiusLarge),
       ),
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(AppSpacing.cardRadiusLarge),
-        ),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Drag handle
-          Padding(
-            padding: const EdgeInsets.only(top: AppSpacing.sm),
-            child: Container(
-              width: 32,
-              height: 4,
-              decoration: BoxDecoration(
-                color: colorScheme.outlineVariant,
-                borderRadius: BorderRadius.circular(2),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+        child: Container(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.sizeOf(context).height * 0.9,
+          ),
+          decoration: BoxDecoration(
+            color: isDark
+                ? surfaceColor.withValues(alpha: 0.85)
+                : surfaceColor.withValues(alpha: 0.9),
+            borderRadius: const BorderRadius.vertical(
+              top: Radius.circular(AppSpacing.cardRadiusLarge),
+            ),
+            border: Border(
+              top: BorderSide(
+                color: separatorColor.withValues(alpha: 0.2),
+                width: LiquidGlass.borderWidth,
               ),
             ),
+            boxShadow: [
+              BoxShadow(
+                color: CupertinoColors.black.withValues(alpha: 0.1),
+                blurRadius: 20,
+                offset: const Offset(0, -8),
+              ),
+            ],
           ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Drag handle
+              Padding(
+                padding: const EdgeInsets.only(top: AppSpacing.sm),
+                child: Container(
+                  width: 32,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: separatorColor,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
 
-          // Header
-          Padding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.xl,
-              AppSpacing.lg,
-              AppSpacing.xl,
-              AppSpacing.sm,
-            ),
-            child: Row(
-              children: [
-                Expanded(
+              // Header
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.xl,
+                  AppSpacing.lg,
+                  AppSpacing.xl,
+                  AppSpacing.sm,
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Dietary Preferences',
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w600,
+                              color: labelColor,
+                            ),
+                          ),
+                          const SizedBox(height: AppSpacing.xxs),
+                          Text(
+                            'Help us personalize your nutrition',
+                            style: TextStyle(
+                              fontSize: 15,
+                              color: secondaryLabel,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    CupertinoButton.filled(
+                      onPressed: _identity != null ? _confirmSelection : null,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.lg,
+                        vertical: AppSpacing.sm,
+                      ),
+                      borderRadius: BorderRadius.circular(
+                        AppSpacing.buttonRadius,
+                      ),
+                      child: const Text('Save'),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Scrollable content
+              Flexible(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.xl,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Dietary Preferences',
-                        style: textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: colorScheme.onSurface,
-                        ),
+                      const SizedBox(height: AppSpacing.lg),
+
+                      // Layer 1: Base Identity
+                      _buildSectionHeader(
+                        context,
+                        'What describes you best?',
+                        'This helps filter your diet options',
                       ),
-                      const SizedBox(height: AppSpacing.xxs),
-                      Text(
-                        'Help us personalize your nutrition',
-                        style: textTheme.bodySmall?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
+                      const SizedBox(height: AppSpacing.md),
+                      _buildIdentityCards(context),
+
+                      // Layer 2: Weekly Rhythm (conditional)
+                      if (_showWeeklyRhythm)
+                        Padding(
+                          padding: const EdgeInsets.only(
+                            top: AppSpacing.sectionSpacing,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildSectionHeader(
+                                context,
+                                'Weekly Rhythm',
+                                'Any specific veg-only days?',
+                              ),
+                              const SizedBox(height: AppSpacing.md),
+                              _buildWeekDayToggles(context),
+                            ],
+                          ),
                         ),
-                      ),
+
+                      // Layer 3: Lifestyle Choices (merged)
+                      if (_identity != null)
+                        Padding(
+                          padding: const EdgeInsets.only(
+                            top: AppSpacing.sectionSpacing,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildSectionHeader(
+                                context,
+                                'Lifestyle Choices',
+                                'Your dietary preferences',
+                              ),
+                              const SizedBox(height: AppSpacing.md),
+                              _buildLifestyleChips(context),
+                              _buildLifestyleInlineInput(context),
+                            ],
+                          ),
+                        ),
+
+                      // Layer 4: Allergies (everyone)
+                      if (_identity != null)
+                        Padding(
+                          padding: const EdgeInsets.only(
+                            top: AppSpacing.sectionSpacing,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildSectionHeader(
+                                context,
+                                'Allergies',
+                                'Medical restrictions we must respect',
+                              ),
+                              const SizedBox(height: AppSpacing.md),
+                              _buildAllergyChips(context),
+                              _buildAllergyInlineInput(context),
+                            ],
+                          ),
+                        ),
+
+                      // Layer 6: Diet Goal (conditional on identity)
+                      if (_identity != null)
+                        Padding(
+                          padding: const EdgeInsets.only(
+                            top: AppSpacing.sectionSpacing,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildSectionHeader(
+                                context,
+                                'Diet Goal',
+                                'Optional focus for your nutrition',
+                              ),
+                              const SizedBox(height: AppSpacing.md),
+                              _buildGoalSelector(context),
+                            ],
+                          ),
+                        ),
+
+                      const SizedBox(height: AppSpacing.xxl),
                     ],
                   ),
                 ),
-                FilledButton(
-                  onPressed: _identity != null ? _confirmSelection : null,
-                  style: FilledButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.lg,
-                      vertical: AppSpacing.sm,
-                    ),
-                    minimumSize: Size.zero,
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  ),
-                  child: const Text('Save'),
-                ),
-              ],
-            ),
-          ),
-
-          // Scrollable content
-          Flexible(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: AppSpacing.lg),
-
-                  // Layer 1: Base Identity
-                  _buildSectionHeader(
-                    context,
-                    'What describes you best?',
-                    'This helps filter your diet options',
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                  _buildIdentityCards(colorScheme, textTheme),
-
-                  // Layer 2: Weekly Rhythm (conditional)
-                  if (_showWeeklyRhythm)
-                    Padding(
-                      padding: const EdgeInsets.only(
-                        top: AppSpacing.sectionSpacing,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _buildSectionHeader(
-                            context,
-                            'Weekly Rhythm',
-                            'Any specific veg-only days?',
-                          ),
-                          const SizedBox(height: AppSpacing.md),
-                          _buildWeekDayToggles(colorScheme, textTheme),
-                        ],
-                      ),
-                    ),
-
-                  // Layer 3: Lifestyle Choices (merged)
-                  if (_identity != null)
-                    Padding(
-                      padding: const EdgeInsets.only(
-                        top: AppSpacing.sectionSpacing,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _buildSectionHeader(
-                            context,
-                            'Lifestyle Choices',
-                            'Your dietary preferences',
-                          ),
-                          const SizedBox(height: AppSpacing.md),
-                          _buildLifestyleChips(colorScheme, textTheme),
-                          _buildLifestyleInlineInput(colorScheme, textTheme),
-                        ],
-                      ),
-                    ),
-
-                  // Layer 4: Allergies (everyone)
-                  if (_identity != null)
-                    Padding(
-                      padding: const EdgeInsets.only(
-                        top: AppSpacing.sectionSpacing,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _buildSectionHeader(
-                            context,
-                            'Allergies',
-                            'Medical restrictions we must respect',
-                          ),
-                          const SizedBox(height: AppSpacing.md),
-                          _buildAllergyChips(colorScheme, textTheme),
-                          _buildAllergyInlineInput(colorScheme, textTheme),
-                        ],
-                      ),
-                    ),
-
-                  // Layer 6: Diet Goal (conditional on identity)
-                  if (_identity != null)
-                    Padding(
-                      padding: const EdgeInsets.only(
-                        top: AppSpacing.sectionSpacing,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _buildSectionHeader(
-                            context,
-                            'Diet Goal',
-                            'Optional focus for your nutrition',
-                          ),
-                          const SizedBox(height: AppSpacing.md),
-                          _buildGoalSelector(colorScheme, textTheme),
-                        ],
-                      ),
-                    ),
-
-                  const SizedBox(height: AppSpacing.xxl),
-                ],
               ),
-            ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -543,123 +571,121 @@ class _DietaryPreferencesSheetState extends State<DietaryPreferencesSheet> {
     String title,
     String subtitle,
   ) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
+    final labelColor = CupertinoColors.label.resolveFrom(context);
+    final secondaryLabel = CupertinoColors.secondaryLabel.resolveFrom(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           title,
-          style: textTheme.titleMedium?.copyWith(
+          style: TextStyle(
+            fontSize: 17,
             fontWeight: FontWeight.w600,
-            color: colorScheme.onSurface,
+            color: labelColor,
           ),
         ),
         const SizedBox(height: AppSpacing.xxs),
-        Text(
-          subtitle,
-          style: textTheme.bodySmall?.copyWith(
-            color: colorScheme.onSurfaceVariant,
-          ),
-        ),
+        Text(subtitle, style: TextStyle(fontSize: 15, color: secondaryLabel)),
       ],
     );
   }
 
-  Widget _buildIdentityCards(ColorScheme colorScheme, TextTheme textTheme) {
+  Widget _buildIdentityCards(BuildContext context) {
+    final primaryColor = CupertinoTheme.of(context).primaryColor;
+    final labelColor = CupertinoColors.label.resolveFrom(context);
+    final secondaryLabel = CupertinoColors.secondaryLabel.resolveFrom(context);
+    final tertiaryFill = CupertinoColors.tertiarySystemFill.resolveFrom(
+      context,
+    );
+    final separatorColor = CupertinoColors.separator.resolveFrom(context);
+
     return Column(
       children: DietIdentity.values.map((identity) {
         final isSelected = _identity == identity;
         return Padding(
           padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: () {
-                HapticFeedback.selectionClick();
-                setState(() {
-                  _identity = identity;
-                  // Clear invalid exclusions when identity changes
-                  _exclusions = _exclusions.intersection(_allValidExclusions);
-                  // Clear veg days if not applicable
-                  if (!_showWeeklyRhythm) {
-                    _vegDays = {};
-                  }
-                });
-              },
-              borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-              child: AnimatedContainer(
-                duration: AppSpacing.durationMedium,
-                curve: Curves.easeOut,
-                padding: const EdgeInsets.all(AppSpacing.md),
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? colorScheme.primaryContainer
-                      : colorScheme.surfaceContainerLow,
-                  borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-                  border: Border.all(
-                    color: isSelected
-                        ? colorScheme.primary
-                        : colorScheme.outlineVariant,
-                    width: isSelected ? 2 : 1,
+          child: GestureDetector(
+            onTap: () {
+              HapticFeedback.selectionClick();
+              setState(() {
+                _identity = identity;
+                // Clear invalid exclusions when identity changes
+                _exclusions = _exclusions.intersection(_allValidExclusions);
+                // Clear veg days if not applicable
+                if (!_showWeeklyRhythm) {
+                  _vegDays = {};
+                }
+              });
+            },
+            child: AnimatedContainer(
+              duration: AppSpacing.durationMedium,
+              curve: Curves.easeOut,
+              padding: const EdgeInsets.all(AppSpacing.md),
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? primaryColor.withValues(alpha: 0.15)
+                    : tertiaryFill,
+                borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
+                border: Border.all(
+                  color: isSelected ? primaryColor : separatorColor,
+                  width: isSelected ? 1.5 : LiquidGlass.borderWidth,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: AppSpacing.touchTargetMin,
+                    height: AppSpacing.touchTargetMin,
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? identity.color
+                          : identity.color.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(
+                        AppSpacing.cardRadiusSmall,
+                      ),
+                    ),
+                    child: Icon(
+                      identity.icon,
+                      color: isSelected
+                          ? CupertinoColors.white
+                          : identity.color,
+                      size: AppSpacing.iconSize,
+                    ),
                   ),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      width: AppSpacing.touchTargetMin,
-                      height: AppSpacing.touchTargetMin,
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? identity.color
-                            : identity.color.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(
-                          AppSpacing.cardRadiusSmall,
+                  const SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          identity.label,
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            color: isSelected ? primaryColor : labelColor,
+                          ),
                         ),
-                      ),
-                      child: Icon(
-                        identity.icon,
-                        color: isSelected ? Colors.white : identity.color,
-                        size: AppSpacing.iconSize,
-                      ),
-                    ),
-                    const SizedBox(width: AppSpacing.md),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            identity.label,
-                            style: textTheme.titleSmall?.copyWith(
-                              fontWeight: FontWeight.w600,
-                              color: isSelected
-                                  ? colorScheme.onPrimaryContainer
-                                  : colorScheme.onSurface,
-                            ),
+                        const SizedBox(height: AppSpacing.xxs),
+                        Text(
+                          identity.description,
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: isSelected
+                                ? primaryColor.withValues(alpha: 0.8)
+                                : secondaryLabel,
                           ),
-                          const SizedBox(height: AppSpacing.xxs),
-                          Text(
-                            identity.description,
-                            style: textTheme.bodySmall?.copyWith(
-                              color: isSelected
-                                  ? colorScheme.onPrimaryContainer.withValues(
-                                      alpha: 0.8,
-                                    )
-                                  : colorScheme.onSurfaceVariant,
-                            ),
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-                    if (isSelected)
-                      Icon(
-                        Icons.check_circle_rounded,
-                        color: colorScheme.primary,
-                        size: AppSpacing.iconSize,
-                      ),
-                  ],
-                ),
+                  ),
+                  if (isSelected)
+                    Icon(
+                      CupertinoIcons.checkmark_circle_fill,
+                      color: primaryColor,
+                      size: AppSpacing.iconSize,
+                    ),
+                ],
               ),
             ),
           ),
@@ -668,7 +694,13 @@ class _DietaryPreferencesSheetState extends State<DietaryPreferencesSheet> {
     );
   }
 
-  Widget _buildWeekDayToggles(ColorScheme colorScheme, TextTheme textTheme) {
+  Widget _buildWeekDayToggles(BuildContext context) {
+    final tertiaryFill = CupertinoColors.tertiarySystemFill.resolveFrom(
+      context,
+    );
+    final separatorColor = CupertinoColors.separator.resolveFrom(context);
+    final secondaryLabel = CupertinoColors.secondaryLabel.resolveFrom(context);
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: List.generate(7, (index) {
@@ -690,22 +722,19 @@ class _DietaryPreferencesSheetState extends State<DietaryPreferencesSheet> {
             height: AppSpacing.touchTargetMin,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: isSelected
-                  ? _vegDayColor
-                  : colorScheme.surfaceContainerLow,
+              color: isSelected ? _vegDayColor : tertiaryFill,
               border: Border.all(
-                color: isSelected ? _vegDayColor : colorScheme.outlineVariant,
-                width: 1.5,
+                color: isSelected ? _vegDayColor : separatorColor,
+                width: isSelected ? 1.5 : LiquidGlass.borderWidth,
               ),
             ),
             child: Center(
               child: Text(
                 _weekDays[index],
-                style: textTheme.labelMedium?.copyWith(
+                style: TextStyle(
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: isSelected
-                      ? Colors.white
-                      : colorScheme.onSurfaceVariant,
+                  color: isSelected ? CupertinoColors.white : secondaryLabel,
                 ),
               ),
             ),
@@ -715,107 +744,63 @@ class _DietaryPreferencesSheetState extends State<DietaryPreferencesSheet> {
     );
   }
 
-  Widget _buildLifestyleChips(ColorScheme colorScheme, TextTheme textTheme) {
+  Widget _buildLifestyleChips(BuildContext context) {
     final validChoices = _validLifestyleChoices;
 
     return Wrap(
       spacing: AppSpacing.xs,
       runSpacing: AppSpacing.xs,
       children: [
-        // Standard lifestyle chips
+        // Standard lifestyle pills
         ...validChoices.map((choice) {
           final isSelected = _exclusions.contains(choice);
-          return FilterChip(
-            label: Text(choice.label),
-            selected: isSelected,
-            onSelected: (selected) {
-              HapticFeedback.selectionClick();
+          return _IOSPill(
+            label: choice.label,
+            isSelected: isSelected,
+            onTap: () {
               setState(() {
-                if (selected) {
-                  _exclusions.add(choice);
-                } else {
+                if (isSelected) {
                   _exclusions.remove(choice);
+                } else {
+                  _exclusions.add(choice);
                 }
               });
             },
-            selectedColor: colorScheme.tertiaryContainer,
-            checkmarkColor: colorScheme.onTertiaryContainer,
-            labelStyle: textTheme.labelMedium?.copyWith(
-              color: isSelected
-                  ? colorScheme.onTertiaryContainer
-                  : colorScheme.onSurfaceVariant,
-              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-            ),
-            side: BorderSide(
-              color: isSelected
-                  ? colorScheme.tertiary
-                  : colorScheme.outlineVariant,
-              width: isSelected ? 1.5 : 1,
-            ),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
-            ),
+            selectedColor: DietColors.lifestyle,
+            selectedBorderColor: DietColors.lifestyleBorder,
           );
         }),
-        // Custom lifestyle chips (deletable)
+        // Custom lifestyle pills (deletable)
         ..._customLifestyle.map((custom) {
-          return InputChip(
-            label: Text(custom),
-            onDeleted: () {
-              HapticFeedback.selectionClick();
-              setState(() => _customLifestyle.remove(custom));
-            },
-            backgroundColor: colorScheme.tertiaryContainer,
-            deleteIconColor: colorScheme.onTertiaryContainer,
-            labelStyle: textTheme.labelMedium?.copyWith(
-              color: colorScheme.onTertiaryContainer,
-              fontWeight: FontWeight.w600,
-            ),
-            side: BorderSide(color: colorScheme.tertiary, width: 1.5),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
-            ),
+          return _IOSDeletablePill(
+            label: custom,
+            onDeleted: () => setState(() => _customLifestyle.remove(custom)),
+            backgroundColor: DietColors.lifestyle,
+            borderColor: DietColors.lifestyleBorder,
           );
         }),
-        // "+ Other" chip or inline input
+        // "+ Other" pill
         if (!_showLifestyleInput)
-          ActionChip(
-            label: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.add_rounded,
-                  size: 18,
-                  color: colorScheme.onSurfaceVariant,
-                ),
-                const SizedBox(width: 4),
-                const Text('Other'),
-              ],
-            ),
-            onPressed: () {
-              HapticFeedback.selectionClick();
+          _IOSActionPill(
+            label: 'Other',
+            onTap: () {
               setState(() => _showLifestyleInput = true);
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 _lifestyleFocusNode.requestFocus();
               });
             },
-            labelStyle: textTheme.labelMedium?.copyWith(
-              color: colorScheme.onSurfaceVariant,
-              fontWeight: FontWeight.w500,
-            ),
-            side: BorderSide(color: colorScheme.outlineVariant),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
-            ),
           ),
       ],
     );
   }
 
-  Widget _buildLifestyleInlineInput(
-    ColorScheme colorScheme,
-    TextTheme textTheme,
-  ) {
+  Widget _buildLifestyleInlineInput(BuildContext context) {
+    final tertiaryFill = CupertinoColors.tertiarySystemFill.resolveFrom(
+      context,
+    );
+    final secondaryLabel = CupertinoColors.secondaryLabel.resolveFrom(context);
+    final primaryColor = CupertinoTheme.of(context).primaryColor;
+
     return AnimatedSize(
       duration: AppSpacing.durationFast,
       curve: Curves.easeOutCubic,
@@ -824,159 +809,118 @@ class _DietaryPreferencesSheetState extends State<DietaryPreferencesSheet> {
           ? const SizedBox.shrink()
           : Padding(
               padding: const EdgeInsets.only(top: AppSpacing.sm),
-              child: TextField(
-                controller: _lifestyleController,
-                focusNode: _lifestyleFocusNode,
-                textCapitalization: TextCapitalization.words,
-                decoration: InputDecoration(
-                  hintText: 'e.g., No Nightshades, Low FODMAP',
-                  hintStyle: textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                  filled: true,
-                  fillColor: colorScheme.surfaceContainerLow,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.md,
-                    vertical: AppSpacing.sm,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
-                    borderSide: BorderSide.none,
-                  ),
-                  suffixIcon: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: Icon(
-                          Icons.close_rounded,
-                          color: colorScheme.onSurfaceVariant,
-                          size: 20,
-                        ),
-                        onPressed: () {
-                          _lifestyleController.clear();
-                          setState(() => _showLifestyleInput = false);
-                        },
-                        visualDensity: VisualDensity.compact,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: CupertinoTextField(
+                      controller: _lifestyleController,
+                      focusNode: _lifestyleFocusNode,
+                      textCapitalization: TextCapitalization.words,
+                      placeholder: 'e.g., No Nightshades, Low FODMAP',
+                      placeholderStyle: TextStyle(
+                        fontSize: 17,
+                        color: secondaryLabel,
                       ),
-                      IconButton(
-                        icon: Icon(
-                          Icons.check_rounded,
-                          color: colorScheme.primary,
-                          size: 20,
-                        ),
-                        onPressed: _submitLifestyleInput,
-                        visualDensity: VisualDensity.compact,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.md,
+                        vertical: AppSpacing.sm,
                       ),
-                    ],
+                      decoration: BoxDecoration(
+                        color: tertiaryFill,
+                        borderRadius: BorderRadius.circular(
+                          AppSpacing.inputRadius,
+                        ),
+                      ),
+                      onSubmitted: (_) => _submitLifestyleInput(),
+                    ),
                   ),
-                ),
-                onSubmitted: (_) => _submitLifestyleInput(),
+                  const SizedBox(width: AppSpacing.xs),
+                  CupertinoButton(
+                    padding: const EdgeInsets.all(AppSpacing.xs),
+                    minSize: 0,
+                    onPressed: () {
+                      _lifestyleController.clear();
+                      setState(() => _showLifestyleInput = false);
+                    },
+                    child: Icon(
+                      CupertinoIcons.xmark_circle_fill,
+                      color: secondaryLabel,
+                      size: 24,
+                    ),
+                  ),
+                  CupertinoButton(
+                    padding: const EdgeInsets.all(AppSpacing.xs),
+                    minSize: 0,
+                    onPressed: _submitLifestyleInput,
+                    child: Icon(
+                      CupertinoIcons.checkmark_circle_fill,
+                      color: primaryColor,
+                      size: 24,
+                    ),
+                  ),
+                ],
               ),
             ),
     );
   }
 
-  Widget _buildAllergyChips(ColorScheme colorScheme, TextTheme textTheme) {
+  Widget _buildAllergyChips(BuildContext context) {
     final validAllergies = _validAllergies;
 
     return Wrap(
       spacing: AppSpacing.xs,
       runSpacing: AppSpacing.xs,
       children: [
-        // Standard allergy chips
+        // Standard allergy pills
         ...validAllergies.map((allergy) {
           final isSelected = _exclusions.contains(allergy);
-          return FilterChip(
-            label: Text(allergy.label),
-            selected: isSelected,
-            onSelected: (selected) {
-              HapticFeedback.selectionClick();
+          return _IOSPill(
+            label: allergy.label,
+            isSelected: isSelected,
+            onTap: () {
               setState(() {
-                if (selected) {
-                  _exclusions.add(allergy);
-                } else {
+                if (isSelected) {
                   _exclusions.remove(allergy);
+                } else {
+                  _exclusions.add(allergy);
                 }
               });
             },
-            selectedColor: colorScheme.errorContainer,
-            checkmarkColor: colorScheme.onErrorContainer,
-            labelStyle: textTheme.labelMedium?.copyWith(
-              color: isSelected
-                  ? colorScheme.onErrorContainer
-                  : colorScheme.onSurfaceVariant,
-              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-            ),
-            side: BorderSide(
-              color: isSelected
-                  ? colorScheme.error
-                  : colorScheme.outlineVariant,
-              width: isSelected ? 1.5 : 1,
-            ),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
-            ),
+            selectedColor: DietColors.allergy,
+            selectedBorderColor: DietColors.allergyBorder,
           );
         }),
-        // Custom allergy chips (deletable)
+        // Custom allergy pills (deletable)
         ..._customAllergies.map((custom) {
-          return InputChip(
-            label: Text(custom),
-            onDeleted: () {
-              HapticFeedback.selectionClick();
-              setState(() => _customAllergies.remove(custom));
-            },
-            backgroundColor: colorScheme.errorContainer,
-            deleteIconColor: colorScheme.onErrorContainer,
-            labelStyle: textTheme.labelMedium?.copyWith(
-              color: colorScheme.onErrorContainer,
-              fontWeight: FontWeight.w600,
-            ),
-            side: BorderSide(color: colorScheme.error, width: 1.5),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
-            ),
+          return _IOSDeletablePill(
+            label: custom,
+            onDeleted: () => setState(() => _customAllergies.remove(custom)),
+            backgroundColor: DietColors.allergy,
+            borderColor: DietColors.allergyBorder,
           );
         }),
-        // "+ Other" chip or inline input
+        // "+ Other" pill
         if (!_showAllergyInput)
-          ActionChip(
-            label: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.add_rounded,
-                  size: 18,
-                  color: colorScheme.onSurfaceVariant,
-                ),
-                const SizedBox(width: 4),
-                const Text('Other'),
-              ],
-            ),
-            onPressed: () {
-              HapticFeedback.selectionClick();
+          _IOSActionPill(
+            label: 'Other',
+            onTap: () {
               setState(() => _showAllergyInput = true);
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 _allergyFocusNode.requestFocus();
               });
             },
-            labelStyle: textTheme.labelMedium?.copyWith(
-              color: colorScheme.onSurfaceVariant,
-              fontWeight: FontWeight.w500,
-            ),
-            side: BorderSide(color: colorScheme.outlineVariant),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
-            ),
           ),
       ],
     );
   }
 
-  Widget _buildAllergyInlineInput(
-    ColorScheme colorScheme,
-    TextTheme textTheme,
-  ) {
+  Widget _buildAllergyInlineInput(BuildContext context) {
+    final tertiaryFill = CupertinoColors.tertiarySystemFill.resolveFrom(
+      context,
+    );
+    final secondaryLabel = CupertinoColors.secondaryLabel.resolveFrom(context);
+    final primaryColor = CupertinoTheme.of(context).primaryColor;
+
     return AnimatedSize(
       duration: AppSpacing.durationFast,
       curve: Curves.easeOutCubic,
@@ -985,71 +929,73 @@ class _DietaryPreferencesSheetState extends State<DietaryPreferencesSheet> {
           ? const SizedBox.shrink()
           : Padding(
               padding: const EdgeInsets.only(top: AppSpacing.sm),
-              child: TextField(
-                controller: _allergyController,
-                focusNode: _allergyFocusNode,
-                textCapitalization: TextCapitalization.words,
-                decoration: InputDecoration(
-                  hintText: 'e.g., Mustard, Celery, Corn',
-                  hintStyle: textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                  filled: true,
-                  fillColor: colorScheme.surfaceContainerLow,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.md,
-                    vertical: AppSpacing.sm,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
-                    borderSide: BorderSide.none,
-                  ),
-                  suffixIcon: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: Icon(
-                          Icons.close_rounded,
-                          color: colorScheme.onSurfaceVariant,
-                          size: 20,
-                        ),
-                        onPressed: () {
-                          _allergyController.clear();
-                          setState(() => _showAllergyInput = false);
-                        },
-                        visualDensity: VisualDensity.compact,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: CupertinoTextField(
+                      controller: _allergyController,
+                      focusNode: _allergyFocusNode,
+                      textCapitalization: TextCapitalization.words,
+                      placeholder: 'e.g., Mustard, Celery, Corn',
+                      placeholderStyle: TextStyle(
+                        fontSize: 17,
+                        color: secondaryLabel,
                       ),
-                      IconButton(
-                        icon: Icon(
-                          Icons.check_rounded,
-                          color: colorScheme.primary,
-                          size: 20,
-                        ),
-                        onPressed: _submitAllergyInput,
-                        visualDensity: VisualDensity.compact,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.md,
+                        vertical: AppSpacing.sm,
                       ),
-                    ],
+                      decoration: BoxDecoration(
+                        color: tertiaryFill,
+                        borderRadius: BorderRadius.circular(
+                          AppSpacing.inputRadius,
+                        ),
+                      ),
+                      onSubmitted: (_) => _submitAllergyInput(),
+                    ),
                   ),
-                ),
-                onSubmitted: (_) => _submitAllergyInput(),
+                  const SizedBox(width: AppSpacing.xs),
+                  CupertinoButton(
+                    padding: const EdgeInsets.all(AppSpacing.xs),
+                    minSize: 0,
+                    onPressed: () {
+                      _allergyController.clear();
+                      setState(() => _showAllergyInput = false);
+                    },
+                    child: Icon(
+                      CupertinoIcons.xmark_circle_fill,
+                      color: secondaryLabel,
+                      size: 24,
+                    ),
+                  ),
+                  CupertinoButton(
+                    padding: const EdgeInsets.all(AppSpacing.xs),
+                    minSize: 0,
+                    onPressed: _submitAllergyInput,
+                    child: Icon(
+                      CupertinoIcons.checkmark_circle_fill,
+                      color: primaryColor,
+                      size: 24,
+                    ),
+                  ),
+                ],
               ),
             ),
     );
   }
 
-  Widget _buildGoalSelector(ColorScheme colorScheme, TextTheme textTheme) {
+  Widget _buildGoalSelector(BuildContext context) {
     return Wrap(
       spacing: AppSpacing.xs,
       runSpacing: AppSpacing.xs,
       children: DietGoal.values.map((goal) {
         final isSelected = _goals.contains(goal);
-        return FilterChip(
-          label: Text(goal.label),
-          selected: isSelected,
-          onSelected: (selected) {
-            HapticFeedback.selectionClick();
+        return _IOSPill(
+          label: goal.label,
+          isSelected: isSelected,
+          onTap: () {
             setState(() {
-              if (selected) {
+              if (!isSelected) {
                 if (goal.isBalanced) {
                   // Selecting Balanced clears all other goals
                   _goals.clear();
@@ -1064,25 +1010,194 @@ class _DietaryPreferencesSheetState extends State<DietaryPreferencesSheet> {
               }
             });
           },
-          selectedColor: colorScheme.secondaryContainer,
-          checkmarkColor: colorScheme.onSecondaryContainer,
-          labelStyle: textTheme.labelMedium?.copyWith(
-            color: isSelected
-                ? colorScheme.onSecondaryContainer
-                : colorScheme.onSurfaceVariant,
-            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-          ),
-          side: BorderSide(
-            color: isSelected
-                ? colorScheme.secondary
-                : colorScheme.outlineVariant,
-            width: isSelected ? 1.5 : 1,
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
-          ),
+          selectedColor: DietColors.goal,
+          selectedBorderColor: DietColors.goalBorder,
         );
       }).toList(),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// iOS-STYLED PILL WIDGETS (Pure Cupertino - No Material Chips)
+// ═══════════════════════════════════════════════════════════════════════════
+
+/// iOS-styled selectable pill button (replaces FilterChip)
+class _IOSPill extends StatelessWidget {
+  const _IOSPill({
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+    required this.selectedColor,
+    required this.selectedBorderColor,
+  });
+
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+  final Color selectedColor;
+  final Color selectedBorderColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final tertiaryFill = CupertinoColors.tertiarySystemFill.resolveFrom(
+      context,
+    );
+    final separatorColor = CupertinoColors.separator.resolveFrom(context);
+    final secondaryLabel = CupertinoColors.secondaryLabel.resolveFrom(context);
+
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.selectionClick();
+        onTap();
+      },
+      child: AnimatedContainer(
+        duration: AppSpacing.durationFast,
+        curve: Curves.easeOut,
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.xs,
+        ),
+        decoration: BoxDecoration(
+          color: isSelected ? selectedColor : tertiaryFill,
+          borderRadius: BorderRadius.circular(AppSpacing.buttonRadiusPill),
+          border: Border.all(
+            color: isSelected ? selectedBorderColor : separatorColor,
+            width: isSelected ? 1.5 : LiquidGlass.borderWidth,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (isSelected) ...[
+              Icon(
+                CupertinoIcons.checkmark,
+                size: 14,
+                color: selectedBorderColor,
+              ),
+              const SizedBox(width: AppSpacing.xxs),
+            ],
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 14,
+                color: isSelected ? selectedBorderColor : secondaryLabel,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// iOS-styled deletable pill (replaces InputChip)
+class _IOSDeletablePill extends StatelessWidget {
+  const _IOSDeletablePill({
+    required this.label,
+    required this.onDeleted,
+    required this.backgroundColor,
+    required this.borderColor,
+  });
+
+  final String label;
+  final VoidCallback onDeleted;
+  final Color backgroundColor;
+  final Color borderColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.only(
+        left: AppSpacing.md,
+        right: AppSpacing.xs,
+        top: AppSpacing.xxs,
+        bottom: AppSpacing.xxs,
+      ),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(AppSpacing.buttonRadiusPill),
+        border: Border.all(color: borderColor, width: 1.5),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 14,
+              color: borderColor,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(width: AppSpacing.xxs),
+          GestureDetector(
+            onTap: () {
+              HapticFeedback.selectionClick();
+              onDeleted();
+            },
+            child: Icon(
+              CupertinoIcons.xmark_circle_fill,
+              size: 18,
+              color: borderColor.withValues(alpha: 0.7),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// iOS-styled action pill with + icon (replaces ActionChip)
+class _IOSActionPill extends StatelessWidget {
+  const _IOSActionPill({required this.label, required this.onTap});
+
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final tertiaryFill = CupertinoColors.tertiarySystemFill.resolveFrom(
+      context,
+    );
+    final separatorColor = CupertinoColors.separator.resolveFrom(context);
+    final secondaryLabel = CupertinoColors.secondaryLabel.resolveFrom(context);
+
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.selectionClick();
+        onTap();
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.xs,
+        ),
+        decoration: BoxDecoration(
+          color: tertiaryFill,
+          borderRadius: BorderRadius.circular(AppSpacing.buttonRadiusPill),
+          border: Border.all(
+            color: separatorColor,
+            width: LiquidGlass.borderWidth,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(CupertinoIcons.plus, size: 16, color: secondaryLabel),
+            const SizedBox(width: AppSpacing.xxs),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 14,
+                color: secondaryLabel,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

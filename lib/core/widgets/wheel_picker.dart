@@ -1,4 +1,6 @@
-import 'package:flutter/material.dart';
+import 'dart:ui';
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 
 import '../theme.dart';
@@ -41,7 +43,7 @@ class WheelGradientOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final surfaceColor = CupertinoColors.systemBackground.resolveFrom(context);
 
     return IgnorePointer(
       child: Stack(
@@ -56,10 +58,7 @@ class WheelGradientOverlay extends StatelessWidget {
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [
-                    colorScheme.surface,
-                    colorScheme.surface.withValues(alpha: 0),
-                  ],
+                  colors: [surfaceColor, surfaceColor.withValues(alpha: 0)],
                 ),
               ),
             ),
@@ -74,10 +73,7 @@ class WheelGradientOverlay extends StatelessWidget {
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [
-                    colorScheme.surface.withValues(alpha: 0),
-                    colorScheme.surface,
-                  ],
+                  colors: [surfaceColor.withValues(alpha: 0), surfaceColor],
                 ),
               ),
             ),
@@ -110,8 +106,9 @@ class SheetHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
+    final separatorColor = CupertinoColors.separator.resolveFrom(context);
+    final labelColor = CupertinoColors.label.resolveFrom(context);
+    final secondaryLabel = CupertinoColors.secondaryLabel.resolveFrom(context);
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -123,7 +120,7 @@ class SheetHeader extends StatelessWidget {
             width: 32,
             height: 4,
             decoration: BoxDecoration(
-              color: colorScheme.outlineVariant,
+              color: separatorColor,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -145,35 +142,38 @@ class SheetHeader extends StatelessWidget {
                   children: [
                     Text(
                       title,
-                      style: textTheme.titleLarge?.copyWith(
+                      style: TextStyle(
+                        fontSize: 22,
                         fontWeight: FontWeight.w600,
-                        color: colorScheme.onSurface,
+                        color: labelColor,
                       ),
                     ),
                     if (subtitle != null) ...[
                       const SizedBox(height: AppSpacing.xxs),
                       Text(
                         subtitle!,
-                        style: textTheme.bodySmall?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                        ),
+                        style: TextStyle(fontSize: 15, color: secondaryLabel),
                       ),
                     ],
                   ],
                 ),
               ),
               if (onDone != null)
-                FilledButton(
+                CupertinoButton.filled(
                   onPressed: doneEnabled ? onDone : null,
-                  style: FilledButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.lg,
-                      vertical: AppSpacing.sm,
-                    ),
-                    minimumSize: Size.zero,
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.lg,
+                    vertical: AppSpacing.sm,
                   ),
-                  child: const Text('Done'),
+                  minSize: 0,
+                  child: Text(
+                    'Done',
+                    style: TextStyle(
+                      color: doneEnabled
+                          ? CupertinoColors.white
+                          : CupertinoColors.white.withValues(alpha: 0.5),
+                    ),
+                  ),
                 ),
             ],
           ),
@@ -204,10 +204,10 @@ class WheelArrowIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final primaryColor = CupertinoTheme.of(context).primaryColor;
     return CustomPaint(
       size: Size(size, size * 1.5),
-      painter: _ArrowPainter(color: colorScheme.primary, direction: direction),
+      painter: _ArrowPainter(color: primaryColor, direction: direction),
     );
   }
 }
@@ -376,8 +376,8 @@ class _WheelPickerState extends State<WheelPicker> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
+    final primaryColor = CupertinoTheme.of(context).primaryColor;
+    final secondaryLabel = CupertinoColors.secondaryLabel.resolveFrom(context);
 
     return SizedBox(
       height: widget.height,
@@ -404,10 +404,9 @@ class _WheelPickerState extends State<WheelPicker> {
                 return Center(
                   child: Text(
                     _formatValue(value),
-                    style: textTheme.headlineMedium?.copyWith(
-                      color: isSelected
-                          ? colorScheme.primary
-                          : colorScheme.onSurfaceVariant,
+                    style: TextStyle(
+                      fontSize: 28,
+                      color: isSelected ? primaryColor : secondaryLabel,
                       fontWeight: isSelected
                           ? FontWeight.w600
                           : FontWeight.w400,
@@ -461,16 +460,16 @@ class WheelValueDisplay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
+    final primaryColor = CupertinoTheme.of(context).primaryColor;
 
     if (formatter != null) {
       // Custom formatted display (e.g., feet'inches")
       return Text(
         formatter!(value),
-        style: textTheme.displayMedium?.copyWith(
+        style: TextStyle(
+          fontSize: 48,
           fontWeight: FontWeight.w600,
-          color: colorScheme.primary,
+          color: primaryColor,
           height: 1,
         ),
       );
@@ -492,9 +491,10 @@ class WheelValueDisplay extends StatelessWidget {
 
     return Text(
       displayText,
-      style: textTheme.displayMedium?.copyWith(
+      style: TextStyle(
+        fontSize: 48,
         fontWeight: FontWeight.w600,
-        color: colorScheme.primary,
+        color: primaryColor,
         height: 1,
       ),
     );
@@ -516,12 +516,15 @@ class WheelUnitToggle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
+    final primaryColor = CupertinoTheme.of(context).primaryColor;
+    final tertiaryFill = CupertinoColors.tertiarySystemFill.resolveFrom(
+      context,
+    );
+    final secondaryLabel = CupertinoColors.secondaryLabel.resolveFrom(context);
 
     return Container(
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLow,
+        color: tertiaryFill,
         borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
       ),
       padding: const EdgeInsets.all(4),
@@ -546,18 +549,17 @@ class WheelUnitToggle extends StatelessWidget {
                 vertical: AppSpacing.sm,
               ),
               decoration: BoxDecoration(
-                color: isSelected ? colorScheme.primary : Colors.transparent,
+                color: isSelected ? primaryColor : const Color(0x00000000),
                 borderRadius: BorderRadius.circular(
                   AppSpacing.buttonRadius - 4,
                 ),
               ),
               child: Text(
                 label,
-                style: textTheme.labelLarge?.copyWith(
+                style: TextStyle(
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: isSelected
-                      ? colorScheme.onPrimary
-                      : colorScheme.onSurfaceVariant,
+                  color: isSelected ? CupertinoColors.white : secondaryLabel,
                 ),
               ),
             ),

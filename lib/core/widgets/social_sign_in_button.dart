@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 
 import '../theme.dart';
 
@@ -25,43 +25,46 @@ class SignInButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final surfaceColor = CupertinoColors.systemBackground.resolveFrom(context);
+    final labelColor = CupertinoColors.label.resolveFrom(context);
+    final separatorColor = CupertinoColors.separator.resolveFrom(context);
 
-    final effectiveBackgroundColor = backgroundColor ?? colorScheme.surface;
-    final effectiveForegroundColor = foregroundColor ?? colorScheme.onSurface;
-    final effectiveBorderColor = borderColor ?? colorScheme.outline;
+    final effectiveBackgroundColor = backgroundColor ?? surfaceColor;
+    final effectiveForegroundColor = foregroundColor ?? labelColor;
+    final effectiveBorderColor = borderColor ?? separatorColor;
 
     return SizedBox(
       width: double.infinity,
       height: AppSpacing.buttonHeight,
-      child: OutlinedButton.icon(
+      child: CupertinoButton(
+        padding: EdgeInsets.zero,
         onPressed: isLoading ? null : onPressed,
-        icon: isLoading
-            ? SizedBox(
-                width: AppSpacing.iconSizeSmall,
-                height: AppSpacing.iconSizeSmall,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation(effectiveForegroundColor),
-                ),
-              )
-            : icon,
-        label: Text(
-          isLoading ? 'Signing in...' : label,
-          style: theme.textTheme.labelLarge?.copyWith(
-            color: effectiveForegroundColor,
-            fontWeight: FontWeight.w600,
-            fontSize: 16,
-            letterSpacing: 0.2,
-          ),
-        ),
-        style: OutlinedButton.styleFrom(
-          backgroundColor: effectiveBackgroundColor,
-          foregroundColor: effectiveForegroundColor,
-          side: BorderSide(color: effectiveBorderColor, width: 1.5),
-          shape: RoundedRectangleBorder(
+        child: Container(
+          width: double.infinity,
+          height: AppSpacing.buttonHeight,
+          decoration: BoxDecoration(
+            color: effectiveBackgroundColor,
             borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
+            border: Border.all(color: effectiveBorderColor, width: 1.5),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (isLoading)
+                CupertinoActivityIndicator(color: effectiveForegroundColor)
+              else
+                icon,
+              const SizedBox(width: AppSpacing.sm),
+              Text(
+                isLoading ? 'Signing in...' : label,
+                style: TextStyle(
+                  color: effectiveForegroundColor,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
+                  letterSpacing: 0.2,
+                ),
+              ),
+            ],
           ),
         ),
       ),

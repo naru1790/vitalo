@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -64,18 +65,53 @@ class VitaloApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Platform-adaptive typography:
-    // iOS: SF Pro (system font) — Apple's native typeface
-    // Android: Outfit (headings) + Inter (body) via Google Fonts
-    TextTheme textTheme = createTextTheme(context);
-    VitaloTheme theme = VitaloTheme(textTheme);
+    // Get system brightness for Cupertino theme
+    final brightness = MediaQuery.platformBrightnessOf(context);
+    final isDark = brightness == Brightness.dark;
 
-    return MaterialApp.router(
+    // Select color scheme based on brightness (iOS 26 Liquid Glass)
+    final colorScheme = isDark
+        ? VitaloTheme.darkScheme()
+        : VitaloTheme.lightScheme();
+
+    return CupertinoApp.router(
       title: 'Vitalo',
       debugShowCheckedModeBanner: false,
-      themeMode: ThemeMode.system,
-      theme: theme.light(),
-      darkTheme: theme.dark(),
+      // iOS 26 Liquid Glass theme
+      theme: CupertinoThemeData(
+        brightness: brightness,
+        primaryColor: colorScheme.primary,
+        primaryContrastingColor: colorScheme.onPrimary,
+        scaffoldBackgroundColor: colorScheme.surface,
+        barBackgroundColor: colorScheme.surface.withValues(alpha: 0.85),
+        textTheme: CupertinoTextThemeData(
+          primaryColor: colorScheme.primary,
+          textStyle: TextStyle(
+            fontSize: 17,
+            fontWeight: FontWeight.w400,
+            letterSpacing: -0.41,
+            color: CupertinoColors.label.resolveFrom(context),
+          ),
+          navTitleTextStyle: TextStyle(
+            fontSize: 17,
+            fontWeight: FontWeight.w600,
+            letterSpacing: -0.41,
+            color: CupertinoColors.label.resolveFrom(context),
+          ),
+          navLargeTitleTextStyle: TextStyle(
+            fontSize: 34,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 0.37,
+            color: CupertinoColors.label.resolveFrom(context),
+          ),
+          actionTextStyle: TextStyle(
+            fontSize: 17,
+            fontWeight: FontWeight.w400,
+            letterSpacing: -0.41,
+            color: colorScheme.primary,
+          ),
+        ),
+      ),
       routerConfig: router,
     );
   }

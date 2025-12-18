@@ -1,5 +1,7 @@
+import 'dart:ui';
+
 import 'package:country_state_city/country_state_city.dart' as csc;
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 
 import '../theme.dart';
 
@@ -67,16 +69,9 @@ class LocationPickerSheet extends StatefulWidget {
     String? initialCountryCode,
     String? initialStateCode,
   }) async {
-    return showModalBottomSheet<LocationResult>(
+    return showCupertinoModalPopup<LocationResult>(
       context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      backgroundColor: Colors.transparent,
-      // Smooth transition animation
-      transitionAnimationController: AnimationController(
-        vsync: Navigator.of(context),
-        duration: const Duration(milliseconds: 300),
-      ),
+      barrierDismissible: true,
       builder: (context) => LocationPickerSheet(
         initialCountryCode: initialCountryCode,
         initialStateCode: initialStateCode,
@@ -242,56 +237,74 @@ class _LocationPickerSheetState extends State<LocationPickerSheet>
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final surfaceColor = CupertinoColors.systemBackground.resolveFrom(context);
+    final labelColor = CupertinoColors.label.resolveFrom(context);
 
     // Use fixed height - 50% of screen for compact presentation
     return FractionallySizedBox(
       heightFactor: 0.5,
-      child: Container(
-        decoration: BoxDecoration(
-          color: colorScheme.surface,
-          borderRadius: const BorderRadius.vertical(
-            top: Radius.circular(AppSpacing.cardRadiusLarge),
+      child: ClipRRect(
+        borderRadius: const BorderRadius.vertical(
+          top: Radius.circular(AppSpacing.cardRadiusLarge),
+        ),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+          child: Container(
+            decoration: BoxDecoration(
+              color: surfaceColor.withValues(alpha: 0.85),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(AppSpacing.cardRadiusLarge),
+              ),
+              border: Border(
+                top: BorderSide(
+                  color: labelColor.withValues(alpha: 0.1),
+                  width: LiquidGlass.borderWidth,
+                ),
+              ),
+            ),
+            child: Column(
+              children: [
+                _buildDragHandle(),
+                _buildHeader(),
+                _buildSearchBar(),
+                const SizedBox(height: AppSpacing.xs),
+                Expanded(
+                  child: _isLoading
+                      ? const Center(child: CupertinoActivityIndicator())
+                      : PageView(
+                          controller: _pageController,
+                          physics: const NeverScrollableScrollPhysics(),
+                          onPageChanged: (page) {
+                            setState(() => _currentStep = page);
+                          },
+                          children: [_buildCountriesPage(), _buildStatesPage()],
+                        ),
+                ),
+              ],
+            ),
           ),
         ),
-        child: Column(
-          children: [
-            _buildDragHandle(colorScheme),
-            _buildHeader(colorScheme),
-            _buildSearchBar(colorScheme),
-            const SizedBox(height: AppSpacing.xs),
-            Expanded(
-              child: _isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : PageView(
-                      controller: _pageController,
-                      physics: const NeverScrollableScrollPhysics(),
-                      onPageChanged: (page) {
-                        setState(() => _currentStep = page);
-                      },
-                      children: [_buildCountriesPage(), _buildStatesPage()],
-                    ),
-            ),
-          ],
-        ),
       ),
     );
   }
 
-  Widget _buildDragHandle(ColorScheme colorScheme) {
+  Widget _buildDragHandle() {
+    final labelColor = CupertinoColors.label.resolveFrom(context);
     return Container(
       margin: const EdgeInsets.only(top: AppSpacing.sm),
-      width: 32,
-      height: 4,
+      width: 36,
+      height: 5,
       decoration: BoxDecoration(
-        color: colorScheme.outlineVariant,
-        borderRadius: BorderRadius.circular(2),
+        color: labelColor.withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(2.5),
       ),
     );
   }
 
-  Widget _buildHeader(ColorScheme colorScheme) {
-    final textTheme = Theme.of(context).textTheme;
+  Widget _buildHeader() {
+    final labelColor = CupertinoColors.label.resolveFrom(context);
+    final secondaryLabel = CupertinoColors.secondaryLabel.resolveFrom(context);
+    final primaryColor = CupertinoTheme.of(context).primaryColor;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(
@@ -312,14 +325,12 @@ class _LocationPickerSheetState extends State<LocationPickerSheet>
               );
             },
             child: _currentStep == 1
-                ? IconButton(
+                ? CupertinoButton(
                     key: const ValueKey('back'),
+                    padding: EdgeInsets.zero,
+                    minSize: AppSpacing.touchTargetMin,
                     onPressed: _onBack,
-                    icon: const Icon(Icons.arrow_back_rounded),
-                    tooltip: 'Back to countries',
-                    style: IconButton.styleFrom(
-                      foregroundColor: colorScheme.onSurface,
-                    ),
+                    child: Icon(CupertinoIcons.back, color: primaryColor),
                   )
                 : const SizedBox(
                     key: ValueKey('spacer'),
@@ -337,16 +348,15 @@ class _LocationPickerSheetState extends State<LocationPickerSheet>
                       children: [
                         Text(
                           'Select Country',
-                          style: textTheme.titleLarge?.copyWith(
+                          style: TextStyle(
+                            fontSize: 22,
                             fontWeight: FontWeight.w600,
-                            color: colorScheme.onSurface,
+                            color: labelColor,
                           ),
                         ),
                         Text(
                           'For personalized health insights',
-                          style: textTheme.bodySmall?.copyWith(
-                            color: colorScheme.onSurfaceVariant,
-                          ),
+                          style: TextStyle(fontSize: 13, color: secondaryLabel),
                         ),
                       ],
                     )
@@ -355,16 +365,18 @@ class _LocationPickerSheetState extends State<LocationPickerSheet>
                       children: [
                         Text(
                           'Select State',
-                          style: textTheme.titleLarge?.copyWith(
+                          style: TextStyle(
+                            fontSize: 22,
                             fontWeight: FontWeight.w600,
-                            color: colorScheme.onSurface,
+                            color: labelColor,
                           ),
                         ),
                         if (_selectedCountry != null)
                           Text(
                             '${_selectedCountry!.flag} ${_selectedCountry!.name}',
-                            style: textTheme.bodySmall?.copyWith(
-                              color: colorScheme.onSurfaceVariant,
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: secondaryLabel,
                             ),
                           ),
                       ],
@@ -373,72 +385,80 @@ class _LocationPickerSheetState extends State<LocationPickerSheet>
           ),
 
           // Step indicator
-          _buildStepIndicator(colorScheme),
+          _buildStepIndicator(),
         ],
       ),
     );
   }
 
-  Widget _buildStepIndicator(ColorScheme colorScheme) {
+  Widget _buildStepIndicator() {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        _buildStepDot(0, colorScheme),
+        _buildStepDot(0),
         const SizedBox(width: AppSpacing.xs),
-        _buildStepDot(1, colorScheme),
+        _buildStepDot(1),
       ],
     );
   }
 
-  Widget _buildStepDot(int step, ColorScheme colorScheme) {
+  Widget _buildStepDot(int step) {
     final isActive = _currentStep >= step;
+    final primaryColor = CupertinoTheme.of(context).primaryColor;
+    final separatorColor = CupertinoColors.separator.resolveFrom(context);
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
       width: isActive ? 20 : 8,
       height: 8,
       decoration: BoxDecoration(
-        color: isActive ? colorScheme.primary : colorScheme.outlineVariant,
+        color: isActive ? primaryColor : separatorColor,
         borderRadius: BorderRadius.circular(4),
       ),
     );
   }
 
-  Widget _buildSearchBar(ColorScheme colorScheme) {
+  Widget _buildSearchBar() {
+    final fillColor = CupertinoColors.tertiarySystemFill.resolveFrom(context);
+    final secondaryLabel = CupertinoColors.secondaryLabel.resolveFrom(context);
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-      child: TextField(
+      child: CupertinoTextField(
         controller: _searchController,
         focusNode: _searchFocusNode,
-        decoration: InputDecoration(
-          hintText: _currentStep == 0
-              ? 'Search countries...'
-              : 'Search states...',
-          prefixIcon: Icon(
-            Icons.search_rounded,
-            color: colorScheme.onSurfaceVariant,
+        placeholder: _currentStep == 0
+            ? 'Search countries...'
+            : 'Search states...',
+        prefix: Padding(
+          padding: const EdgeInsets.only(left: AppSpacing.sm),
+          child: Icon(
+            CupertinoIcons.search,
+            color: secondaryLabel,
+            size: AppSpacing.iconSizeSmall,
           ),
-          suffixIcon: _searchQuery.isNotEmpty
-              ? IconButton(
-                  icon: Icon(
-                    Icons.clear_rounded,
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                  onPressed: () {
-                    _searchController.clear();
-                    setState(() => _searchQuery = '');
-                  },
-                )
-              : null,
-          filled: true,
-          fillColor: colorScheme.surfaceContainerLow,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.md,
-            vertical: AppSpacing.sm,
-          ),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
-            borderSide: BorderSide.none,
-          ),
+        ),
+        suffix: _searchQuery.isNotEmpty
+            ? CupertinoButton(
+                padding: const EdgeInsets.only(right: AppSpacing.xs),
+                minSize: 0,
+                onPressed: () {
+                  _searchController.clear();
+                  setState(() => _searchQuery = '');
+                },
+                child: Icon(
+                  CupertinoIcons.xmark_circle_fill,
+                  color: secondaryLabel,
+                  size: AppSpacing.iconSizeSmall,
+                ),
+              )
+            : null,
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.sm,
+          vertical: AppSpacing.sm,
+        ),
+        decoration: BoxDecoration(
+          color: fillColor,
+          borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
         ),
         onChanged: (value) => setState(() => _searchQuery = value),
       ),
@@ -450,13 +470,11 @@ class _LocationPickerSheetState extends State<LocationPickerSheet>
   // ═══════════════════════════════════════════════════════════════════════════
 
   Widget _buildCountriesPage() {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
     final filteredCountries = _getFilteredCountries();
     final showPopular = _searchQuery.isEmpty;
 
     if (filteredCountries.isEmpty) {
-      return _buildEmptyState('No countries found', colorScheme);
+      return _buildEmptyState('No countries found');
     }
 
     return ListView.builder(
@@ -468,44 +486,29 @@ class _LocationPickerSheetState extends State<LocationPickerSheet>
         if (showPopular) {
           // Popular section
           if (index == 0) {
-            return _buildSectionHeader('Popular', textTheme, colorScheme);
+            return _buildSectionHeader('Popular');
           }
           if (index <= _popularCountries.length) {
-            return _buildCountryTile(
-              _popularCountries[index - 1],
-              colorScheme,
-              textTheme,
-            );
+            return _buildCountryTile(_popularCountries[index - 1]);
           }
           // All countries section
           if (index == _popularCountries.length + 1) {
-            return _buildSectionHeader('All Countries', textTheme, colorScheme);
+            return _buildSectionHeader('All Countries');
           }
           final allIndex = index - _popularCountries.length - 2;
           if (allIndex < filteredCountries.length) {
-            return _buildCountryTile(
-              filteredCountries[allIndex],
-              colorScheme,
-              textTheme,
-            );
+            return _buildCountryTile(filteredCountries[allIndex]);
           }
           return const SizedBox.shrink();
         }
 
-        return _buildCountryTile(
-          filteredCountries[index],
-          colorScheme,
-          textTheme,
-        );
+        return _buildCountryTile(filteredCountries[index]);
       },
     );
   }
 
-  Widget _buildSectionHeader(
-    String title,
-    TextTheme textTheme,
-    ColorScheme colorScheme,
-  ) {
+  Widget _buildSectionHeader(String title) {
+    final secondaryLabel = CupertinoColors.secondaryLabel.resolveFrom(context);
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.md,
@@ -515,50 +518,44 @@ class _LocationPickerSheetState extends State<LocationPickerSheet>
       ),
       child: Text(
         title,
-        style: textTheme.labelLarge?.copyWith(
-          color: colorScheme.onSurfaceVariant,
+        style: TextStyle(
+          fontSize: 13,
           fontWeight: FontWeight.w600,
+          color: secondaryLabel,
         ),
       ),
     );
   }
 
-  Widget _buildCountryTile(
-    csc.Country country,
-    ColorScheme colorScheme,
-    TextTheme textTheme,
-  ) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () => _onCountrySelected(country),
-        child: Container(
-          constraints: const BoxConstraints(
-            minHeight: AppSpacing.touchTargetMin,
-          ),
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.md,
-            vertical: AppSpacing.sm,
-          ),
-          child: Row(
-            children: [
-              Text(country.flag, style: const TextStyle(fontSize: 24)),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: Text(
-                  country.name,
-                  style: textTheme.bodyLarge?.copyWith(
-                    color: colorScheme.onSurface,
-                  ),
-                ),
+  Widget _buildCountryTile(csc.Country country) {
+    final labelColor = CupertinoColors.label.resolveFrom(context);
+    final secondaryLabel = CupertinoColors.secondaryLabel.resolveFrom(context);
+
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => _onCountrySelected(country),
+      child: Container(
+        constraints: const BoxConstraints(minHeight: AppSpacing.touchTargetMin),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.sm,
+        ),
+        child: Row(
+          children: [
+            Text(country.flag, style: const TextStyle(fontSize: 24)),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: Text(
+                country.name,
+                style: TextStyle(fontSize: 17, color: labelColor),
               ),
-              Icon(
-                Icons.chevron_right_rounded,
-                color: colorScheme.onSurfaceVariant,
-                size: AppSpacing.iconSize,
-              ),
-            ],
-          ),
+            ),
+            Icon(
+              CupertinoIcons.chevron_right,
+              color: secondaryLabel,
+              size: AppSpacing.iconSize,
+            ),
+          ],
         ),
       ),
     );
@@ -569,18 +566,15 @@ class _LocationPickerSheetState extends State<LocationPickerSheet>
   // ═══════════════════════════════════════════════════════════════════════════
 
   Widget _buildStatesPage() {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-
     if (_isLoadingStates) {
-      return const Center(child: CircularProgressIndicator());
+      return const Center(child: CupertinoActivityIndicator());
     }
 
     final filteredStates = _getFilteredStates();
     final hasStates = _states.isNotEmpty;
 
     if (!hasStates && _searchQuery.isNotEmpty) {
-      return _buildEmptyState('No states found', colorScheme);
+      return _buildEmptyState('No states found');
     }
 
     return ListView.builder(
@@ -588,155 +582,130 @@ class _LocationPickerSheetState extends State<LocationPickerSheet>
       itemCount: filteredStates.length + 1, // +1 for skip option
       itemBuilder: (context, index) {
         if (index == 0) {
-          return _buildSkipStateTile(colorScheme, textTheme, hasStates);
+          return _buildSkipStateTile(hasStates);
         }
         if (index - 1 < filteredStates.length) {
-          return _buildStateTile(
-            filteredStates[index - 1],
-            colorScheme,
-            textTheme,
-          );
+          return _buildStateTile(filteredStates[index - 1]);
         }
         return const SizedBox.shrink();
       },
     );
   }
 
-  Widget _buildSkipStateTile(
-    ColorScheme colorScheme,
-    TextTheme textTheme,
-    bool hasStates,
-  ) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () => _onStateSelected(null),
-        child: Container(
-          constraints: const BoxConstraints(
-            minHeight: AppSpacing.touchTargetMin,
-          ),
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.md,
-            vertical: AppSpacing.sm,
-          ),
-          decoration: BoxDecoration(
-            border: Border(
-              bottom: BorderSide(color: colorScheme.outlineVariant, width: 0.5),
+  Widget _buildSkipStateTile(bool hasStates) {
+    final labelColor = CupertinoColors.label.resolveFrom(context);
+    final secondaryLabel = CupertinoColors.secondaryLabel.resolveFrom(context);
+    final separatorColor = CupertinoColors.separator.resolveFrom(context);
+    final primaryColor = CupertinoTheme.of(context).primaryColor;
+
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => _onStateSelected(null),
+      child: Container(
+        constraints: const BoxConstraints(minHeight: AppSpacing.touchTargetMin),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.sm,
+        ),
+        decoration: BoxDecoration(
+          border: Border(bottom: BorderSide(color: separatorColor, width: 0.5)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: primaryColor.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(CupertinoIcons.globe, color: primaryColor, size: 18),
             ),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  color: colorScheme.primaryContainer.withValues(alpha: 0.5),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(
-                  Icons.public_rounded,
-                  color: colorScheme.primary,
-                  size: 18,
-                ),
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      hasStates ? 'Country only' : 'No states available',
-                      style: textTheme.bodyLarge?.copyWith(
-                        color: colorScheme.onSurface,
-                        fontWeight: FontWeight.w500,
-                      ),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    hasStates ? 'Country only' : 'No states available',
+                    style: TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w500,
+                      color: labelColor,
                     ),
-                    Text(
-                      hasStates
-                          ? 'Continue without selecting state'
-                          : 'Tap to continue with ${_selectedCountry?.name ?? "country"}',
-                      style: textTheme.bodySmall?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Icon(
-                Icons.arrow_forward_rounded,
-                color: colorScheme.primary,
-                size: AppSpacing.iconSize,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStateTile(
-    csc.State state,
-    ColorScheme colorScheme,
-    TextTheme textTheme,
-  ) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () => _onStateSelected(state),
-        child: Container(
-          constraints: const BoxConstraints(
-            minHeight: AppSpacing.touchTargetMin,
-          ),
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.md,
-            vertical: AppSpacing.sm,
-          ),
-          child: Row(
-            children: [
-              Icon(
-                Icons.location_on_outlined,
-                color: colorScheme.onSurfaceVariant,
-                size: AppSpacing.iconSize,
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: Text(
-                  state.name,
-                  style: textTheme.bodyLarge?.copyWith(
-                    color: colorScheme.onSurface,
                   ),
-                ),
+                  Text(
+                    hasStates
+                        ? 'Continue without selecting state'
+                        : 'Tap to continue with ${_selectedCountry?.name ?? "country"}',
+                    style: TextStyle(fontSize: 13, color: secondaryLabel),
+                  ),
+                ],
               ),
-              Icon(
-                Icons.arrow_forward_rounded,
-                color: colorScheme.onSurfaceVariant,
-                size: AppSpacing.iconSizeSmall,
-              ),
-            ],
-          ),
+            ),
+            Icon(
+              CupertinoIcons.arrow_right,
+              color: primaryColor,
+              size: AppSpacing.iconSize,
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildEmptyState(String message, ColorScheme colorScheme) {
+  Widget _buildStateTile(csc.State state) {
+    final labelColor = CupertinoColors.label.resolveFrom(context);
+    final secondaryLabel = CupertinoColors.secondaryLabel.resolveFrom(context);
+
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => _onStateSelected(state),
+      child: Container(
+        constraints: const BoxConstraints(minHeight: AppSpacing.touchTargetMin),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.sm,
+        ),
+        child: Row(
+          children: [
+            Icon(
+              CupertinoIcons.location,
+              color: secondaryLabel,
+              size: AppSpacing.iconSize,
+            ),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: Text(
+                state.name,
+                style: TextStyle(fontSize: 17, color: labelColor),
+              ),
+            ),
+            Icon(
+              CupertinoIcons.arrow_right,
+              color: secondaryLabel,
+              size: AppSpacing.iconSizeSmall,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(String message) {
+    final secondaryLabel = CupertinoColors.secondaryLabel.resolveFrom(context);
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.xl),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.search_off_rounded,
-              size: 48,
-              color: colorScheme.onSurfaceVariant,
-            ),
+            Icon(CupertinoIcons.search, size: 48, color: secondaryLabel),
             const SizedBox(height: AppSpacing.md),
             Text(
               message,
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: colorScheme.onSurfaceVariant,
-              ),
+              style: TextStyle(fontSize: 17, color: secondaryLabel),
             ),
           ],
         ),

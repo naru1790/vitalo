@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 
 import '../../../../core/theme.dart';
 
@@ -14,7 +14,9 @@ class SettingsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final surfaceColor = CupertinoColors.systemBackground.resolveFrom(context);
+    final secondaryLabel = CupertinoColors.secondaryLabel.resolveFrom(context);
+    final separatorColor = CupertinoColors.separator.resolveFrom(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -26,28 +28,26 @@ class SettingsSection extends StatelessWidget {
           ),
           child: Text(
             title.toUpperCase(),
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: colorScheme.onSurfaceVariant,
-              letterSpacing: 1.0,
-            ),
+            style: AppleTextStyles.caption1(
+              context,
+            ).copyWith(color: secondaryLabel, letterSpacing: 1.0),
           ),
         ),
         Container(
           decoration: BoxDecoration(
-            color: colorScheme.surface,
+            color: surfaceColor,
             borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-            border: Border.all(color: colorScheme.outline, width: 1),
+            border: Border.all(color: separatorColor, width: 0.5),
           ),
           child: Column(
             children: [
               for (int i = 0; i < children.length; i++) ...[
                 children[i],
                 if (i < children.length - 1)
-                  Divider(
-                    height: 1,
-                    thickness: 1,
-                    indent: 72,
-                    color: colorScheme.outline,
+                  Container(
+                    height: 0.5,
+                    margin: const EdgeInsets.only(left: 72),
+                    color: separatorColor,
                   ),
               ],
             ],

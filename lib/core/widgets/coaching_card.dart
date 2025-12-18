@@ -2,10 +2,12 @@
 // COACHING SECTION - Goals & Coach Personality
 // =============================================================================
 // User's health goal and preferred AI coaching style.
-// Follows soft minimalist design language.
+// iOS 26 Liquid Glass design - CupertinoIcons, Cupertino controls.
 // =============================================================================
 
-import 'package:flutter/material.dart';
+import 'dart:ui';
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 
 import '../theme.dart';
@@ -20,43 +22,43 @@ enum HealthGoal {
   loseWeight(
     'Lose Weight',
     'Shed extra pounds and feel lighter',
-    Icons.trending_down_rounded,
+    CupertinoIcons.arrow_down_right,
     GoalColors.loseWeight,
   ),
   buildMuscle(
     'Build Muscle',
     'Get stronger and more toned',
-    Icons.fitness_center_rounded,
+    CupertinoIcons.flame,
     GoalColors.buildMuscle,
   ),
   improveSleep(
     'Improve Sleep',
     'Better rest and recovery',
-    Icons.bedtime_rounded,
+    CupertinoIcons.moon_fill,
     GoalColors.improveSleep,
   ),
   manageStress(
     'Manage Stress',
     'Find calm and mental clarity',
-    Icons.self_improvement_rounded,
+    CupertinoIcons.leaf_arrow_circlepath,
     GoalColors.manageStress,
   ),
   boostStamina(
     'Boost Stamina',
     'Increase energy and endurance',
-    Icons.bolt_rounded,
+    CupertinoIcons.bolt_fill,
     GoalColors.boostStamina,
   ),
   maintainWeight(
     'Maintain Weight',
     'Stay consistent and balanced',
-    Icons.balance_rounded,
+    CupertinoIcons.equal,
     GoalColors.maintainWeight,
   ),
   gainWeight(
     'Gain Weight',
     'Build mass in a healthy way',
-    Icons.trending_up_rounded,
+    CupertinoIcons.arrow_up_right,
     GoalColors.gainWeight,
   );
 
@@ -78,42 +80,42 @@ enum CoachingStyle {
     'Supportive Friend',
     'Warm, encouraging, celebrates small wins',
     '"You\'ve got this! Every step counts 💪"',
-    Icons.volunteer_activism_rounded,
+    CupertinoIcons.hand_thumbsup_fill,
     CoachColors.supportiveFriend,
   ),
   toughCoach(
     'Tough Coach',
     'Direct, no excuses, accountability-focused',
     '"No shortcuts. Show up and do the work."',
-    Icons.fitness_center_rounded,
+    CupertinoIcons.sportscourt,
     CoachColors.toughCoach,
   ),
   calmMentor(
     'Calm Mentor',
     'Patient, wise, sustainable habits focus',
     '"Progress takes time. Trust the process."',
-    Icons.psychology_rounded,
+    CupertinoIcons.person_fill,
     CoachColors.calmMentor,
   ),
   energeticHype(
     'Energetic Hype',
     'High energy, enthusiastic, motivating',
     '"LET\'S GO! Today is YOUR day! 🔥"',
-    Icons.local_fire_department_rounded,
+    CupertinoIcons.flame_fill,
     CoachColors.energeticHype,
   ),
   dataAnalyst(
     'Data Analyst',
     'Logical, evidence-based, loves metrics',
     '"Your data shows 12% improvement."',
-    Icons.insights_rounded,
+    CupertinoIcons.chart_bar_fill,
     CoachColors.dataAnalyst,
   ),
   mindfulGuide(
     'Mindful Guide',
     'Holistic, balanced, wellness-focused',
     '"Listen to your body. Rest is growth."',
-    Icons.self_improvement_rounded,
+    CupertinoIcons.leaf_arrow_circlepath,
     CoachColors.mindfulGuide,
   );
 
@@ -188,8 +190,7 @@ class CoachingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
+    final labelColor = CupertinoColors.label.resolveFrom(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -199,9 +200,10 @@ class CoachingCard extends StatelessWidget {
           padding: const EdgeInsets.only(left: AppSpacing.xxs),
           child: Text(
             'Your Coach',
-            style: textTheme.titleMedium?.copyWith(
-              color: colorScheme.onSurface,
+            style: TextStyle(
+              fontSize: 17,
               fontWeight: FontWeight.w600,
+              color: labelColor,
             ),
           ),
         ),
@@ -212,14 +214,14 @@ class CoachingCard extends StatelessWidget {
           child: Column(
             children: [
               ProfileTappableRow(
-                icon: Icons.flag_rounded,
+                icon: CupertinoIcons.flag_fill,
                 label: 'My Goal',
                 value: data.goal?.label ?? '—',
                 onTap: () => _selectGoal(context),
               ),
               const ProfileRowDivider(),
               ProfileTappableRow(
-                icon: Icons.person_rounded,
+                icon: CupertinoIcons.person_fill,
                 label: 'Coaching Style',
                 value: data.coachingStyle?.label ?? '—',
                 onTap: () => _selectCoachingStyle(context),
@@ -245,15 +247,8 @@ class _HealthGoalSheet extends StatefulWidget {
     required BuildContext context,
     HealthGoal? initialValue,
   }) {
-    return showModalBottomSheet<HealthGoal>(
+    return showCupertinoModalPopup<HealthGoal>(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(AppSpacing.cardRadiusLarge),
-        ),
-      ),
       builder: (context) => _HealthGoalSheet(initialValue: initialValue),
     );
   }
@@ -279,12 +274,14 @@ class _HealthGoalSheetState extends State<_HealthGoalSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
+    final surfaceColor = CupertinoColors.systemBackground.resolveFrom(context);
+    final labelColor = CupertinoColors.label.resolveFrom(context);
+    final secondaryLabel = CupertinoColors.secondaryLabel.resolveFrom(context);
+    final separatorColor = CupertinoColors.separator.resolveFrom(context);
 
     return Container(
       decoration: BoxDecoration(
-        color: colorScheme.surface,
+        color: surfaceColor,
         borderRadius: const BorderRadius.vertical(
           top: Radius.circular(AppSpacing.cardRadiusLarge),
         ),
@@ -301,7 +298,7 @@ class _HealthGoalSheetState extends State<_HealthGoalSheet> {
                 width: 32,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: colorScheme.outlineVariant,
+                  color: separatorColor,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -323,31 +320,26 @@ class _HealthGoalSheetState extends State<_HealthGoalSheet> {
                       children: [
                         Text(
                           'What\'s Your Goal?',
-                          style: textTheme.titleLarge?.copyWith(
+                          style: TextStyle(
+                            fontSize: 22,
                             fontWeight: FontWeight.w600,
-                            color: colorScheme.onSurface,
+                            color: labelColor,
                           ),
                         ),
                         const SizedBox(height: AppSpacing.xxs),
                         Text(
                           'Choose your primary health focus',
-                          style: textTheme.bodySmall?.copyWith(
-                            color: colorScheme.onSurfaceVariant,
-                          ),
+                          style: TextStyle(fontSize: 15, color: secondaryLabel),
                         ),
                       ],
                     ),
                   ),
-                  FilledButton(
-                    onPressed: _selected != null ? _confirm : null,
-                    style: FilledButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.lg,
-                        vertical: AppSpacing.sm,
-                      ),
-                      minimumSize: Size.zero,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  CupertinoButton.filled(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.lg,
+                      vertical: AppSpacing.sm,
                     ),
+                    onPressed: _selected != null ? _confirm : null,
                     child: const Text('Done'),
                   ),
                 ],
@@ -398,80 +390,77 @@ class _GoalCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
+    final primaryColor = CupertinoTheme.of(context).primaryColor;
+    final labelColor = CupertinoColors.label.resolveFrom(context);
+    final secondaryLabel = CupertinoColors.secondaryLabel.resolveFrom(context);
+    final tertiaryFill = CupertinoColors.tertiarySystemFill.resolveFrom(
+      context,
+    );
+    final separatorColor = CupertinoColors.separator.resolveFrom(context);
     final goalColor = goal.color;
 
-    return Material(
-      color: isSelected
-          ? colorScheme.primaryContainer
-          : colorScheme.surfaceContainerLow,
-      borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-        child: Container(
-          padding: const EdgeInsets.all(AppSpacing.md),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-            border: Border.all(
-              color: isSelected
-                  ? colorScheme.primary
-                  : colorScheme.outlineVariant,
-              width: isSelected ? 2 : 1,
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? primaryColor.withValues(alpha: 0.15)
+              : tertiaryFill,
+          borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
+          border: Border.all(
+            color: isSelected ? primaryColor : separatorColor,
+            width: isSelected ? 1.5 : LiquidGlass.borderWidth,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: goalColor.withValues(alpha: isSelected ? 1.0 : 0.15),
+                borderRadius: BorderRadius.circular(AppSpacing.cardRadiusSmall),
+              ),
+              child: Icon(
+                goal.icon,
+                color: isSelected ? CupertinoColors.white : goalColor,
+                size: AppSpacing.iconSize,
+              ),
             ),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: goalColor.withValues(alpha: isSelected ? 1.0 : 0.15),
-                  borderRadius: BorderRadius.circular(
-                    AppSpacing.cardRadiusSmall,
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    goal.label,
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: isSelected ? primaryColor : labelColor,
+                    ),
                   ),
-                ),
-                child: Icon(
-                  goal.icon,
-                  color: isSelected ? Colors.white : goalColor,
-                  size: AppSpacing.iconSize,
-                ),
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      goal.label,
-                      style: textTheme.titleSmall?.copyWith(
-                        color: isSelected
-                            ? colorScheme.onPrimaryContainer
-                            : colorScheme.onSurface,
-                        fontWeight: FontWeight.w600,
-                      ),
+                  const SizedBox(height: 2),
+                  Text(
+                    goal.description,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: isSelected
+                          ? primaryColor.withValues(alpha: 0.8)
+                          : secondaryLabel,
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      goal.description,
-                      style: textTheme.bodySmall?.copyWith(
-                        color: isSelected
-                            ? colorScheme.onPrimaryContainer
-                            : colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-              if (isSelected)
-                Icon(
-                  Icons.check_circle_rounded,
-                  color: colorScheme.primary,
-                  size: AppSpacing.iconSize,
-                ),
-            ],
-          ),
+            ),
+            if (isSelected)
+              Icon(
+                CupertinoIcons.checkmark_circle_fill,
+                color: primaryColor,
+                size: AppSpacing.iconSize,
+              ),
+          ],
         ),
       ),
     );
@@ -491,15 +480,8 @@ class _CoachingStyleSheet extends StatefulWidget {
     required BuildContext context,
     CoachingStyle? initialValue,
   }) {
-    return showModalBottomSheet<CoachingStyle>(
+    return showCupertinoModalPopup<CoachingStyle>(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(AppSpacing.cardRadiusLarge),
-        ),
-      ),
       builder: (context) => _CoachingStyleSheet(initialValue: initialValue),
     );
   }
@@ -525,15 +507,17 @@ class _CoachingStyleSheetState extends State<_CoachingStyleSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
+    final surfaceColor = CupertinoColors.systemBackground.resolveFrom(context);
+    final labelColor = CupertinoColors.label.resolveFrom(context);
+    final secondaryLabel = CupertinoColors.secondaryLabel.resolveFrom(context);
+    final separatorColor = CupertinoColors.separator.resolveFrom(context);
 
     return Container(
       constraints: BoxConstraints(
         maxHeight: MediaQuery.sizeOf(context).height * 0.85,
       ),
       decoration: BoxDecoration(
-        color: colorScheme.surface,
+        color: surfaceColor,
         borderRadius: const BorderRadius.vertical(
           top: Radius.circular(AppSpacing.cardRadiusLarge),
         ),
@@ -550,7 +534,7 @@ class _CoachingStyleSheetState extends State<_CoachingStyleSheet> {
                 width: 32,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: colorScheme.outlineVariant,
+                  color: separatorColor,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -572,31 +556,26 @@ class _CoachingStyleSheetState extends State<_CoachingStyleSheet> {
                       children: [
                         Text(
                           'Choose Your Coach',
-                          style: textTheme.titleLarge?.copyWith(
+                          style: TextStyle(
+                            fontSize: 22,
                             fontWeight: FontWeight.w600,
-                            color: colorScheme.onSurface,
+                            color: labelColor,
                           ),
                         ),
                         const SizedBox(height: AppSpacing.xxs),
                         Text(
                           'How would you like to be coached?',
-                          style: textTheme.bodySmall?.copyWith(
-                            color: colorScheme.onSurfaceVariant,
-                          ),
+                          style: TextStyle(fontSize: 15, color: secondaryLabel),
                         ),
                       ],
                     ),
                   ),
-                  FilledButton(
-                    onPressed: _selected != null ? _confirm : null,
-                    style: FilledButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.lg,
-                        vertical: AppSpacing.sm,
-                      ),
-                      minimumSize: Size.zero,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  CupertinoButton.filled(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.lg,
+                      vertical: AppSpacing.sm,
                     ),
+                    onPressed: _selected != null ? _confirm : null,
                     child: const Text('Done'),
                   ),
                 ],
@@ -650,96 +629,93 @@ class _CoachingStyleCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
+    final primaryColor = CupertinoTheme.of(context).primaryColor;
+    final labelColor = CupertinoColors.label.resolveFrom(context);
+    final secondaryLabel = CupertinoColors.secondaryLabel.resolveFrom(context);
+    final tertiaryFill = CupertinoColors.tertiarySystemFill.resolveFrom(
+      context,
+    );
+    final separatorColor = CupertinoColors.separator.resolveFrom(context);
     final coachColor = style.color;
 
-    return Material(
-      color: isSelected
-          ? colorScheme.primaryContainer
-          : colorScheme.surfaceContainerLow,
-      borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-        child: Container(
-          padding: const EdgeInsets.all(AppSpacing.md),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-            border: Border.all(
-              color: isSelected
-                  ? colorScheme.primary
-                  : colorScheme.outlineVariant,
-              width: isSelected ? 2 : 1,
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? primaryColor.withValues(alpha: 0.15)
+              : tertiaryFill,
+          borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
+          border: Border.all(
+            color: isSelected ? primaryColor : separatorColor,
+            width: isSelected ? 1.5 : LiquidGlass.borderWidth,
+          ),
+        ),
+        child: Row(
+          children: [
+            // Avatar with coaching style icon
+            Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                color: coachColor.withValues(alpha: isSelected ? 1.0 : 0.15),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                style.icon,
+                color: isSelected ? CupertinoColors.white : coachColor,
+                size: AppSpacing.iconSizeLarge,
+              ),
             ),
-          ),
-          child: Row(
-            children: [
-              // Avatar with coaching style icon
-              Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  color: coachColor.withValues(alpha: isSelected ? 1.0 : 0.15),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  style.icon,
-                  color: isSelected ? Colors.white : coachColor,
-                  size: AppSpacing.iconSizeLarge,
-                ),
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      style.label,
-                      style: textTheme.titleSmall?.copyWith(
-                        color: isSelected
-                            ? colorScheme.onPrimaryContainer
-                            : colorScheme.onSurface,
-                        fontWeight: FontWeight.w600,
-                      ),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    style.label,
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: isSelected ? primaryColor : labelColor,
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      style.description,
-                      style: textTheme.bodySmall?.copyWith(
-                        color: isSelected
-                            ? colorScheme.onPrimaryContainer
-                            : colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.xs),
-                    // Sample quote
-                    Text(
-                      style.sampleQuote,
-                      style: textTheme.bodySmall?.copyWith(
-                        color: isSelected
-                            ? colorScheme.onPrimaryContainer.withValues(
-                                alpha: 0.8,
-                              )
-                            : colorScheme.onSurfaceVariant,
-                        fontStyle: FontStyle.italic,
-                        fontSize: 11,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              if (isSelected)
-                Padding(
-                  padding: const EdgeInsets.only(left: AppSpacing.xs),
-                  child: Icon(
-                    Icons.check_circle_rounded,
-                    color: colorScheme.primary,
-                    size: AppSpacing.iconSize,
                   ),
+                  const SizedBox(height: 2),
+                  Text(
+                    style.description,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: isSelected
+                          ? primaryColor.withValues(alpha: 0.8)
+                          : secondaryLabel,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
+                  // Sample quote
+                  Text(
+                    style.sampleQuote,
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontStyle: FontStyle.italic,
+                      color: isSelected
+                          ? primaryColor.withValues(alpha: 0.7)
+                          : secondaryLabel,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (isSelected)
+              Padding(
+                padding: const EdgeInsets.only(left: AppSpacing.xs),
+                child: Icon(
+                  CupertinoIcons.checkmark_circle_fill,
+                  color: primaryColor,
+                  size: AppSpacing.iconSize,
                 ),
-            ],
-          ),
+              ),
+          ],
         ),
       ),
     );

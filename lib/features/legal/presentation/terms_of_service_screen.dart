@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/theme.dart';
@@ -8,64 +8,59 @@ class TermsOfServiceScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final primaryColor = CupertinoTheme.of(context).primaryColor;
+    final surfaceColor = CupertinoColors.systemBackground.resolveFrom(context);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Terms of Service'),
-        backgroundColor: colorScheme.surface,
-        leading: IconButton(
-          icon: const Icon(Icons.close),
+    return CupertinoPageScaffold(
+      navigationBar: CupertinoNavigationBar(
+        middle: const Text('Terms of Service'),
+        backgroundColor: surfaceColor,
+        border: null,
+        leading: CupertinoButton(
+          padding: EdgeInsets.zero,
           onPressed: () => context.pop(),
+          child: Icon(CupertinoIcons.xmark, color: primaryColor),
         ),
       ),
-      body: SafeArea(
+      child: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(AppSpacing.pageHorizontalPadding),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Terms of Service',
-                style: theme.textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+              Text('Terms of Service', style: AppleTextStyles.title1(context)),
               const SizedBox(height: AppSpacing.sm),
               Text(
                 'Last updated: December 14, 2025',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
+                style: AppleTextStyles.captionSecondary(context),
               ),
               const SizedBox(height: AppSpacing.xl),
               _buildSection(
-                theme,
+                context,
                 'Acceptance of Terms',
                 'By accessing and using Vitalo, you accept and agree to be bound by these Terms of Service. '
                     'If you do not agree, please do not use our services.',
               ),
               _buildSection(
-                theme,
+                context,
                 'Service Description',
                 'Vitalo is an AI-powered wellness platform that provides personalized health insights, '
                     'fitness tracking, and mental wellness support.',
               ),
               _buildSection(
-                theme,
+                context,
                 'User Responsibilities',
                 'You are responsible for maintaining the confidentiality of your account and for all '
                     'activities under your account. You agree to provide accurate health information.',
               ),
               _buildSection(
-                theme,
+                context,
                 'Medical Disclaimer',
                 'Vitalo provides wellness insights and is not a substitute for professional medical advice. '
                     'Always consult with healthcare professionals for medical decisions.',
               ),
               _buildSection(
-                theme,
+                context,
                 'Limitation of Liability',
                 'Vitalo is provided "as is" without warranties. We are not liable for any indirect, '
                     'incidental, or consequential damages arising from your use of the service.',
@@ -78,20 +73,15 @@ class TermsOfServiceScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSection(ThemeData theme, String title, String content) {
+  Widget _buildSection(BuildContext context, String title, String content) {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.lg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
-          ),
+          Text(title, style: AppleTextStyles.headline(context)),
           const SizedBox(height: AppSpacing.sm),
-          Text(content, style: theme.textTheme.bodyMedium),
+          Text(content, style: AppleTextStyles.body(context)),
         ],
       ),
     );

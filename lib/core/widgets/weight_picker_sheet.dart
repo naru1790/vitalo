@@ -1,4 +1,6 @@
-import 'package:flutter/material.dart';
+import 'dart:ui';
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 
 import '../theme.dart';
@@ -53,11 +55,9 @@ class WeightPickerSheet extends StatefulWidget {
   }) async {
     final effectiveWeight = initialWeight ?? 70.0;
 
-    return showModalBottomSheet<WeightResult>(
+    return showCupertinoModalPopup<WeightResult>(
       context: context,
-      isScrollControlled: true,
-      enableDrag: true,
-      backgroundColor: Colors.transparent,
+      barrierDismissible: true,
       builder: (context) => WeightPickerSheet(
         initialWeight: effectiveWeight,
         initialUnit: initialUnit,
@@ -201,8 +201,10 @@ class _WeightPickerSheetState extends State<WeightPickerSheet>
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
+    final surfaceColor = CupertinoColors.systemBackground.resolveFrom(context);
+    final labelColor = CupertinoColors.label.resolveFrom(context);
+    final secondaryLabel = CupertinoColors.secondaryLabel.resolveFrom(context);
+    final primaryColor = CupertinoTheme.of(context).primaryColor;
 
     return AnimatedBuilder(
       animation: _animationController,
@@ -210,118 +212,134 @@ class _WeightPickerSheetState extends State<WeightPickerSheet>
         final slideOffset = Offset(0, 1 - _animationController.value);
         return FractionalTranslation(translation: slideOffset, child: child);
       },
-      child: Container(
-        decoration: BoxDecoration(
-          color: colorScheme.surface,
-          borderRadius: const BorderRadius.vertical(
-            top: Radius.circular(AppSpacing.cardRadiusLarge),
-          ),
+      child: ClipRRect(
+        borderRadius: const BorderRadius.vertical(
+          top: Radius.circular(AppSpacing.cardRadiusLarge),
         ),
-        child: SafeArea(
-          top: false,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Drag handle
-              Padding(
-                padding: const EdgeInsets.only(top: AppSpacing.sm),
-                child: Container(
-                  width: 32,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: colorScheme.outlineVariant,
-                    borderRadius: BorderRadius.circular(2),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+          child: Container(
+            decoration: BoxDecoration(
+              color: surfaceColor.withValues(alpha: 0.85),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(AppSpacing.cardRadiusLarge),
+              ),
+              border: Border(
+                top: BorderSide(
+                  color: labelColor.withValues(alpha: 0.1),
+                  width: LiquidGlass.borderWidth,
+                ),
+              ),
+            ),
+            child: SafeArea(
+              top: false,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Drag handle
+                  Padding(
+                    padding: const EdgeInsets.only(top: AppSpacing.sm),
+                    child: Container(
+                      width: 36,
+                      height: 5,
+                      decoration: BoxDecoration(
+                        color: labelColor.withValues(alpha: 0.3),
+                        borderRadius: BorderRadius.circular(2.5),
+                      ),
+                    ),
                   ),
-                ),
-              ),
 
-              // Header with Done button
-              Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.xl,
-                  AppSpacing.lg,
-                  AppSpacing.xl,
-                  AppSpacing.sm,
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Weight',
-                            style: textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.w600,
-                              color: colorScheme.onSurface,
-                            ),
-                          ),
-                          const SizedBox(height: AppSpacing.xxs),
-                          Text(
-                            'Scroll to set your weight',
-                            style: textTheme.bodySmall?.copyWith(
-                              color: colorScheme.onSurfaceVariant,
-                            ),
-                          ),
-                        ],
-                      ),
+                  // Header with Done button
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.xl,
+                      AppSpacing.lg,
+                      AppSpacing.xl,
+                      AppSpacing.sm,
                     ),
-                    FilledButton(
-                      onPressed: _confirmSelection,
-                      style: FilledButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.lg,
-                          vertical: AppSpacing.sm,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Weight',
+                                style: TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w600,
+                                  color: labelColor,
+                                ),
+                              ),
+                              const SizedBox(height: AppSpacing.xxs),
+                              Text(
+                                'Scroll to set your weight',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: secondaryLabel,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                        minimumSize: Size.zero,
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      ),
-                      child: const Text('Done'),
+                        CupertinoButton.filled(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.lg,
+                            vertical: AppSpacing.sm,
+                          ),
+                          minSize: 0,
+                          onPressed: _confirmSelection,
+                          child: const Text('Done'),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+
+                  const SizedBox(height: AppSpacing.lg),
+
+                  // Large value display
+                  Text(
+                    _displayValue,
+                    style: TextStyle(
+                      fontSize: 48,
+                      fontWeight: FontWeight.w600,
+                      color: primaryColor,
+                      height: 1,
+                    ),
+                  ),
+
+                  const SizedBox(height: AppSpacing.lg),
+
+                  // Unit toggle
+                  WheelUnitToggle(
+                    options: const ['kg', 'lbs'],
+                    selectedIndex: _currentUnit == WeightUnit.kg ? 0 : 1,
+                    onChanged: (_) => _toggleUnit(),
+                  ),
+
+                  const SizedBox(height: AppSpacing.lg),
+
+                  // Wheel picker - different layout for kg vs lbs
+                  SizedBox(
+                    height: 220,
+                    child: _currentUnit == WeightUnit.kg
+                        ? _buildKgPicker()
+                        : _buildLbsPicker(),
+                  ),
+
+                  const SizedBox(height: AppSpacing.xxl),
+                ],
               ),
-
-              const SizedBox(height: AppSpacing.lg),
-
-              // Large value display
-              Text(
-                _displayValue,
-                style: textTheme.displayMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: colorScheme.primary,
-                  height: 1,
-                ),
-              ),
-
-              const SizedBox(height: AppSpacing.lg),
-
-              // Unit toggle
-              WheelUnitToggle(
-                options: const ['kg', 'lbs'],
-                selectedIndex: _currentUnit == WeightUnit.kg ? 0 : 1,
-                onChanged: (_) => _toggleUnit(),
-              ),
-
-              const SizedBox(height: AppSpacing.lg),
-
-              // Wheel picker - different layout for kg vs lbs
-              SizedBox(
-                height: 220,
-                child: _currentUnit == WeightUnit.kg
-                    ? _buildKgPicker(colorScheme, textTheme)
-                    : _buildLbsPicker(colorScheme, textTheme),
-              ),
-
-              const SizedBox(height: AppSpacing.xxl),
-            ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildKgPicker(ColorScheme colorScheme, TextTheme textTheme) {
+  Widget _buildKgPicker() {
+    final primaryColor = CupertinoTheme.of(context).primaryColor;
+    final secondaryLabel = CupertinoColors.secondaryLabel.resolveFrom(context);
     const arrowSpace = AppSpacing.lg + 12;
 
     return Column(
@@ -335,9 +353,10 @@ class _WeightPickerSheetState extends State<WeightPickerSheet>
                 child: Center(
                   child: Text(
                     'kg',
-                    style: textTheme.labelMedium?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
+                    style: TextStyle(
+                      fontSize: 12,
                       fontWeight: FontWeight.w600,
+                      color: secondaryLabel,
                     ),
                   ),
                 ),
@@ -346,9 +365,10 @@ class _WeightPickerSheetState extends State<WeightPickerSheet>
                 child: Center(
                   child: Text(
                     'g',
-                    style: textTheme.labelMedium?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
+                    style: TextStyle(
+                      fontSize: 12,
                       fontWeight: FontWeight.w600,
+                      color: secondaryLabel,
                     ),
                   ),
                 ),
@@ -384,13 +404,14 @@ class _WeightPickerSheetState extends State<WeightPickerSheet>
                             return Center(
                               child: Text(
                                 '$kg',
-                                style: textTheme.headlineMedium?.copyWith(
-                                  color: isSelected
-                                      ? colorScheme.primary
-                                      : colorScheme.onSurfaceVariant,
+                                style: TextStyle(
+                                  fontSize: 28,
                                   fontWeight: isSelected
                                       ? FontWeight.w600
                                       : FontWeight.w400,
+                                  color: isSelected
+                                      ? primaryColor
+                                      : secondaryLabel,
                                 ),
                               ),
                             );
@@ -404,9 +425,10 @@ class _WeightPickerSheetState extends State<WeightPickerSheet>
                       padding: const EdgeInsets.only(bottom: 8),
                       child: Text(
                         '.',
-                        style: textTheme.headlineMedium?.copyWith(
-                          color: colorScheme.primary,
+                        style: TextStyle(
+                          fontSize: 28,
                           fontWeight: FontWeight.w600,
+                          color: primaryColor,
                         ),
                       ),
                     ),
@@ -427,13 +449,14 @@ class _WeightPickerSheetState extends State<WeightPickerSheet>
                             return Center(
                               child: Text(
                                 index.toString().padLeft(2, '0'),
-                                style: textTheme.headlineMedium?.copyWith(
-                                  color: isSelected
-                                      ? colorScheme.primary
-                                      : colorScheme.onSurfaceVariant,
+                                style: TextStyle(
+                                  fontSize: 28,
                                   fontWeight: isSelected
                                       ? FontWeight.w600
                                       : FontWeight.w400,
+                                  color: isSelected
+                                      ? primaryColor
+                                      : secondaryLabel,
                                 ),
                               ),
                             );
@@ -472,7 +495,10 @@ class _WeightPickerSheetState extends State<WeightPickerSheet>
     );
   }
 
-  Widget _buildLbsPicker(ColorScheme colorScheme, TextTheme textTheme) {
+  Widget _buildLbsPicker() {
+    final primaryColor = CupertinoTheme.of(context).primaryColor;
+    final secondaryLabel = CupertinoColors.secondaryLabel.resolveFrom(context);
+
     return Column(
       children: [
         // Spacer to match kg header height
@@ -498,13 +524,12 @@ class _WeightPickerSheetState extends State<WeightPickerSheet>
                     return Center(
                       child: Text(
                         '$lbs',
-                        style: textTheme.headlineMedium?.copyWith(
-                          color: isSelected
-                              ? colorScheme.primary
-                              : colorScheme.onSurfaceVariant,
+                        style: TextStyle(
+                          fontSize: 28,
                           fontWeight: isSelected
                               ? FontWeight.w600
                               : FontWeight.w400,
+                          color: isSelected ? primaryColor : secondaryLabel,
                         ),
                       ),
                     );

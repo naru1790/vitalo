@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart' show Icons;
 import 'package:go_router/go_router.dart';
 
 import '../../../core/widgets/social_sign_in_button.dart';
@@ -15,8 +16,8 @@ class LandingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: SafeArea(
+    return const CupertinoPageScaffold(
+      child: SafeArea(
         child: Column(
           children: [
             // Top Section: Brand Hook (~60% of screen)
@@ -36,8 +37,7 @@ class BrandHookSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final primaryColor = CupertinoTheme.of(context).primaryColor;
 
     return Padding(
       padding: const EdgeInsets.symmetric(
@@ -50,25 +50,21 @@ class BrandHookSection extends StatelessWidget {
           const SizedBox(height: AppSpacing.xl),
           Text(
             'Vitalo',
-            style: theme.textTheme.displayLarge?.copyWith(
-              color: colorScheme.primary,
-            ),
+            style: AppleTextStyles.largeTitle(
+              context,
+            ).copyWith(color: primaryColor),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: AppSpacing.md),
           Text(
             'Awaken Your Intelligent Wellness',
-            style: theme.textTheme.headlineSmall?.copyWith(
-              color: colorScheme.onSurface,
-            ),
+            style: AppleTextStyles.title3(context),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(
             'Vitalo learns and grows with you — mind, body, and beyond.',
-            style: theme.textTheme.bodyLarge?.copyWith(
-              color: colorScheme.onSurfaceVariant,
-            ),
+            style: AppleTextStyles.bodySecondary(context),
             textAlign: TextAlign.center,
           ),
         ],
@@ -142,8 +138,10 @@ class _ActionsSectionState extends State<_ActionsSection> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final primaryColor = CupertinoTheme.of(context).primaryColor;
+    final secondaryLabel = CupertinoColors.secondaryLabel.resolveFrom(context);
+    final isDark = CupertinoTheme.of(context).brightness == Brightness.dark;
+    final outlineColor = CupertinoColors.separator.resolveFrom(context);
 
     return Container(
       width: double.infinity,
@@ -162,12 +160,12 @@ class _ActionsSectionState extends State<_ActionsSection> {
             label: 'Continue with Apple',
             icon: const Icon(
               Icons.apple,
-              color: Colors.white,
+              color: CupertinoColors.white,
               size: AppSpacing.iconSize,
             ),
-            backgroundColor: Colors.black,
-            foregroundColor: Colors.white,
-            borderColor: Colors.black,
+            backgroundColor: CupertinoColors.black,
+            foregroundColor: CupertinoColors.white,
+            borderColor: CupertinoColors.black,
             isLoading: _loadingState == _LoadingState.apple,
           ),
           const SizedBox(height: AppSpacing.sm),
@@ -181,15 +179,13 @@ class _ActionsSectionState extends State<_ActionsSection> {
               height: AppSpacing.iconSizeSmall,
               child: GoogleLogo(),
             ),
-            backgroundColor: theme.brightness == Brightness.dark
+            backgroundColor: isDark
                 ? const Color(0xFF131314)
-                : Colors.white,
-            foregroundColor: theme.brightness == Brightness.dark
-                ? Colors.white
+                : CupertinoColors.white,
+            foregroundColor: isDark
+                ? CupertinoColors.white
                 : const Color(0xFF1F1F1F),
-            borderColor: theme.brightness == Brightness.dark
-                ? const Color(0xFF8E918F)
-                : colorScheme.outline,
+            borderColor: isDark ? const Color(0xFF8E918F) : outlineColor,
             isLoading: _loadingState == _LoadingState.google,
           ),
 
@@ -200,9 +196,9 @@ class _ActionsSectionState extends State<_ActionsSection> {
             onPressed: _isLoading ? null : _handleEmailFlow,
             label: 'Continue with Email',
             icon: Icon(
-              Icons.email_outlined,
+              CupertinoIcons.mail,
               size: AppSpacing.iconSizeSmall,
-              color: colorScheme.primary,
+              color: primaryColor,
             ),
           ),
 
@@ -215,9 +211,7 @@ class _ActionsSectionState extends State<_ActionsSection> {
             child: Text.rich(
               TextSpan(
                 text: 'By continuing, you agree to our ',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
+                style: AppleTextStyles.captionSecondary(context),
                 children: [
                   WidgetSpan(
                     child: GestureDetector(
@@ -230,17 +224,17 @@ class _ActionsSectionState extends State<_ActionsSection> {
                         children: [
                           Text(
                             'Terms',
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: colorScheme.primary,
+                            style: AppleTextStyles.caption1(context).copyWith(
+                              color: primaryColor,
                               decoration: TextDecoration.underline,
-                              decorationColor: colorScheme.primary,
+                              decorationColor: primaryColor,
                             ),
                           ),
                           const SizedBox(width: AppSpacing.xxs),
                           Icon(
-                            Icons.open_in_new,
+                            CupertinoIcons.arrow_up_right_square,
                             size: AppSpacing.sm,
-                            color: colorScheme.primary,
+                            color: primaryColor,
                           ),
                         ],
                       ),
@@ -248,9 +242,7 @@ class _ActionsSectionState extends State<_ActionsSection> {
                   ),
                   TextSpan(
                     text: ' & ',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                    ),
+                    style: AppleTextStyles.captionSecondary(context),
                   ),
                   WidgetSpan(
                     child: GestureDetector(
@@ -263,17 +255,17 @@ class _ActionsSectionState extends State<_ActionsSection> {
                         children: [
                           Text(
                             'Privacy Policy',
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: colorScheme.primary,
+                            style: AppleTextStyles.caption1(context).copyWith(
+                              color: primaryColor,
                               decoration: TextDecoration.underline,
-                              decorationColor: colorScheme.primary,
+                              decorationColor: primaryColor,
                             ),
                           ),
                           const SizedBox(width: AppSpacing.xxs),
                           Icon(
-                            Icons.open_in_new,
+                            CupertinoIcons.arrow_up_right_square,
                             size: AppSpacing.sm,
-                            color: colorScheme.primary,
+                            color: primaryColor,
                           ),
                         ],
                       ),

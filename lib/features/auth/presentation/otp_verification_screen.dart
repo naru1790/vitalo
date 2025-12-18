@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -175,106 +175,105 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final primaryColor = CupertinoTheme.of(context).primaryColor;
+    final labelColor = CupertinoColors.label.resolveFrom(context);
+    final secondaryLabel = CupertinoColors.secondaryLabel.resolveFrom(context);
+    final surfaceColor = CupertinoColors.systemBackground.resolveFrom(context);
+    final errorColor = CupertinoColors.systemRed.resolveFrom(context);
 
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: colorScheme.surface,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+    return CupertinoPageScaffold(
+      navigationBar: CupertinoNavigationBar(
+        backgroundColor: surfaceColor,
+        border: null,
+        leading: CupertinoButton(
+          padding: EdgeInsets.zero,
           onPressed: () {
             talker.debug('User navigated back from OTP verification screen');
             context.pop();
           },
+          child: Icon(CupertinoIcons.back, color: primaryColor),
         ),
       ),
-      body: Stack(
-        children: [
-          SafeArea(
-            child: Center(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(AppSpacing.pageHorizontalPadding),
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 400),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.email_outlined,
-                        size: AppSpacing.iconSizeHero,
-                        color: colorScheme.primary,
-                      ),
-                      const SizedBox(height: AppSpacing.xl),
-                      Text(
-                        'Verify it\'s you',
-                        style: theme.textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.sm),
-                      RichText(
-                        textAlign: TextAlign.center,
-                        text: TextSpan(
-                          text: 'Enter the code sent to ',
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: colorScheme.onSurfaceVariant,
-                          ),
-                          children: [
-                            TextSpan(
-                              text: widget.email,
-                              style: TextStyle(
-                                color: colorScheme.primary,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.xxl),
-                      OtpInput(
-                        controller: _otpController,
-                        focusNode: _focusNode,
-                        enabled: !_isLoading,
-                        hasError: _errorMessage != null,
-                        onCompleted: (_) => _verifyOtp(),
-                      ),
-                      if (_errorMessage != null) ...[
-                        const SizedBox(height: AppSpacing.sm),
-                        Text(
-                          _errorMessage!,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: colorScheme.error,
-                          ),
-                          textAlign: TextAlign.center,
+      child: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(AppSpacing.pageHorizontalPadding),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 400),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    CupertinoIcons.mail,
+                    size: AppSpacing.iconSizeHero,
+                    color: primaryColor,
+                  ),
+                  const SizedBox(height: AppSpacing.xl),
+                  Text(
+                    'Verify it\'s you',
+                    style: AppleTextStyles.title2(context),
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  RichText(
+                    textAlign: TextAlign.center,
+                    text: TextSpan(
+                      text: 'Enter the code sent to ',
+                      style: AppleTextStyles.bodySecondary(context),
+                      children: [
+                        TextSpan(
+                          text: widget.email,
+                          style: AppleTextStyles.headline(
+                            context,
+                          ).copyWith(color: primaryColor),
                         ),
                       ],
-                      const SizedBox(height: AppSpacing.xl),
-                      LoadingButton(
-                        onPressed: _verifyOtp,
-                        label: 'Verify & Continue',
-                        isLoading: _isLoading,
-                        enabled: _isOtpComplete,
-                      ),
-                      const SizedBox(height: AppSpacing.md),
-                      TextButton(
-                        onPressed: _canResend && !_isLoading
-                            ? _resendOtp
-                            : null,
-                        child: Text(
-                          _canResend
-                              ? 'Resend code'
-                              : 'Resend code in ${_resendCountdown}s',
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
-                ),
+                  const SizedBox(height: AppSpacing.xxl),
+                  OtpInput(
+                    controller: _otpController,
+                    focusNode: _focusNode,
+                    enabled: !_isLoading,
+                    hasError: _errorMessage != null,
+                    onCompleted: (_) => _verifyOtp(),
+                  ),
+                  if (_errorMessage != null) ...[
+                    const SizedBox(height: AppSpacing.sm),
+                    Text(
+                      _errorMessage!,
+                      style: AppleTextStyles.footnote(
+                        context,
+                      ).copyWith(color: errorColor),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                  const SizedBox(height: AppSpacing.xl),
+                  LoadingButton(
+                    onPressed: _verifyOtp,
+                    label: 'Verify & Continue',
+                    isLoading: _isLoading,
+                    enabled: _isOtpComplete,
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  CupertinoButton(
+                    padding: EdgeInsets.zero,
+                    onPressed: _canResend && !_isLoading ? _resendOtp : null,
+                    child: Text(
+                      _canResend
+                          ? 'Resend code'
+                          : 'Resend code in ${_resendCountdown}s',
+                      style: AppleTextStyles.callout(context).copyWith(
+                        color: _canResend && !_isLoading
+                            ? primaryColor
+                            : secondaryLabel,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
-        ],
+        ),
       ),
     );
   }

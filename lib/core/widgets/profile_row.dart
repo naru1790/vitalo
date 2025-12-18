@@ -1,11 +1,11 @@
 // =============================================================================
-// PROFILE ROW WIDGETS - Reusable tappable rows for profile cards
+// PROFILE ROW WIDGETS - iOS 26 Liquid Glass Design
 // =============================================================================
-// Unified row components used across profile screens and settings.
-// Follows Material 3 Soft Minimalistic design.
+// Reusable row components for profile screens and settings.
+// Follows Apple Human Interface Guidelines with glass-style cards.
 // =============================================================================
 
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:vitalo/core/theme.dart';
 
 /// Standard tappable row with icon, label, optional value/subtitle, and chevron.
@@ -56,13 +56,14 @@ class ProfileTappableRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
+    final primaryColor = CupertinoTheme.of(context).primaryColor;
+    final labelColor_ = CupertinoColors.label.resolveFrom(context);
+    final secondaryLabel = CupertinoColors.secondaryLabel.resolveFrom(context);
     final hasValue = value != null && value != 'Not Set' && value != '—';
 
-    return InkWell(
+    return GestureDetector(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
+      behavior: HitTestBehavior.opaque,
       child: Padding(
         padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.md,
@@ -73,7 +74,7 @@ class ProfileTappableRow extends StatelessWidget {
             Icon(
               icon,
               size: AppSpacing.iconSizeSmall,
-              color: iconColor ?? colorScheme.primary,
+              color: iconColor ?? primaryColor,
             ),
             const SizedBox(width: AppSpacing.md),
 
@@ -85,15 +86,17 @@ class ProfileTappableRow extends StatelessWidget {
                   children: [
                     Text(
                       label,
-                      style: textTheme.bodyMedium?.copyWith(
-                        color: labelColor ?? colorScheme.onSurface,
+                      style: TextStyle(
+                        fontSize: 17,
+                        color: labelColor ?? labelColor_,
                       ),
                     ),
                     const SizedBox(height: AppSpacing.xxs),
                     Text(
                       subtitle!,
-                      style: textTheme.bodySmall?.copyWith(
-                        color: colorScheme.primary,
+                      style: TextStyle(
+                        fontSize: 15,
+                        color: primaryColor,
                         fontWeight: FontWeight.w500,
                       ),
                       maxLines: 1,
@@ -105,8 +108,9 @@ class ProfileTappableRow extends StatelessWidget {
             else
               Text(
                 label,
-                style: textTheme.bodyMedium?.copyWith(
-                  color: labelColor ?? colorScheme.onSurface,
+                style: TextStyle(
+                  fontSize: 17,
+                  color: labelColor ?? labelColor_,
                 ),
               ),
 
@@ -119,10 +123,9 @@ class ProfileTappableRow extends StatelessWidget {
               Expanded(
                 child: Text(
                   value!,
-                  style: textTheme.bodyMedium?.copyWith(
-                    color: hasValue
-                        ? colorScheme.primary
-                        : colorScheme.onSurfaceVariant,
+                  style: TextStyle(
+                    fontSize: 17,
+                    color: hasValue ? primaryColor : secondaryLabel,
                     fontWeight: hasValue ? FontWeight.w600 : FontWeight.w400,
                   ),
                   maxLines: 1,
@@ -135,9 +138,7 @@ class ProfileTappableRow extends StatelessWidget {
             if (value != null && subtitle != null)
               Text(
                 value!,
-                style: textTheme.bodyMedium?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
+                style: TextStyle(fontSize: 17, color: secondaryLabel),
               ),
 
             // Spacer when no value and no subtitle
@@ -146,9 +147,9 @@ class ProfileTappableRow extends StatelessWidget {
             if (showChevron) ...[
               const SizedBox(width: AppSpacing.xs),
               Icon(
-                Icons.chevron_right_rounded,
+                CupertinoIcons.chevron_right,
                 size: AppSpacing.iconSizeSmall,
-                color: colorScheme.onSurfaceVariant,
+                color: secondaryLabel,
               ),
             ],
           ],
@@ -194,8 +195,9 @@ class ProfileSwitchRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
+    final primaryColor = CupertinoTheme.of(context).primaryColor;
+    final labelColor = CupertinoColors.label.resolveFrom(context);
+    final secondaryLabel = CupertinoColors.secondaryLabel.resolveFrom(context);
 
     return Padding(
       padding: const EdgeInsets.symmetric(
@@ -207,7 +209,7 @@ class ProfileSwitchRow extends StatelessWidget {
           Icon(
             icon,
             size: AppSpacing.iconSizeSmall,
-            color: iconColor ?? colorScheme.primary,
+            color: iconColor ?? primaryColor,
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
@@ -217,30 +219,25 @@ class ProfileSwitchRow extends StatelessWidget {
                     children: [
                       Text(
                         label,
-                        style: textTheme.bodyMedium?.copyWith(
-                          color: colorScheme.onSurface,
-                        ),
+                        style: TextStyle(fontSize: 17, color: labelColor),
                       ),
                       Text(
                         value ? 'Connected' : subtitle!,
-                        style: textTheme.bodySmall?.copyWith(
-                          color: value
-                              ? colorScheme.primary
-                              : colorScheme.onSurfaceVariant,
+                        style: TextStyle(
+                          fontSize: 15,
+                          color: value ? primaryColor : secondaryLabel,
                         ),
                       ),
                     ],
                   )
                 : Text(
                     label,
-                    style: textTheme.bodyMedium?.copyWith(
-                      color: colorScheme.onSurface,
-                    ),
+                    style: TextStyle(fontSize: 17, color: labelColor),
                   ),
           ),
-          Switch.adaptive(
+          CupertinoSwitch(
             value: value,
-            activeTrackColor: colorScheme.primary,
+            activeTrackColor: primaryColor,
             onChanged: onChanged,
           ),
         ],
@@ -249,27 +246,26 @@ class ProfileSwitchRow extends StatelessWidget {
   }
 }
 
-/// Standard divider for separating rows within a card.
-///
-/// Indented to align with text after icon.
+/// iOS-style separator for rows within a card.
+/// 0.5px thickness aligned with text after icon.
 class ProfileRowDivider extends StatelessWidget {
   const ProfileRowDivider({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return Divider(
-      height: 1,
-      thickness: 1,
-      indent: AppSpacing.md + AppSpacing.iconSizeSmall + AppSpacing.md,
-      color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+    final separatorColor = CupertinoColors.separator.resolveFrom(context);
+    return Container(
+      height: LiquidGlass.borderWidth,
+      margin: EdgeInsets.only(
+        left: AppSpacing.md + AppSpacing.iconSizeSmall + AppSpacing.md,
+      ),
+      color: separatorColor,
     );
   }
 }
 
 /// Container for a profile card section.
-///
-/// Provides consistent styling for card backgrounds.
+/// iOS 26 Liquid Glass style with subtle glass edge.
 class ProfileCard extends StatelessWidget {
   const ProfileCard({super.key, required this.child});
 
@@ -277,11 +273,18 @@ class ProfileCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final tertiaryFill = CupertinoColors.tertiarySystemFill.resolveFrom(
+      context,
+    );
+    final separatorColor = CupertinoColors.separator.resolveFrom(context);
     return Container(
       decoration: BoxDecoration(
-        color: colorScheme.surface,
+        color: tertiaryFill,
         borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
+        border: Border.all(
+          color: separatorColor.withValues(alpha: 0.3),
+          width: LiquidGlass.borderWidth,
+        ),
       ),
       child: child,
     );

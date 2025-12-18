@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 
 import '../../../../core/theme.dart';
 
@@ -28,11 +28,13 @@ class ProfileMenuTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final primaryColor = CupertinoTheme.of(context).primaryColor;
+    final labelColor = CupertinoColors.label.resolveFrom(context);
+    final secondaryLabel = CupertinoColors.secondaryLabel.resolveFrom(context);
 
-    return InkWell(
+    return GestureDetector(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(AppSpacing.cardRadiusSmall),
+      behavior: HitTestBehavior.opaque,
       child: Padding(
         padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.md,
@@ -44,15 +46,13 @@ class ProfileMenuTile extends StatelessWidget {
               width: AppSpacing.xxxl,
               height: AppSpacing.xxxl,
               decoration: BoxDecoration(
-                color: (iconColor ?? colorScheme.primary).withValues(
-                  alpha: 0.1,
-                ),
+                color: (iconColor ?? primaryColor).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(AppSpacing.cardRadiusSmall),
               ),
               child: Icon(
                 icon,
                 size: AppSpacing.iconSizeSmall,
-                color: iconColor ?? colorScheme.primary,
+                color: iconColor ?? primaryColor,
               ),
             ),
             const SizedBox(width: AppSpacing.md),
@@ -62,17 +62,18 @@ class ProfileMenuTile extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      color: titleColor ?? colorScheme.onSurface,
+                    style: AppleTextStyles.subhead(context).copyWith(
+                      color: titleColor ?? labelColor,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                   if (subtitle != null) ...[
                     const SizedBox(height: AppSpacing.xxs),
                     Text(
                       subtitle!,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: subtitleColor ?? colorScheme.onSurfaceVariant,
-                      ),
+                      style: AppleTextStyles.footnote(
+                        context,
+                      ).copyWith(color: subtitleColor ?? secondaryLabel),
                     ),
                   ],
                 ],
@@ -81,9 +82,9 @@ class ProfileMenuTile extends StatelessWidget {
             if (trailing != null) trailing!,
             if (showArrow && trailing == null)
               Icon(
-                Icons.chevron_right_rounded,
+                CupertinoIcons.chevron_right,
                 size: AppSpacing.iconSize,
-                color: colorScheme.onSurfaceVariant,
+                color: secondaryLabel,
               ),
           ],
         ),

@@ -1,12 +1,13 @@
 // =============================================================================
-// BODY & HEALTH SECTION - Soft Minimalist Design
+// BODY & HEALTH SECTION - iOS 26 Liquid Glass Design
 // =============================================================================
 // Matches the standard profile section design (same as Personal Info, etc.)
 // Uses WheelPicker for waist measurement (Cupertino-style wheel).
 // Follows dietary preferences pattern for "+Other" chip with inline input.
+// iOS-first: CupertinoIcons, Cupertino controls, glass bottom sheets.
 // =============================================================================
 
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:vitalo/core/theme.dart';
 import 'package:vitalo/core/widgets/app_segmented_button.dart';
@@ -20,21 +21,21 @@ import 'package:vitalo/core/widgets/wheel_picker.dart';
 enum HealthCondition {
   none('I\'m healthy', null),
   // Metabolic conditions
-  diabetes('Diabetes (Type 2)', Icons.bloodtype_outlined),
-  preDiabetes('Pre-diabetic', Icons.bloodtype_outlined),
-  highBP('High Blood Pressure', Icons.favorite_border),
-  cholesterol('High Cholesterol', Icons.analytics_outlined),
+  diabetes('Diabetes (Type 2)', CupertinoIcons.drop),
+  preDiabetes('Pre-diabetic', CupertinoIcons.drop),
+  highBP('High Blood Pressure', CupertinoIcons.heart),
+  cholesterol('High Cholesterol', CupertinoIcons.chart_bar),
   // Hormonal conditions
-  thyroid('Thyroid Issues', Icons.monitor_heart_outlined),
-  pcos('PCOS', Icons.female),
+  thyroid('Thyroid Issues', CupertinoIcons.waveform_path_ecg),
+  pcos('PCOS', CupertinoIcons.person),
   // Kidney & Liver
-  kidneyDisease('Kidney Disease', Icons.water_drop_outlined),
-  fattyLiver('Fatty Liver', Icons.healing_outlined),
+  kidneyDisease('Kidney Disease', CupertinoIcons.drop_fill),
+  fattyLiver('Fatty Liver', CupertinoIcons.bandage),
   // Heart
-  heartDisease('Heart Disease', Icons.monitor_heart_outlined),
+  heartDisease('Heart Disease', CupertinoIcons.heart_fill),
   // Female-specific conditions
-  pregnant('Pregnant', Icons.pregnant_woman),
-  lactating('Breastfeeding', Icons.child_care);
+  pregnant('Pregnant', CupertinoIcons.person_2),
+  lactating('Breastfeeding', CupertinoIcons.person_2_fill);
 
   const HealthCondition(this.label, this.icon);
   final String label;
@@ -163,24 +164,11 @@ class _BodyHealthCardState extends State<BodyHealthCard> {
   }
 
   Future<void> _selectWaist() async {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-
-    final result = await showModalBottomSheet<double?>(
+    final result = await showCupertinoModalPopup<double?>(
       context: context,
-      isScrollControlled: true,
-      enableDrag: true,
-      backgroundColor: colorScheme.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(AppSpacing.cardRadiusLarge),
-        ),
-      ),
       builder: (context) => _WaistPickerSheet(
         initialValue: widget.data.waistCm,
         isMetric: widget.data.isMetric,
-        colorScheme: colorScheme,
-        textTheme: textTheme,
       ),
     );
 
@@ -190,24 +178,10 @@ class _BodyHealthCardState extends State<BodyHealthCard> {
   }
 
   Future<void> _selectHealthConditions() async {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-
-    final result = await showModalBottomSheet<BodyHealthData?>(
+    final result = await showCupertinoModalPopup<BodyHealthData?>(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: colorScheme.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(AppSpacing.cardRadiusLarge),
-        ),
-      ),
-      builder: (context) => _HealthConditionsSheet(
-        data: widget.data,
-        isFemale: widget.isFemale,
-        colorScheme: colorScheme,
-        textTheme: textTheme,
-      ),
+      builder: (context) =>
+          _HealthConditionsSheet(data: widget.data, isFemale: widget.isFemale),
     );
 
     if (result != null && mounted) {
@@ -233,38 +207,37 @@ class _BodyHealthCardState extends State<BodyHealthCard> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Section title
-        _buildSectionHeader(colorScheme, textTheme),
+        _buildSectionHeader(context),
         const SizedBox(height: AppSpacing.sm),
 
         // All body & health rows in a single card
-        _buildBodyHealthCard(colorScheme, textTheme),
+        _buildBodyHealthCard(context),
       ],
     );
   }
 
-  Widget _buildSectionHeader(ColorScheme colorScheme, TextTheme textTheme) {
+  Widget _buildSectionHeader(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(left: AppSpacing.xxs),
       child: Text(
         'Body & Health',
-        style: textTheme.titleMedium?.copyWith(
-          color: colorScheme.onSurface,
+        style: TextStyle(
+          fontSize: 17,
           fontWeight: FontWeight.w600,
+          color: CupertinoColors.label.resolveFrom(context),
         ),
       ),
     );
   }
 
-  Widget _buildBodyHealthCard(ColorScheme colorScheme, TextTheme textTheme) {
+  Widget _buildBodyHealthCard(BuildContext context) {
     final hasConditions = !widget.data.hasNoConditions;
     final conditionsSummary = _formatConditions();
+    final primaryColor = CupertinoTheme.of(context).primaryColor;
 
     return ProfileCard(
       child: Column(
@@ -278,29 +251,32 @@ class _BodyHealthCardState extends State<BodyHealthCard> {
             child: Row(
               children: [
                 Icon(
-                  Icons.straighten_outlined,
+                  CupertinoIcons.resize,
                   size: AppSpacing.iconSizeSmall,
-                  color: colorScheme.primary,
+                  color: primaryColor,
                 ),
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
                   child: Text(
                     'Unit System',
-                    style: textTheme.bodyMedium?.copyWith(
-                      color: colorScheme.onSurface,
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: CupertinoColors.label.resolveFrom(context),
                     ),
                   ),
                 ),
                 AppSegmentedButton<bool>(
-                  segments: const [
-                    ButtonSegment<bool>(value: true, label: Text('Metric')),
-                    ButtonSegment<bool>(value: false, label: Text('Imperial')),
-                  ],
-                  selected: {widget.data.isMetric},
-                  onSelectionChanged: (selection) {
-                    widget.onDataChanged(
-                      widget.data.copyWith(isMetric: selection.first),
-                    );
+                  children: const {
+                    true: Text('Metric'),
+                    false: Text('Imperial'),
+                  },
+                  groupValue: widget.data.isMetric,
+                  onValueChanged: (value) {
+                    if (value != null) {
+                      widget.onDataChanged(
+                        widget.data.copyWith(isMetric: value),
+                      );
+                    }
                   },
                 ),
               ],
@@ -308,21 +284,21 @@ class _BodyHealthCardState extends State<BodyHealthCard> {
           ),
           const ProfileRowDivider(),
           ProfileTappableRow(
-            icon: Icons.monitor_weight_outlined,
+            icon: CupertinoIcons.speedometer,
             label: 'Weight',
             value: _formatWeight(),
             onTap: _selectWeight,
           ),
           const ProfileRowDivider(),
           ProfileTappableRow(
-            icon: Icons.height_outlined,
+            icon: CupertinoIcons.arrow_up_arrow_down,
             label: 'Height',
             value: _formatHeight(),
             onTap: _selectHeight,
           ),
           const ProfileRowDivider(),
           ProfileTappableRow(
-            icon: Icons.straighten_outlined,
+            icon: CupertinoIcons.resize_h,
             label: 'Waist',
             value: _formatWaist(),
             onTap: _selectWaist,
@@ -330,7 +306,7 @@ class _BodyHealthCardState extends State<BodyHealthCard> {
           const ProfileRowDivider(),
           // Health Conditions row
           ProfileTappableRow(
-            icon: Icons.medical_information_outlined,
+            icon: CupertinoIcons.heart_circle,
             label: 'Health Conditions',
             value: hasConditions ? null : 'I\'m healthy',
             subtitle: hasConditions ? conditionsSummary : null,
@@ -346,15 +322,8 @@ class _BodyHealthCardState extends State<BodyHealthCard> {
 class _HealthConditionsSheet extends StatefulWidget {
   final BodyHealthData data;
   final bool isFemale;
-  final ColorScheme colorScheme;
-  final TextTheme textTheme;
 
-  const _HealthConditionsSheet({
-    required this.data,
-    required this.isFemale,
-    required this.colorScheme,
-    required this.textTheme,
-  });
+  const _HealthConditionsSheet({required this.data, required this.isFemale});
 
   @override
   State<_HealthConditionsSheet> createState() => _HealthConditionsSheetState();
@@ -453,8 +422,7 @@ class _HealthConditionsSheetState extends State<_HealthConditionsSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = widget.colorScheme;
-    final textTheme = widget.textTheme;
+    final primaryColor = CupertinoTheme.of(context).primaryColor;
 
     // Filter conditions based on gender
     final availableConditions = HealthCondition.values
@@ -464,7 +432,7 @@ class _HealthConditionsSheetState extends State<_HealthConditionsSheet> {
 
     return Container(
       decoration: BoxDecoration(
-        color: colorScheme.surface,
+        color: CupertinoColors.systemBackground.resolveFrom(context),
         borderRadius: const BorderRadius.vertical(
           top: Radius.circular(AppSpacing.cardRadiusLarge),
         ),
@@ -481,7 +449,7 @@ class _HealthConditionsSheetState extends State<_HealthConditionsSheet> {
                 width: 32,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: colorScheme.outlineVariant,
+                  color: CupertinoColors.separator.resolveFrom(context),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -503,31 +471,31 @@ class _HealthConditionsSheetState extends State<_HealthConditionsSheet> {
                       children: [
                         Text(
                           'Health Conditions',
-                          style: textTheme.titleLarge?.copyWith(
+                          style: TextStyle(
+                            fontSize: 22,
                             fontWeight: FontWeight.w600,
-                            color: colorScheme.onSurface,
+                            color: CupertinoColors.label.resolveFrom(context),
                           ),
                         ),
                         const SizedBox(height: AppSpacing.xxs),
                         Text(
                           'Help us personalize your experience safely',
-                          style: textTheme.bodySmall?.copyWith(
-                            color: colorScheme.onSurfaceVariant,
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: CupertinoColors.secondaryLabel.resolveFrom(
+                              context,
+                            ),
                           ),
                         ),
                       ],
                     ),
                   ),
-                  FilledButton(
-                    onPressed: _confirmSelection,
-                    style: FilledButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.lg,
-                        vertical: AppSpacing.sm,
-                      ),
-                      minimumSize: Size.zero,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  CupertinoButton.filled(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.lg,
+                      vertical: AppSpacing.sm,
                     ),
+                    onPressed: _confirmSelection,
                     child: const Text('Done'),
                   ),
                 ],
@@ -543,115 +511,48 @@ class _HealthConditionsSheetState extends State<_HealthConditionsSheet> {
                 spacing: AppSpacing.xs,
                 runSpacing: AppSpacing.xs,
                 children: [
-                  // "I'm healthy" chip
-                  FilterChip(
-                    label: Text(HealthCondition.none.label),
-                    selected: !_hasAnyCondition,
-                    onSelected: (_) => _toggleCondition(HealthCondition.none),
-                    selectedColor: colorScheme.primaryContainer,
-                    checkmarkColor: colorScheme.onPrimaryContainer,
-                    side: BorderSide(
-                      color: !_hasAnyCondition
-                          ? colorScheme.primary
-                          : colorScheme.outlineVariant,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(
-                        AppSpacing.buttonRadius,
-                      ),
-                    ),
-                    labelStyle: textTheme.labelMedium?.copyWith(
-                      color: !_hasAnyCondition
-                          ? colorScheme.onPrimaryContainer
-                          : colorScheme.onSurfaceVariant,
-                      fontWeight: !_hasAnyCondition
-                          ? FontWeight.w600
-                          : FontWeight.w400,
-                    ),
+                  // "I'm healthy" chip - iOS style
+                  _buildIOSChip(
+                    context: context,
+                    label: HealthCondition.none.label,
+                    isSelected: !_hasAnyCondition,
+                    onTap: () => _toggleCondition(HealthCondition.none),
+                    primaryColor: primaryColor,
                   ),
 
-                  // Condition chips
+                  // Condition chips - iOS style
                   ...availableConditions.map((condition) {
                     final isSelected = _conditions.contains(condition);
-                    return FilterChip(
-                      label: Text(condition.label),
-                      selected: isSelected,
-                      onSelected: (_) => _toggleCondition(condition),
-                      selectedColor: colorScheme.primaryContainer,
-                      checkmarkColor: colorScheme.onPrimaryContainer,
-                      side: BorderSide(
-                        color: isSelected
-                            ? colorScheme.primary
-                            : colorScheme.outlineVariant,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(
-                          AppSpacing.buttonRadius,
-                        ),
-                      ),
-                      labelStyle: textTheme.labelMedium?.copyWith(
-                        color: isSelected
-                            ? colorScheme.onPrimaryContainer
-                            : colorScheme.onSurfaceVariant,
-                        fontWeight: isSelected
-                            ? FontWeight.w600
-                            : FontWeight.w400,
-                      ),
+                    return _buildIOSChip(
+                      context: context,
+                      label: condition.label,
+                      isSelected: isSelected,
+                      onTap: () => _toggleCondition(condition),
+                      primaryColor: primaryColor,
                     );
                   }),
 
-                  // Custom conditions (deletable)
+                  // Custom conditions (deletable) - iOS style
                   ..._customConditions.map((condition) {
-                    return InputChip(
-                      label: Text(condition),
-                      onDeleted: () => _removeCustomCondition(condition),
-                      backgroundColor: colorScheme.primaryContainer,
-                      deleteIconColor: colorScheme.onPrimaryContainer,
-                      labelStyle: textTheme.labelMedium?.copyWith(
-                        color: colorScheme.onPrimaryContainer,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      side: BorderSide(color: colorScheme.primary),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(
-                          AppSpacing.buttonRadius,
-                        ),
-                      ),
+                    return _buildIOSDeletableChip(
+                      context: context,
+                      label: condition,
+                      onDelete: () => _removeCustomCondition(condition),
+                      primaryColor: primaryColor,
                     );
                   }),
 
-                  // "+ Other" chip
+                  // "+ Other" chip - iOS style
                   if (!_showInput)
-                    ActionChip(
-                      label: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.add_rounded,
-                            size: 18,
-                            color: colorScheme.onSurfaceVariant,
-                          ),
-                          const SizedBox(width: 4),
-                          const Text('Other'),
-                        ],
-                      ),
-                      onPressed: () {
+                    _buildIOSActionChip(
+                      context: context,
+                      onTap: () {
                         HapticFeedback.selectionClick();
                         setState(() => _showInput = true);
                         WidgetsBinding.instance.addPostFrameCallback((_) {
                           _inputFocusNode.requestFocus();
                         });
                       },
-                      labelStyle: textTheme.labelMedium?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                        fontWeight: FontWeight.w500,
-                      ),
-                      side: BorderSide(color: colorScheme.outlineVariant),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(
-                          AppSpacing.buttonRadius,
-                        ),
-                      ),
                     ),
                 ],
               ),
@@ -671,60 +572,205 @@ class _HealthConditionsSheetState extends State<_HealthConditionsSheet> {
                         AppSpacing.xl,
                         0,
                       ),
-                      child: TextField(
-                        controller: _inputController,
-                        focusNode: _inputFocusNode,
-                        textCapitalization: TextCapitalization.words,
-                        decoration: InputDecoration(
-                          hintText: 'e.g., IBS, Celiac, Arthritis',
-                          hintStyle: textTheme.bodyMedium?.copyWith(
-                            color: colorScheme.onSurfaceVariant,
-                          ),
-                          filled: true,
-                          fillColor: colorScheme.surfaceContainerLow,
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: AppSpacing.md,
-                            vertical: AppSpacing.sm,
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(
-                              AppSpacing.inputRadius,
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: CupertinoTextField(
+                              controller: _inputController,
+                              focusNode: _inputFocusNode,
+                              textCapitalization: TextCapitalization.words,
+                              placeholder: 'e.g., IBS, Celiac, Arthritis',
+                              placeholderStyle: TextStyle(
+                                fontSize: 16,
+                                color: CupertinoColors.secondaryLabel
+                                    .resolveFrom(context),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: AppSpacing.md,
+                                vertical: AppSpacing.sm,
+                              ),
+                              decoration: BoxDecoration(
+                                color: CupertinoColors.tertiarySystemFill
+                                    .resolveFrom(context),
+                                borderRadius: BorderRadius.circular(
+                                  AppSpacing.inputRadius,
+                                ),
+                              ),
+                              onSubmitted: (_) => _submitInput(),
                             ),
-                            borderSide: BorderSide.none,
                           ),
-                          suffixIcon: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                icon: Icon(
-                                  Icons.close_rounded,
-                                  color: colorScheme.onSurfaceVariant,
-                                  size: 20,
-                                ),
-                                onPressed: () {
-                                  _inputController.clear();
-                                  setState(() => _showInput = false);
-                                },
-                                visualDensity: VisualDensity.compact,
+                          const SizedBox(width: AppSpacing.xs),
+                          CupertinoButton(
+                            padding: EdgeInsets.zero,
+                            onPressed: () {
+                              _inputController.clear();
+                              setState(() => _showInput = false);
+                            },
+                            child: Icon(
+                              CupertinoIcons.xmark_circle_fill,
+                              color: CupertinoColors.secondaryLabel.resolveFrom(
+                                context,
                               ),
-                              IconButton(
-                                icon: Icon(
-                                  Icons.check_rounded,
-                                  color: colorScheme.primary,
-                                  size: 20,
-                                ),
-                                onPressed: _submitInput,
-                                visualDensity: VisualDensity.compact,
-                              ),
-                            ],
+                              size: 24,
+                            ),
                           ),
-                        ),
-                        onSubmitted: (_) => _submitInput(),
+                          CupertinoButton(
+                            padding: EdgeInsets.zero,
+                            onPressed: _submitInput,
+                            child: Icon(
+                              CupertinoIcons.checkmark_circle_fill,
+                              color: primaryColor,
+                              size: 24,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
             ),
 
             const SizedBox(height: AppSpacing.xxl),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// iOS-style selectable chip with checkmark
+  Widget _buildIOSChip({
+    required BuildContext context,
+    required String label,
+    required bool isSelected,
+    required VoidCallback onTap,
+    required Color primaryColor,
+  }) {
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.selectionClick();
+        onTap();
+      },
+      child: AnimatedContainer(
+        duration: AppSpacing.durationFast,
+        curve: Curves.easeOutCubic,
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.xs,
+        ),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? primaryColor.withValues(alpha: 0.15)
+              : CupertinoColors.transparent,
+          borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
+          border: Border.all(
+            color: isSelected
+                ? primaryColor
+                : CupertinoColors.separator.resolveFrom(context),
+            width: LiquidGlass.borderWidth,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (isSelected) ...[
+              Icon(CupertinoIcons.checkmark, size: 14, color: primaryColor),
+              const SizedBox(width: AppSpacing.xxs),
+            ],
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                color: isSelected
+                    ? CupertinoColors.label.resolveFrom(context)
+                    : CupertinoColors.secondaryLabel.resolveFrom(context),
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// iOS-style deletable chip (for custom conditions)
+  Widget _buildIOSDeletableChip({
+    required BuildContext context,
+    required String label,
+    required VoidCallback onDelete,
+    required Color primaryColor,
+  }) {
+    return Container(
+      padding: const EdgeInsets.only(
+        left: AppSpacing.md,
+        right: AppSpacing.xs,
+        top: AppSpacing.xxs,
+        bottom: AppSpacing.xxs,
+      ),
+      decoration: BoxDecoration(
+        color: primaryColor.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
+        border: Border.all(color: primaryColor, width: LiquidGlass.borderWidth),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              color: CupertinoColors.label.resolveFrom(context),
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(width: AppSpacing.xxs),
+          GestureDetector(
+            onTap: onDelete,
+            child: Icon(
+              CupertinoIcons.xmark_circle_fill,
+              size: 18,
+              color: CupertinoColors.secondaryLabel.resolveFrom(context),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// iOS-style "+ Other" action chip
+  Widget _buildIOSActionChip({
+    required BuildContext context,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.xs,
+        ),
+        decoration: BoxDecoration(
+          color: CupertinoColors.transparent,
+          borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
+          border: Border.all(
+            color: CupertinoColors.separator.resolveFrom(context),
+            width: LiquidGlass.borderWidth,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              CupertinoIcons.add,
+              size: 16,
+              color: CupertinoColors.secondaryLabel.resolveFrom(context),
+            ),
+            const SizedBox(width: AppSpacing.xxs),
+            Text(
+              'Other',
+              style: TextStyle(
+                fontSize: 12,
+                color: CupertinoColors.secondaryLabel.resolveFrom(context),
+                fontWeight: FontWeight.w500,
+              ),
+            ),
           ],
         ),
       ),
@@ -736,15 +782,8 @@ class _HealthConditionsSheetState extends State<_HealthConditionsSheet> {
 class _WaistPickerSheet extends StatefulWidget {
   final double? initialValue;
   final bool isMetric;
-  final ColorScheme colorScheme;
-  final TextTheme textTheme;
 
-  const _WaistPickerSheet({
-    this.initialValue,
-    required this.isMetric,
-    required this.colorScheme,
-    required this.textTheme,
-  });
+  const _WaistPickerSheet({this.initialValue, required this.isMetric});
 
   @override
   State<_WaistPickerSheet> createState() => _WaistPickerSheetState();
@@ -822,15 +861,14 @@ class _WaistPickerSheetState extends State<_WaistPickerSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
+    final primaryColor = CupertinoTheme.of(context).primaryColor;
 
     final itemCount = _isMetric ? _maxCm - _minCm + 1 : _maxInch - _minInch + 1;
     final minVal = _isMetric ? _minCm : _minInch;
 
     return Container(
       decoration: BoxDecoration(
-        color: colorScheme.surface,
+        color: CupertinoColors.systemBackground.resolveFrom(context),
         borderRadius: const BorderRadius.vertical(
           top: Radius.circular(AppSpacing.cardRadiusLarge),
         ),
@@ -847,7 +885,7 @@ class _WaistPickerSheetState extends State<_WaistPickerSheet> {
                 width: 32,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: colorScheme.outlineVariant,
+                  color: CupertinoColors.separator.resolveFrom(context),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -869,31 +907,31 @@ class _WaistPickerSheetState extends State<_WaistPickerSheet> {
                       children: [
                         Text(
                           'Waist',
-                          style: textTheme.titleLarge?.copyWith(
+                          style: TextStyle(
+                            fontSize: 22,
                             fontWeight: FontWeight.w600,
-                            color: colorScheme.onSurface,
+                            color: CupertinoColors.label.resolveFrom(context),
                           ),
                         ),
                         const SizedBox(height: AppSpacing.xxs),
                         Text(
                           'Scroll to set your waist size',
-                          style: textTheme.bodySmall?.copyWith(
-                            color: colorScheme.onSurfaceVariant,
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: CupertinoColors.secondaryLabel.resolveFrom(
+                              context,
+                            ),
                           ),
                         ),
                       ],
                     ),
                   ),
-                  FilledButton(
-                    onPressed: _confirmSelection,
-                    style: FilledButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.lg,
-                        vertical: AppSpacing.sm,
-                      ),
-                      minimumSize: Size.zero,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  CupertinoButton.filled(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.lg,
+                      vertical: AppSpacing.sm,
                     ),
+                    onPressed: _confirmSelection,
                     child: const Text('Done'),
                   ),
                 ],
@@ -907,22 +945,23 @@ class _WaistPickerSheetState extends State<_WaistPickerSheet> {
                 width: double.infinity,
                 padding: const EdgeInsets.all(AppSpacing.sm),
                 decoration: BoxDecoration(
-                  color: colorScheme.primaryContainer.withValues(alpha: 0.3),
+                  color: primaryColor.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
                 ),
                 child: Row(
                   children: [
                     Icon(
-                      Icons.tips_and_updates_outlined,
+                      CupertinoIcons.lightbulb,
                       size: 18,
-                      color: colorScheme.primary,
+                      color: primaryColor,
                     ),
                     const SizedBox(width: AppSpacing.sm),
                     Expanded(
                       child: Text(
                         'Measure at belly button level, breathing out naturally',
-                        style: textTheme.bodySmall?.copyWith(
-                          color: colorScheme.onSurface,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: CupertinoColors.label.resolveFrom(context),
                         ),
                       ),
                     ),
@@ -936,9 +975,10 @@ class _WaistPickerSheetState extends State<_WaistPickerSheet> {
             // Large value display
             Text(
               '$_displayValue $_unitLabel',
-              style: textTheme.displayMedium?.copyWith(
+              style: TextStyle(
+                fontSize: 45,
                 fontWeight: FontWeight.w600,
-                color: colorScheme.primary,
+                color: primaryColor,
                 height: 1,
               ),
             ),
@@ -969,16 +1009,19 @@ class _WaistPickerSheetState extends State<_WaistPickerSheet> {
                     onSelectedItemChanged: _onValueChanged,
                     childDelegate: ListWheelChildBuilderDelegate(
                       childCount: itemCount,
-                      builder: (context, index) {
+                      builder: (ctx, index) {
                         final value = index + minVal;
                         final isSelected = value == _displayValue;
                         return Center(
                           child: Text(
                             '$value',
-                            style: textTheme.headlineMedium?.copyWith(
+                            style: TextStyle(
+                              fontSize: 28,
                               color: isSelected
-                                  ? colorScheme.primary
-                                  : colorScheme.onSurfaceVariant,
+                                  ? primaryColor
+                                  : CupertinoColors.secondaryLabel.resolveFrom(
+                                      context,
+                                    ),
                               fontWeight: isSelected
                                   ? FontWeight.w600
                                   : FontWeight.w400,

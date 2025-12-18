@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 
 import '../theme.dart';
 
@@ -51,7 +51,8 @@ class _FluxMascotState extends State<FluxMascot> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    final isLight = Theme.of(context).brightness == Brightness.light;
+    final isLight =
+        MediaQuery.platformBrightnessOf(context) == Brightness.light;
 
     final back = isLight ? FluxColors.lightBack : FluxColors.darkBack;
     final mid = isLight ? FluxColors.lightMid : FluxColors.darkMid;

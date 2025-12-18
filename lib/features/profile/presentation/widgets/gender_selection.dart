@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 
 import '../../../../core/theme.dart';
 import '../../../../core/widgets/app_segmented_button.dart';
@@ -17,8 +17,13 @@ class GenderSelection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
+    final primaryColor = CupertinoTheme.of(context).primaryColor;
+
+    // Normalize to valid key - handle case variations or invalid values
+    final normalizedGender = switch (selectedGender?.toLowerCase()) {
+      'female' => 'Female',
+      _ => 'Male', // Default to Male for null or any other value
+    };
 
     return Padding(
       padding: const EdgeInsets.symmetric(
@@ -28,26 +33,18 @@ class GenderSelection extends StatelessWidget {
       child: Row(
         children: [
           Icon(
-            Icons.person_outline_rounded,
+            CupertinoIcons.person,
             size: AppSpacing.iconSizeSmall,
-            color: colorScheme.primary,
+            color: primaryColor,
           ),
           const SizedBox(width: AppSpacing.md),
-          Text(
-            'Gender',
-            style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface),
-          ),
+          Text('Gender', style: AppleTextStyles.callout(context)),
           const Spacer(),
           AppSegmentedButton<String>(
-            segments: const [
-              ButtonSegment(value: 'Male', label: Text('Male')),
-              ButtonSegment(value: 'Female', label: Text('Female')),
-              ButtonSegment(value: 'Others', label: Text('Others')),
-            ],
-            selected: selectedGender != null ? {selectedGender!} : {},
-            emptySelectionAllowed: true,
-            onSelectionChanged: (selection) {
-              onGenderSelected(selection.isEmpty ? null : selection.first);
+            children: const {'Male': Text('Male'), 'Female': Text('Female')},
+            groupValue: normalizedGender,
+            onValueChanged: (value) {
+              onGenderSelected(value);
             },
           ),
         ],

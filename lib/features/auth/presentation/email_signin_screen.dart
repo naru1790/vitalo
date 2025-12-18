@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../main.dart';
@@ -198,39 +198,38 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final primaryColor = CupertinoTheme.of(context).primaryColor;
+    final surfaceColor = CupertinoColors.systemBackground.resolveFrom(context);
 
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+    return CupertinoPageScaffold(
+      navigationBar: CupertinoNavigationBar(
+        leading: CupertinoButton(
+          padding: EdgeInsets.zero,
           onPressed: _goBack,
+          child: Icon(CupertinoIcons.back, color: primaryColor),
         ),
-        backgroundColor: colorScheme.surface,
-        elevation: 0,
+        backgroundColor: surfaceColor,
+        border: null,
       ),
-      body: GestureDetector(
+      child: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
-        child: Stack(
-          children: [
-            SafeArea(
-              child: PageView(
-                controller: _pageController,
-                physics: const NeverScrollableScrollPhysics(),
-                children: [
-                  _buildEmailStep(theme, colorScheme),
-                  _buildOtpStep(theme, colorScheme),
-                ],
-              ),
-            ),
-          ],
+        child: SafeArea(
+          child: PageView(
+            controller: _pageController,
+            physics: const NeverScrollableScrollPhysics(),
+            children: [_buildEmailStep(), _buildOtpStep()],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildEmailStep(ThemeData theme, ColorScheme colorScheme) {
+  Widget _buildEmailStep() {
+    final labelColor = CupertinoColors.label.resolveFrom(context);
+    final secondaryLabel = CupertinoColors.secondaryLabel.resolveFrom(context);
+    final fillColor = CupertinoColors.tertiarySystemFill.resolveFrom(context);
+    final primaryColor = CupertinoTheme.of(context).primaryColor;
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(AppSpacing.pageHorizontalPadding),
       child: Form(
@@ -239,36 +238,31 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const SizedBox(height: AppSpacing.xl),
-            Text(
-              'Welcome Back',
-              style: theme.textTheme.displaySmall?.copyWith(
-                fontWeight: FontWeight.w600,
-                color: colorScheme.onSurface,
-              ),
-            ),
+            Text('Welcome Back', style: AppleTextStyles.largeTitle(context)),
             const SizedBox(height: AppSpacing.md),
             Text(
               'Enter your email to access your health vault.',
-              style: theme.textTheme.bodyLarge?.copyWith(
-                color: colorScheme.onSurfaceVariant,
-              ),
+              style: AppleTextStyles.bodySecondary(context),
             ),
             const SizedBox(height: AppSpacing.xxl),
-            TextFormField(
+            CupertinoTextFormFieldRow(
               controller: _emailController,
               keyboardType: TextInputType.emailAddress,
               textInputAction: TextInputAction.done,
               enabled: !_isLoading,
-              style: theme.textTheme.bodyLarge,
-              decoration: InputDecoration(
-                labelText: 'Email Address',
-                hintText: 'you@example.com',
-                prefixIcon: Icon(
-                  Icons.email_outlined,
-                  color: colorScheme.primary,
+              padding: EdgeInsets.zero,
+              placeholder: 'you@example.com',
+              prefix: Padding(
+                padding: const EdgeInsets.only(right: AppSpacing.sm),
+                child: Icon(
+                  CupertinoIcons.mail,
+                  color: primaryColor,
+                  size: AppSpacing.iconSizeSmall,
                 ),
-                filled: true,
-                fillColor: colorScheme.surfaceContainerLow,
+              ),
+              decoration: BoxDecoration(
+                color: fillColor,
+                borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
               ),
               validator: (value) {
                 if (value == null || value.isEmpty) {
@@ -296,40 +290,33 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
     );
   }
 
-  Widget _buildOtpStep(ThemeData theme, ColorScheme colorScheme) {
+  Widget _buildOtpStep() {
+    final labelColor = CupertinoColors.label.resolveFrom(context);
+    final secondaryLabel = CupertinoColors.secondaryLabel.resolveFrom(context);
+    final primaryColor = CupertinoTheme.of(context).primaryColor;
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(AppSpacing.pageHorizontalPadding),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const SizedBox(height: AppSpacing.xl),
-          Text(
-            'Verify it\'s you',
-            style: theme.textTheme.displaySmall?.copyWith(
-              fontWeight: FontWeight.w600,
-              color: colorScheme.onSurface,
-            ),
-          ),
+          Text('Verify it\'s you', style: AppleTextStyles.largeTitle(context)),
           const SizedBox(height: AppSpacing.md),
           RichText(
             text: TextSpan(
               text: 'We sent a code to ',
-              style: theme.textTheme.bodyLarge?.copyWith(
-                color: colorScheme.onSurfaceVariant,
-              ),
+              style: AppleTextStyles.bodySecondary(context),
               children: [
                 TextSpan(
                   text: _emailController.text,
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                    color: colorScheme.primary,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: AppleTextStyles.headline(
+                    context,
+                  ).copyWith(color: primaryColor),
                 ),
                 TextSpan(
                   text: '. Enter it below.',
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
+                  style: AppleTextStyles.bodySecondary(context),
                 ),
               ],
             ),
@@ -342,7 +329,8 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
           ),
           const SizedBox(height: AppSpacing.xl),
           Center(
-            child: TextButton(
+            child: CupertinoButton(
+              padding: EdgeInsets.zero,
               onPressed: _resendCountdown > 0 || _isLoading
                   ? null
                   : _resendCode,
@@ -350,6 +338,11 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
                 _resendCountdown > 0
                     ? 'Resend code in ${_resendCountdown}s'
                     : 'Resend Code',
+                style: AppleTextStyles.callout(context).copyWith(
+                  color: _resendCountdown > 0 || _isLoading
+                      ? secondaryLabel
+                      : primaryColor,
+                ),
               ),
             ),
           ),

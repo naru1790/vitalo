@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 
 import '../theme.dart';
 
@@ -20,23 +20,27 @@ class LoadingButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final primaryColor = CupertinoTheme.of(context).primaryColor;
+    final isDisabled = isLoading || !enabled;
 
     return SizedBox(
       width: double.infinity,
       height: height,
-      child: FilledButton(
-        onPressed: isLoading || !enabled ? null : onPressed,
+      child: CupertinoButton(
+        padding: EdgeInsets.zero,
+        borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
+        color: isDisabled ? primaryColor.withValues(alpha: 0.5) : primaryColor,
+        onPressed: isDisabled ? null : onPressed,
         child: isLoading
-            ? SizedBox(
-                height: AppSpacing.iconSizeSmall,
-                width: AppSpacing.iconSizeSmall,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: colorScheme.onPrimary,
+            ? const CupertinoActivityIndicator(color: CupertinoColors.white)
+            : Text(
+                label,
+                style: const TextStyle(
+                  color: CupertinoColors.white,
+                  fontSize: 17,
+                  fontWeight: FontWeight.w600,
                 ),
-              )
-            : Text(label),
+              ),
       ),
     );
   }

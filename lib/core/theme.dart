@@ -1,7 +1,5 @@
-import 'dart:io' show Platform;
-
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // VITALO THEME - iOS 26 Liquid Glass Design
@@ -26,169 +24,144 @@ import 'package:google_fonts/google_fonts.dart';
 // - Caption 2: 11pt Regular
 // ═══════════════════════════════════════════════════════════════════════════
 
-/// Creates platform-adaptive text theme
-/// iOS: SF Pro (system font) with Apple HIG sizes
-/// Android: Outfit (headings) + Inter (body) via Google Fonts
-TextTheme createTextTheme(BuildContext context) {
-  if (Platform.isIOS || Platform.isMacOS) {
-    return _createAppleTextTheme();
-  }
-  return _createAndroidTextTheme(context);
-}
+// ═══════════════════════════════════════════════════════════════════════════
+// APPLE TEXT STYLES - Pure Cupertino Typography
+// Use these in Cupertino screens for consistent iOS HIG typography.
+// These are context-independent base styles. Apply color via .copyWith()
+//
+// Usage:
+//   Text('Title', style: AppleTextStyles.largeTitle(context))
+//   Text('Body', style: AppleTextStyles.body(context))
+// ═══════════════════════════════════════════════════════════════════════════
 
-/// Apple SF Pro typography following iOS HIG exactly
-TextTheme _createAppleTextTheme() {
-  // SF Pro is the system font on iOS/macOS - no fontFamily needed
-  return const TextTheme(
-    // Large Title - 34pt Bold
-    displayLarge: TextStyle(
-      fontSize: 34,
-      fontWeight: FontWeight.bold,
-      letterSpacing: 0.37,
-    ),
-    // Title 1 - 28pt Bold
-    displayMedium: TextStyle(
-      fontSize: 28,
-      fontWeight: FontWeight.bold,
-      letterSpacing: 0.36,
-    ),
-    // Title 2 - 22pt Bold
-    displaySmall: TextStyle(
-      fontSize: 22,
-      fontWeight: FontWeight.bold,
-      letterSpacing: 0.35,
-    ),
-    // Title 3 - 20pt Semibold
-    headlineLarge: TextStyle(
-      fontSize: 20,
-      fontWeight: FontWeight.w600,
-      letterSpacing: 0.38,
-    ),
-    // Headline - 17pt Semibold
-    headlineMedium: TextStyle(
-      fontSize: 17,
-      fontWeight: FontWeight.w600,
-      letterSpacing: -0.41,
-    ),
-    // Subheadline - 15pt Regular
-    headlineSmall: TextStyle(
-      fontSize: 15,
-      fontWeight: FontWeight.w400,
-      letterSpacing: -0.24,
-    ),
-    // Title Large - 20pt Semibold (for nav bars)
-    titleLarge: TextStyle(
-      fontSize: 20,
-      fontWeight: FontWeight.w600,
-      letterSpacing: 0.38,
-    ),
-    // Headline - 17pt Semibold
-    titleMedium: TextStyle(
-      fontSize: 17,
-      fontWeight: FontWeight.w600,
-      letterSpacing: -0.41,
-    ),
-    // Subheadline - 15pt Medium
-    titleSmall: TextStyle(
-      fontSize: 15,
-      fontWeight: FontWeight.w500,
-      letterSpacing: -0.24,
-    ),
-    // Body - 17pt Regular
-    bodyLarge: TextStyle(
-      fontSize: 17,
-      fontWeight: FontWeight.w400,
-      letterSpacing: -0.41,
-    ),
-    // Callout - 16pt Regular
-    bodyMedium: TextStyle(
-      fontSize: 16,
-      fontWeight: FontWeight.w400,
-      letterSpacing: -0.32,
-    ),
-    // Subhead - 15pt Regular
-    bodySmall: TextStyle(
-      fontSize: 15,
-      fontWeight: FontWeight.w400,
-      letterSpacing: -0.24,
-    ),
-    // Button text - 17pt Semibold (iOS standard for buttons)
-    labelLarge: TextStyle(
-      fontSize: 17,
-      fontWeight: FontWeight.w600,
-      letterSpacing: -0.41,
-    ),
-    // Caption 1 - 12pt Regular
-    labelMedium: TextStyle(
-      fontSize: 12,
-      fontWeight: FontWeight.w400,
-      letterSpacing: 0,
-    ),
-    // Caption 2 - 11pt Regular
-    labelSmall: TextStyle(
-      fontSize: 11,
-      fontWeight: FontWeight.w400,
-      letterSpacing: 0.07,
-    ),
+/// Apple HIG Typography for pure Cupertino screens.
+/// All methods return TextStyle with proper color from CupertinoColors.
+abstract class AppleTextStyles {
+  // ─────────────────────────────────────────────────────────────────────────
+  // Primary Text Styles (with CupertinoColors.label)
+  // ─────────────────────────────────────────────────────────────────────────
+
+  /// Large Title - 34pt Bold (main screen titles)
+  static TextStyle largeTitle(BuildContext context) => TextStyle(
+    fontSize: 34,
+    fontWeight: FontWeight.bold,
+    letterSpacing: 0.37,
+    color: CupertinoColors.label.resolveFrom(context),
+  );
+
+  /// Title 1 - 28pt Bold (section headers)
+  static TextStyle title1(BuildContext context) => TextStyle(
+    fontSize: 28,
+    fontWeight: FontWeight.bold,
+    letterSpacing: 0.36,
+    color: CupertinoColors.label.resolveFrom(context),
+  );
+
+  /// Title 2 - 22pt Bold (subsection headers)
+  static TextStyle title2(BuildContext context) => TextStyle(
+    fontSize: 22,
+    fontWeight: FontWeight.bold,
+    letterSpacing: 0.35,
+    color: CupertinoColors.label.resolveFrom(context),
+  );
+
+  /// Title 3 - 20pt Semibold (smaller headers)
+  static TextStyle title3(BuildContext context) => TextStyle(
+    fontSize: 20,
+    fontWeight: FontWeight.w600,
+    letterSpacing: 0.38,
+    color: CupertinoColors.label.resolveFrom(context),
+  );
+
+  /// Headline - 17pt Semibold (emphasized body text)
+  static TextStyle headline(BuildContext context) => TextStyle(
+    fontSize: 17,
+    fontWeight: FontWeight.w600,
+    letterSpacing: -0.41,
+    color: CupertinoColors.label.resolveFrom(context),
+  );
+
+  /// Body - 17pt Regular (primary content)
+  static TextStyle body(BuildContext context) => TextStyle(
+    fontSize: 17,
+    fontWeight: FontWeight.w400,
+    letterSpacing: -0.41,
+    color: CupertinoColors.label.resolveFrom(context),
+  );
+
+  /// Callout - 16pt Regular (secondary content)
+  static TextStyle callout(BuildContext context) => TextStyle(
+    fontSize: 16,
+    fontWeight: FontWeight.w400,
+    letterSpacing: -0.32,
+    color: CupertinoColors.label.resolveFrom(context),
+  );
+
+  /// Subhead - 15pt Regular (tertiary content)
+  static TextStyle subhead(BuildContext context) => TextStyle(
+    fontSize: 15,
+    fontWeight: FontWeight.w400,
+    letterSpacing: -0.24,
+    color: CupertinoColors.label.resolveFrom(context),
+  );
+
+  /// Footnote - 13pt Regular (supporting text)
+  static TextStyle footnote(BuildContext context) => TextStyle(
+    fontSize: 13,
+    fontWeight: FontWeight.w400,
+    letterSpacing: 0,
+    color: CupertinoColors.label.resolveFrom(context),
+  );
+
+  /// Caption 1 - 12pt Regular (smallest readable text)
+  static TextStyle caption1(BuildContext context) => TextStyle(
+    fontSize: 12,
+    fontWeight: FontWeight.w400,
+    letterSpacing: 0,
+    color: CupertinoColors.label.resolveFrom(context),
+  );
+
+  /// Caption 2 - 11pt Regular (micro text)
+  static TextStyle caption2(BuildContext context) => TextStyle(
+    fontSize: 11,
+    fontWeight: FontWeight.w400,
+    letterSpacing: 0.07,
+    color: CupertinoColors.label.resolveFrom(context),
+  );
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Secondary Text Styles (with CupertinoColors.secondaryLabel)
+  // ─────────────────────────────────────────────────────────────────────────
+
+  /// Body Secondary - 17pt Regular (secondary content)
+  static TextStyle bodySecondary(BuildContext context) => TextStyle(
+    fontSize: 17,
+    fontWeight: FontWeight.w400,
+    letterSpacing: -0.41,
+    color: CupertinoColors.secondaryLabel.resolveFrom(context),
+  );
+
+  /// Footnote Secondary - 13pt Regular
+  static TextStyle footnoteSecondary(BuildContext context) => TextStyle(
+    fontSize: 13,
+    fontWeight: FontWeight.w400,
+    letterSpacing: 0,
+    color: CupertinoColors.secondaryLabel.resolveFrom(context),
+  );
+
+  /// Caption Secondary - 12pt Regular
+  static TextStyle captionSecondary(BuildContext context) => TextStyle(
+    fontSize: 12,
+    fontWeight: FontWeight.w400,
+    letterSpacing: 0,
+    color: CupertinoColors.secondaryLabel.resolveFrom(context),
   );
 }
 
-/// Android typography using Google Fonts (Outfit + Inter)
-TextTheme _createAndroidTextTheme(BuildContext context) {
-  TextTheme baseTextTheme = Theme.of(context).textTheme;
-
-  // Body text: Inter - designed specifically for screen legibility
-  TextTheme bodyTextTheme = GoogleFonts.getTextTheme('Inter', baseTextTheme);
-
-  // Outfit for headings + Inter for body
-  return TextTheme(
-    // Display styles - Outfit SemiBold for main page titles
-    displayLarge: GoogleFonts.outfit(fontSize: 34, fontWeight: FontWeight.w600),
-    displayMedium: GoogleFonts.outfit(
-      fontSize: 28,
-      fontWeight: FontWeight.w600,
-    ),
-    displaySmall: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.w600),
-    // Headline styles - Outfit SemiBold for section headers
-    headlineLarge: GoogleFonts.outfit(
-      fontSize: 20,
-      fontWeight: FontWeight.w600,
-    ),
-    headlineMedium: GoogleFonts.outfit(
-      fontSize: 17,
-      fontWeight: FontWeight.w600,
-    ),
-    headlineSmall: GoogleFonts.outfit(
-      fontSize: 15,
-      fontWeight: FontWeight.w400,
-    ),
-    // Title styles - Outfit for subtitles
-    titleLarge: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.w600),
-    titleMedium: GoogleFonts.outfit(fontSize: 17, fontWeight: FontWeight.w500),
-    titleSmall: GoogleFonts.outfit(fontSize: 15, fontWeight: FontWeight.w500),
-    // Body styles - Inter for readable content
-    bodyLarge: bodyTextTheme.bodyLarge?.copyWith(fontSize: 17),
-    bodyMedium: bodyTextTheme.bodyMedium?.copyWith(fontSize: 16),
-    bodySmall: bodyTextTheme.bodySmall?.copyWith(fontSize: 15),
-    // Label styles - Outfit for buttons (17pt iOS standard), Inter for captions
-    labelLarge: GoogleFonts.outfit(fontSize: 17, fontWeight: FontWeight.w600),
-    labelMedium: bodyTextTheme.labelMedium?.copyWith(
-      fontSize: 12,
-      fontWeight: FontWeight.w500,
-    ),
-    labelSmall: bodyTextTheme.labelSmall?.copyWith(
-      fontSize: 11,
-      fontWeight: FontWeight.w400,
-    ),
-  );
-}
-
-/// Vitalo iOS-first theme configuration
-/// Provides light/dark themes with iOS 26 Liquid Glass design language
+/// Vitalo iOS-first color scheme configuration
+/// Provides light/dark color schemes with iOS 26 Liquid Glass design language
 class VitaloTheme {
-  final TextTheme textTheme;
-
-  const VitaloTheme(this.textTheme);
+  VitaloTheme._();
 
   // ═══════════════════════════════════════════════════════════════════════════
   // LIGHT THEME - iOS 26 Liquid Glass (Bright & Vibrant)
@@ -252,124 +225,6 @@ class VitaloTheme {
     );
   }
 
-  ThemeData light() {
-    return theme(lightScheme());
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // LIGHT MEDIUM CONTRAST
-  // ═══════════════════════════════════════════════════════════════════════════
-  static ColorScheme lightMediumContrastScheme() {
-    return const ColorScheme(
-      brightness: Brightness.light,
-      primary: Color(0xFFEA580C), // Orange 600
-      onPrimary: Color(0xFFFFFFFF),
-      primaryContainer: Color(0xFFFB923C), // Orange 400
-      onPrimaryContainer: Color(0xFF431407),
-      secondary: Color(0xFFDB2777), // Pink 600
-      onSecondary: Color(0xFFFFFFFF),
-      secondaryContainer: Color(0xFFF472B6), // Pink 400
-      onSecondaryContainer: Color(0xFF500724),
-      tertiary: Color(0xFF0891B2), // Cyan 600
-      onTertiary: Color(0xFFFFFFFF),
-      tertiaryContainer: Color(0xFF22D3EE), // Cyan 400
-      onTertiaryContainer: Color(0xFF083344),
-      error: Color(0xFFDC2626), // Red 600
-      onError: Color(0xFFFFFFFF),
-      errorContainer: Color(0xFFF87171), // Red 400
-      onErrorContainer: Color(0xFF450A0A),
-      surface: Color(0xFFFFFFFF),
-      onSurface: Color(0xFF020617), // Slate 950
-      onSurfaceVariant: Color(0xFF475569), // Slate 600
-      outline: Color(0xFF64748B), // Slate 500
-      outlineVariant: Color(0xFFCBD5E1), // Slate 300
-      shadow: Color(0x1A000000),
-      scrim: Color(0x80000000),
-      inverseSurface: Color(0xFF1E293B),
-      inversePrimary: Color(0xFFFDBA74),
-      primaryFixed: Color(0xFFFFF7ED),
-      onPrimaryFixed: Color(0xFF000000),
-      primaryFixedDim: Color(0xFFFB923C),
-      onPrimaryFixedVariant: Color(0xFF7C2D12),
-      secondaryFixed: Color(0xFFFDF2F8),
-      onSecondaryFixed: Color(0xFF000000),
-      secondaryFixedDim: Color(0xFFF472B6),
-      onSecondaryFixedVariant: Color(0xFF9D174D),
-      tertiaryFixed: Color(0xFFECFEFF),
-      onTertiaryFixed: Color(0xFF000000),
-      tertiaryFixedDim: Color(0xFF22D3EE),
-      onTertiaryFixedVariant: Color(0xFF0E7490),
-      surfaceDim: Color(0xFFE2E8F0),
-      surfaceBright: Color(0xFFFFFFFF),
-      surfaceContainerLowest: Color(0xFFFFFFFF),
-      surfaceContainerLow: Color(0xFFF8FAFC),
-      surfaceContainer: Color(0xFFF1F5F9),
-      surfaceContainerHigh: Color(0xFFE2E8F0),
-      surfaceContainerHighest: Color(0xFFCBD5E1),
-    );
-  }
-
-  ThemeData lightMediumContrast() {
-    return theme(lightMediumContrastScheme());
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // LIGHT HIGH CONTRAST
-  // ═══════════════════════════════════════════════════════════════════════════
-  static ColorScheme lightHighContrastScheme() {
-    return const ColorScheme(
-      brightness: Brightness.light,
-      primary: Color(0xFFC2410C), // Orange 700
-      onPrimary: Color(0xFFFFFFFF),
-      primaryContainer: Color(0xFF7C2D12), // Orange 900
-      onPrimaryContainer: Color(0xFFFFFFFF),
-      secondary: Color(0xFFBE185D), // Pink 700
-      onSecondary: Color(0xFFFFFFFF),
-      secondaryContainer: Color(0xFF9D174D), // Pink 800
-      onSecondaryContainer: Color(0xFFFFFFFF),
-      tertiary: Color(0xFF0E7490), // Cyan 700
-      onTertiary: Color(0xFFFFFFFF),
-      tertiaryContainer: Color(0xFF155E75), // Cyan 800
-      onTertiaryContainer: Color(0xFFFFFFFF),
-      error: Color(0xFFB91C1C), // Red 700
-      onError: Color(0xFFFFFFFF),
-      errorContainer: Color(0xFF991B1B), // Red 800
-      onErrorContainer: Color(0xFFFFFFFF),
-      surface: Color(0xFFFFFFFF),
-      onSurface: Color(0xFF000000),
-      onSurfaceVariant: Color(0xFF1E293B), // Slate 800
-      outline: Color(0xFF334155), // Slate 700
-      outlineVariant: Color(0xFF475569), // Slate 600
-      shadow: Color(0x33000000),
-      scrim: Color(0x99000000),
-      inverseSurface: Color(0xFF0F172A),
-      inversePrimary: Color(0xFFFDBA74),
-      primaryFixed: Color(0xFF7C2D12),
-      onPrimaryFixed: Color(0xFFFFFFFF),
-      primaryFixedDim: Color(0xFF431407),
-      onPrimaryFixedVariant: Color(0xFFFFFFFF),
-      secondaryFixed: Color(0xFF9D174D),
-      onSecondaryFixed: Color(0xFFFFFFFF),
-      secondaryFixedDim: Color(0xFF500724),
-      onSecondaryFixedVariant: Color(0xFFFFFFFF),
-      tertiaryFixed: Color(0xFF155E75),
-      onTertiaryFixed: Color(0xFFFFFFFF),
-      tertiaryFixedDim: Color(0xFF083344),
-      onTertiaryFixedVariant: Color(0xFFFFFFFF),
-      surfaceDim: Color(0xFFCBD5E1),
-      surfaceBright: Color(0xFFFFFFFF),
-      surfaceContainerLowest: Color(0xFFFFFFFF),
-      surfaceContainerLow: Color(0xFFF1F5F9),
-      surfaceContainer: Color(0xFFE2E8F0),
-      surfaceContainerHigh: Color(0xFFCBD5E1),
-      surfaceContainerHighest: Color(0xFF94A3B8),
-    );
-  }
-
-  ThemeData lightHighContrast() {
-    return theme(lightHighContrastScheme());
-  }
-
   // ═══════════════════════════════════════════════════════════════════════════
   // DARK THEME - iOS 26 Liquid Glass (Bright on Dark)
   // ═══════════════════════════════════════════════════════════════════════════
@@ -431,484 +286,6 @@ class VitaloTheme {
       surfaceContainerHighest: Color(0xFF475569), // Slate 600
     );
   }
-
-  ThemeData dark() {
-    return theme(darkScheme());
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // DARK MEDIUM CONTRAST
-  // ═══════════════════════════════════════════════════════════════════════════
-  static ColorScheme darkMediumContrastScheme() {
-    return const ColorScheme(
-      brightness: Brightness.dark,
-      primary: Color(0xFFFDBA74), // Orange 300
-      onPrimary: Color(0xFF431407),
-      primaryContainer: Color(0xFFF97316), // Orange 500
-      onPrimaryContainer: Color(0xFF1C0800),
-      secondary: Color(0xFFF9A8D4), // Pink 300
-      onSecondary: Color(0xFF500724),
-      secondaryContainer: Color(0xFFEC4899), // Pink 500
-      onSecondaryContainer: Color(0xFF1A0412),
-      tertiary: Color(0xFF67E8F9), // Cyan 300
-      onTertiary: Color(0xFF083344),
-      tertiaryContainer: Color(0xFF06B6D4), // Cyan 500
-      onTertiaryContainer: Color(0xFF041F26),
-      error: Color(0xFFFCA5A5), // Red 300
-      onError: Color(0xFF450A0A),
-      errorContainer: Color(0xFFEF4444), // Red 500
-      onErrorContainer: Color(0xFF1A0000),
-      surface: Color(0xFF0F172A),
-      onSurface: Color(0xFFFFFFFF),
-      onSurfaceVariant: Color(0xFFE2E8F0), // Slate 200
-      outline: Color(0xFF94A3B8), // Slate 400
-      outlineVariant: Color(0xFF64748B), // Slate 500
-      shadow: Color(0x59000000),
-      scrim: Color(0x99000000),
-      inverseSurface: Color(0xFFF1F5F9),
-      inversePrimary: Color(0xFFEA580C),
-      primaryFixed: Color(0xFFFFF7ED),
-      onPrimaryFixed: Color(0xFF2C0E06),
-      primaryFixedDim: Color(0xFFFDBA74),
-      onPrimaryFixedVariant: Color(0xFFC2410C),
-      secondaryFixed: Color(0xFFFDF2F8),
-      onSecondaryFixed: Color(0xFF2C0412),
-      secondaryFixedDim: Color(0xFFF9A8D4),
-      onSecondaryFixedVariant: Color(0xFFBE185D),
-      tertiaryFixed: Color(0xFFECFEFF),
-      onTertiaryFixed: Color(0xFF041F26),
-      tertiaryFixedDim: Color(0xFF67E8F9),
-      onTertiaryFixedVariant: Color(0xFF0E7490),
-      surfaceDim: Color(0xFF020617),
-      surfaceBright: Color(0xFF475569),
-      surfaceContainerLowest: Color(0xFF000000),
-      surfaceContainerLow: Color(0xFF0F172A),
-      surfaceContainer: Color(0xFF1E293B),
-      surfaceContainerHigh: Color(0xFF334155),
-      surfaceContainerHighest: Color(0xFF475569),
-    );
-  }
-
-  ThemeData darkMediumContrast() {
-    return theme(darkMediumContrastScheme());
-  }
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // DARK HIGH CONTRAST
-  // ═══════════════════════════════════════════════════════════════════════════
-  static ColorScheme darkHighContrastScheme() {
-    return const ColorScheme(
-      brightness: Brightness.dark,
-      primary: Color(0xFFFFF7ED), // Orange 50
-      onPrimary: Color(0xFF000000),
-      primaryContainer: Color(0xFFFB923C), // Orange 400
-      onPrimaryContainer: Color(0xFF1C0800),
-      secondary: Color(0xFFFDF2F8), // Pink 50
-      onSecondary: Color(0xFF000000),
-      secondaryContainer: Color(0xFFF472B6), // Pink 400
-      onSecondaryContainer: Color(0xFF1A0412),
-      tertiary: Color(0xFFECFEFF), // Cyan 50
-      onTertiary: Color(0xFF000000),
-      tertiaryContainer: Color(0xFF22D3EE), // Cyan 400
-      onTertiaryContainer: Color(0xFF041F26),
-      error: Color(0xFFFEF2F2), // Red 50
-      onError: Color(0xFF000000),
-      errorContainer: Color(0xFFF87171), // Red 400
-      onErrorContainer: Color(0xFF0F0000),
-      surface: Color(0xFF020617), // Slate 950
-      onSurface: Color(0xFFFFFFFF),
-      onSurfaceVariant: Color(0xFFFFFFFF),
-      outline: Color(0xFFF1F5F9), // Slate 100
-      outlineVariant: Color(0xFFCBD5E1), // Slate 300
-      shadow: Color(0xFF000000),
-      scrim: Color(0xFF000000),
-      inverseSurface: Color(0xFFF8FAFC),
-      inversePrimary: Color(0xFFC2410C),
-      primaryFixed: Color(0xFFFFF7ED),
-      onPrimaryFixed: Color(0xFF000000),
-      primaryFixedDim: Color(0xFFFDBA74),
-      onPrimaryFixedVariant: Color(0xFF2C0E06),
-      secondaryFixed: Color(0xFFFDF2F8),
-      onSecondaryFixed: Color(0xFF000000),
-      secondaryFixedDim: Color(0xFFFBCFE8),
-      onSecondaryFixedVariant: Color(0xFF2C0412),
-      tertiaryFixed: Color(0xFFECFEFF),
-      onTertiaryFixed: Color(0xFF000000),
-      tertiaryFixedDim: Color(0xFFA5F3FC),
-      onTertiaryFixedVariant: Color(0xFF041F26),
-      surfaceDim: Color(0xFF020617),
-      surfaceBright: Color(0xFF64748B),
-      surfaceContainerLowest: Color(0xFF000000),
-      surfaceContainerLow: Color(0xFF1E293B),
-      surfaceContainer: Color(0xFF334155),
-      surfaceContainerHigh: Color(0xFF475569),
-      surfaceContainerHighest: Color(0xFF64748B),
-    );
-  }
-
-  ThemeData darkHighContrast() {
-    return theme(darkHighContrastScheme());
-  }
-
-  ThemeData theme(ColorScheme colorScheme) => ThemeData(
-    useMaterial3: true,
-    brightness: colorScheme.brightness,
-    colorScheme: colorScheme,
-    textTheme: textTheme.apply(
-      bodyColor: colorScheme.onSurface,
-      displayColor: colorScheme.onSurface,
-    ),
-    scaffoldBackgroundColor: colorScheme.surface,
-    canvasColor: colorScheme.surface,
-    // ───── Input Decoration Theme (iOS 26 Style) ─────
-    inputDecorationTheme: InputDecorationTheme(
-      filled: true,
-      fillColor: colorScheme.surfaceContainerLow,
-      floatingLabelBehavior: FloatingLabelBehavior.auto,
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
-        borderSide: BorderSide(color: colorScheme.outlineVariant, width: 0.5),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
-        borderSide: BorderSide(color: colorScheme.outlineVariant, width: 0.5),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
-        borderSide: BorderSide(color: colorScheme.primary, width: 1.0),
-      ),
-      errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
-        borderSide: BorderSide(color: colorScheme.error, width: 1.0),
-      ),
-      focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
-        borderSide: BorderSide(color: colorScheme.error, width: 1.0),
-      ),
-      floatingLabelStyle: TextStyle(color: colorScheme.primary),
-      labelStyle: TextStyle(color: colorScheme.onSurfaceVariant),
-      hintStyle: TextStyle(
-        color: colorScheme.onSurfaceVariant.withOpacity(0.6),
-      ),
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.md,
-        vertical: AppSpacing.sm,
-      ),
-    ),
-    // ───── Filled Button Theme (iOS 26 Primary Actions) ─────
-    filledButtonTheme: FilledButtonThemeData(
-      style: ButtonStyle(
-        minimumSize: WidgetStateProperty.all(
-          const Size(double.infinity, AppSpacing.buttonHeight),
-        ),
-        padding: WidgetStateProperty.all(
-          const EdgeInsets.symmetric(
-            horizontal: AppSpacing.lg,
-            vertical: AppSpacing.sm,
-          ),
-        ),
-        shape: WidgetStateProperty.all(
-          RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
-          ),
-        ),
-        elevation: WidgetStateProperty.all(0),
-        textStyle: WidgetStateProperty.all(
-          textTheme.labelLarge?.copyWith(
-            fontWeight: FontWeight.w600,
-            fontSize: 17, // iOS standard
-            letterSpacing: 0,
-          ),
-        ),
-      ),
-    ),
-    // ───── Outlined Button Theme (iOS 26 Secondary Actions) ─────
-    outlinedButtonTheme: OutlinedButtonThemeData(
-      style: ButtonStyle(
-        minimumSize: WidgetStateProperty.all(
-          const Size(double.infinity, AppSpacing.buttonHeight),
-        ),
-        padding: WidgetStateProperty.all(
-          const EdgeInsets.symmetric(
-            horizontal: AppSpacing.lg,
-            vertical: AppSpacing.sm,
-          ),
-        ),
-        shape: WidgetStateProperty.all(
-          RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
-          ),
-        ),
-        side: WidgetStateProperty.resolveWith((states) {
-          if (states.contains(WidgetState.pressed)) {
-            return BorderSide(color: colorScheme.primary, width: 1.0);
-          }
-          return BorderSide(color: colorScheme.outlineVariant, width: 0.5);
-        }),
-        foregroundColor: WidgetStateProperty.all(colorScheme.primary),
-        elevation: WidgetStateProperty.all(0),
-        textStyle: WidgetStateProperty.all(
-          textTheme.labelLarge?.copyWith(
-            fontWeight: FontWeight.w600,
-            fontSize: 17,
-            letterSpacing: 0,
-          ),
-        ),
-      ),
-    ),
-    // ───── Text Button Theme (iOS 26 Tertiary Actions) ─────
-    textButtonTheme: TextButtonThemeData(
-      style: ButtonStyle(
-        minimumSize: WidgetStateProperty.all(
-          const Size(AppSpacing.touchTargetMin, AppSpacing.buttonHeightSmall),
-        ),
-        padding: WidgetStateProperty.all(
-          const EdgeInsets.symmetric(
-            horizontal: AppSpacing.sm,
-            vertical: AppSpacing.xs,
-          ),
-        ),
-        shape: WidgetStateProperty.all(
-          RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppSpacing.cardRadiusSmall),
-          ),
-        ),
-        foregroundColor: WidgetStateProperty.all(colorScheme.primary),
-        textStyle: WidgetStateProperty.all(
-          textTheme.labelLarge?.copyWith(
-            fontWeight: FontWeight.w600,
-            fontSize: 17,
-          ),
-        ),
-      ),
-    ),
-    // ───── Segmented Button Theme (iOS 26 Sliding Control Style) ─────
-    segmentedButtonTheme: SegmentedButtonThemeData(
-      style: ButtonStyle(
-        // Remove icon from selected state
-        iconSize: WidgetStateProperty.all(0),
-        // iOS-aligned padding
-        padding: WidgetStateProperty.all(
-          const EdgeInsets.symmetric(
-            horizontal: AppSpacing.md,
-            vertical: AppSpacing.xs,
-          ),
-        ),
-        // Subtle glass-edge border
-        side: WidgetStateProperty.all(
-          BorderSide(color: colorScheme.outlineVariant, width: 0.5),
-        ),
-        // iOS rounded corners
-        shape: WidgetStateProperty.all(
-          RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppSpacing.cardRadiusSmall),
-          ),
-        ),
-        // Background colors - glass-inspired
-        backgroundColor: WidgetStateProperty.resolveWith((states) {
-          if (states.contains(WidgetState.selected)) {
-            return colorScheme.primary;
-          }
-          return colorScheme.surfaceContainerLow;
-        }),
-        // Text/icon colors
-        foregroundColor: WidgetStateProperty.resolveWith((states) {
-          if (states.contains(WidgetState.selected)) {
-            return colorScheme.onPrimary;
-          }
-          return colorScheme.onSurfaceVariant;
-        }),
-        // Text styling
-        textStyle: WidgetStateProperty.resolveWith((states) {
-          return textTheme.labelMedium?.copyWith(
-            fontWeight: states.contains(WidgetState.selected)
-                ? FontWeight.w600
-                : FontWeight.w500,
-            fontSize: 13,
-          );
-        }),
-        // iOS minimum touch target
-        minimumSize: WidgetStateProperty.all(
-          const Size(AppSpacing.touchTargetMin, 32),
-        ),
-        // No elevation for flat glass look
-        elevation: WidgetStateProperty.all(0),
-        shadowColor: WidgetStateProperty.all(Colors.transparent),
-      ),
-    ),
-    // ───── Card Theme (iOS 26 Glass-Ready) ─────
-    cardTheme: CardTheme(
-      elevation: 0,
-      color: colorScheme.surfaceContainer,
-      surfaceTintColor: Colors.transparent,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-        side: BorderSide(color: colorScheme.outlineVariant, width: 0.5),
-      ),
-      margin: EdgeInsets.zero,
-    ),
-    // ───── AppBar Theme (iOS 26 Style) ─────
-    appBarTheme: AppBarTheme(
-      elevation: 0,
-      scrolledUnderElevation: 0,
-      backgroundColor: colorScheme.surface,
-      surfaceTintColor: Colors.transparent,
-      foregroundColor: colorScheme.onSurface,
-      centerTitle: true,
-      titleTextStyle: textTheme.headlineSmall?.copyWith(
-        color: colorScheme.onSurface,
-        fontWeight: FontWeight.w600,
-        fontSize: 17, // iOS standard
-      ),
-    ),
-    // ───── Bottom Sheet Theme (iOS 26 Modal Style) ─────
-    bottomSheetTheme: BottomSheetThemeData(
-      elevation: 0,
-      backgroundColor: colorScheme.surface,
-      surfaceTintColor: Colors.transparent,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(AppSpacing.cardRadiusLarge),
-        ),
-      ),
-      showDragHandle: true,
-      dragHandleColor: colorScheme.onSurfaceVariant.withOpacity(0.3),
-      dragHandleSize: const Size(36, 5),
-    ),
-    // ───── Dialog Theme (iOS 26 Alert Style) ─────
-    dialogTheme: DialogTheme(
-      elevation: 0,
-      backgroundColor: colorScheme.surface,
-      surfaceTintColor: Colors.transparent,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-      ),
-      titleTextStyle: textTheme.headlineSmall?.copyWith(
-        color: colorScheme.onSurface,
-        fontWeight: FontWeight.w600,
-        fontSize: 17,
-      ),
-      contentTextStyle: textTheme.bodyMedium?.copyWith(
-        color: colorScheme.onSurfaceVariant,
-        fontSize: 13,
-      ),
-    ),
-    // ───── Switch Theme (iOS Style) ─────
-    switchTheme: SwitchThemeData(
-      thumbColor: WidgetStateProperty.resolveWith((states) {
-        return Colors.white;
-      }),
-      trackColor: WidgetStateProperty.resolveWith((states) {
-        if (states.contains(WidgetState.selected)) {
-          return colorScheme.primary;
-        }
-        return colorScheme.surfaceContainerHighest;
-      }),
-      trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
-    ),
-    // ───── Slider Theme (iOS Style) ─────
-    sliderTheme: SliderThemeData(
-      activeTrackColor: colorScheme.primary,
-      inactiveTrackColor: colorScheme.surfaceContainerHighest,
-      thumbColor: Colors.white,
-      overlayColor: colorScheme.primary.withOpacity(0.12),
-      trackHeight: 4,
-      thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 14),
-    ),
-    // ───── Divider Theme (iOS Separator) ─────
-    dividerTheme: DividerThemeData(
-      color: colorScheme.outlineVariant,
-      thickness: 0.5,
-      space: 0,
-    ),
-    // ───── List Tile Theme (iOS Settings Style) ─────
-    listTileTheme: ListTileThemeData(
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.pageHorizontalPadding,
-        vertical: AppSpacing.xs,
-      ),
-      minVerticalPadding: AppSpacing.sm,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-      ),
-      titleTextStyle: textTheme.bodyLarge?.copyWith(
-        color: colorScheme.onSurface,
-        fontSize: 17,
-      ),
-      subtitleTextStyle: textTheme.bodySmall?.copyWith(
-        color: colorScheme.onSurfaceVariant,
-        fontSize: 15,
-      ),
-    ),
-    // ───── Chip Theme (iOS Tag Style) ─────
-    chipTheme: ChipThemeData(
-      elevation: 0,
-      pressElevation: 0,
-      backgroundColor: colorScheme.surfaceContainerLow,
-      selectedColor: colorScheme.primaryContainer,
-      disabledColor: colorScheme.surfaceContainerLow,
-      labelStyle: textTheme.labelMedium?.copyWith(
-        color: colorScheme.onSurface,
-        fontSize: 13,
-      ),
-      side: BorderSide(color: colorScheme.outlineVariant, width: 0.5),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppSpacing.cardRadiusSmall),
-      ),
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.sm,
-        vertical: AppSpacing.xxs,
-      ),
-    ),
-    // ───── Icon Theme ─────
-    iconTheme: IconThemeData(
-      color: colorScheme.onSurface,
-      size: AppSpacing.iconSize,
-    ),
-    // ───── Progress Indicator Theme ─────
-    progressIndicatorTheme: ProgressIndicatorThemeData(
-      color: colorScheme.primary,
-      linearTrackColor: colorScheme.surfaceContainerHighest,
-      circularTrackColor: colorScheme.surfaceContainerHighest,
-    ),
-  );
-
-  List<ExtendedColor> get extendedColors => [];
-}
-
-class ExtendedColor {
-  final Color seed, value;
-  final ColorFamily light;
-  final ColorFamily lightHighContrast;
-  final ColorFamily lightMediumContrast;
-  final ColorFamily dark;
-  final ColorFamily darkHighContrast;
-  final ColorFamily darkMediumContrast;
-
-  const ExtendedColor({
-    required this.seed,
-    required this.value,
-    required this.light,
-    required this.lightHighContrast,
-    required this.lightMediumContrast,
-    required this.dark,
-    required this.darkHighContrast,
-    required this.darkMediumContrast,
-  });
-}
-
-class ColorFamily {
-  const ColorFamily({
-    required this.color,
-    required this.onColor,
-    required this.colorContainer,
-    required this.onColorContainer,
-  });
-
-  final Color color;
-  final Color onColor;
-  final Color colorContainer;
-  final Color onColorContainer;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -1046,6 +423,18 @@ class DietColors {
 
   /// Veg days indicator
   static const Color vegDay = Color(0xFF4CAF50);
+
+  /// Lifestyle choices - Teal (balance, wellness)
+  static const Color lifestyle = Color(0xFFB2DFDB);
+  static const Color lifestyleBorder = Color(0xFF009688);
+
+  /// Allergies - Red tint (caution, medical)
+  static const Color allergy = Color(0xFFFFCDD2);
+  static const Color allergyBorder = Color(0xFFD32F2F);
+
+  /// Diet goals - Purple tint (aspiration, focus)
+  static const Color goal = Color(0xFFE1BEE7);
+  static const Color goalBorder = Color(0xFF7B1FA2);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════

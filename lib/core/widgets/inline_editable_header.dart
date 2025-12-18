@@ -1,4 +1,6 @@
-import 'package:flutter/material.dart';
+import 'dart:ui';
+
+import 'package:flutter/cupertino.dart';
 
 import '../../main.dart';
 import '../theme.dart';
@@ -43,10 +45,8 @@ class _InlineEditableHeaderState extends State<InlineEditableHeader> {
 
   void _openEditSheet() {
     talker.info('Inline header edit sheet opened');
-    showModalBottomSheet<String>(
+    showCupertinoModalPopup<String>(
       context: context,
-      isScrollControlled: true,
-      showDragHandle: true,
       builder: (context) => _EditSheet(
         initialText: _currentText,
         placeholder: widget.placeholder,
@@ -61,14 +61,15 @@ class _InlineEditableHeaderState extends State<InlineEditableHeader> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
+    final primaryColor = CupertinoTheme.of(context).primaryColor;
+    final labelColor = CupertinoColors.label.resolveFrom(context);
+    final secondaryLabel = CupertinoColors.secondaryLabel.resolveFrom(context);
     final isEmpty = _currentText.isEmpty;
 
-    final textStyle = textTheme.titleLarge?.copyWith(
+    final textStyle = TextStyle(
       fontSize: widget.fontSize,
       fontWeight: FontWeight.w600,
-      color: isEmpty ? colorScheme.onSurfaceVariant : colorScheme.onSurface,
+      color: isEmpty ? secondaryLabel : labelColor,
       height: 1.0,
     );
 
@@ -95,11 +96,9 @@ class _InlineEditableHeaderState extends State<InlineEditableHeader> {
             Positioned(
               right: -AppSpacing.xl,
               child: Icon(
-                Icons.edit_outlined,
+                CupertinoIcons.pencil,
                 size: AppSpacing.md,
-                color: isEmpty
-                    ? colorScheme.primary
-                    : colorScheme.onSurfaceVariant,
+                color: isEmpty ? primaryColor : secondaryLabel,
               ),
             ),
           ],
@@ -175,69 +174,110 @@ class _EditSheetState extends State<_EditSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
+    final surfaceColor = CupertinoColors.systemBackground.resolveFrom(context);
+    final tertiaryFill = CupertinoColors.tertiarySystemFill.resolveFrom(
+      context,
+    );
+    final separatorColor = CupertinoColors.separator.resolveFrom(context);
+    final isDark = CupertinoTheme.brightnessOf(context) == Brightness.dark;
     final bottomPadding = MediaQuery.viewInsetsOf(context).bottom;
 
-    return Padding(
-      padding: EdgeInsets.fromLTRB(
-        AppSpacing.lg,
-        0,
-        AppSpacing.lg,
-        bottomPadding + AppSpacing.sm,
+    return ClipRRect(
+      borderRadius: const BorderRadius.vertical(
+        top: Radius.circular(AppSpacing.cardRadiusLarge),
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          TextField(
-            controller: _controller,
-            focusNode: _focusNode,
-            textAlign: TextAlign.center,
-            textInputAction: TextInputAction.done,
-            onSubmitted: (_) => _save(),
-            style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
-            decoration: InputDecoration(
-              hintText: widget.placeholder,
-              filled: true,
-              fillColor: colorScheme.surfaceContainerLow,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
-                borderSide: BorderSide(color: colorScheme.outline, width: 1.5),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
-                borderSide: BorderSide(color: colorScheme.outline, width: 1.5),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
-                borderSide: BorderSide(color: colorScheme.primary, width: 1.5),
-              ),
-              floatingLabelBehavior: FloatingLabelBehavior.never,
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.md,
-                vertical: AppSpacing.sm,
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+        child: Container(
+          decoration: BoxDecoration(
+            // Liquid Glass - translucent surface
+            color: isDark
+                ? surfaceColor.withValues(alpha: 0.85)
+                : surfaceColor.withValues(alpha: 0.9),
+            borderRadius: const BorderRadius.vertical(
+              top: Radius.circular(AppSpacing.cardRadiusLarge),
+            ),
+            // Glass edge effect
+            border: Border(
+              top: BorderSide(
+                color: separatorColor.withValues(alpha: 0.2),
+                width: LiquidGlass.borderWidth,
               ),
             ),
+            // Soft floating shadow
+            boxShadow: [
+              BoxShadow(
+                color: CupertinoColors.black.withValues(alpha: 0.1),
+                blurRadius: 20,
+                offset: const Offset(0, -8),
+              ),
+            ],
           ),
-          const SizedBox(height: AppSpacing.md),
-          SizedBox(
-            height: AppSpacing.touchTargetMin,
-            child: FilledButton(
-              onPressed: _isSaving ? null : _save,
-              child: _isSaving
-                  ? SizedBox(
-                      width: AppSpacing.iconSizeSmall,
-                      height: AppSpacing.iconSizeSmall,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: colorScheme.onPrimary,
+          child: SafeArea(
+            top: false,
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(
+                AppSpacing.lg,
+                AppSpacing.lg,
+                AppSpacing.lg,
+                bottomPadding + AppSpacing.lg,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Drag handle
+                  Center(
+                    child: Container(
+                      width: 36,
+                      height: 5,
+                      margin: const EdgeInsets.only(bottom: AppSpacing.lg),
+                      decoration: BoxDecoration(
+                        color: separatorColor.withValues(alpha: 0.5),
+                        borderRadius: BorderRadius.circular(2.5),
                       ),
-                    )
-                  : const Text('Save'),
+                    ),
+                  ),
+                  CupertinoTextField(
+                    controller: _controller,
+                    focusNode: _focusNode,
+                    textAlign: TextAlign.center,
+                    textInputAction: TextInputAction.done,
+                    onSubmitted: (_) => _save(),
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    placeholder: widget.placeholder,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.md,
+                      vertical: AppSpacing.sm,
+                    ),
+                    decoration: BoxDecoration(
+                      color: tertiaryFill,
+                      borderRadius: BorderRadius.circular(
+                        AppSpacing.inputRadius,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  SizedBox(
+                    height: AppSpacing.buttonHeight,
+                    child: CupertinoButton.filled(
+                      padding: EdgeInsets.zero,
+                      onPressed: _isSaving ? null : _save,
+                      child: _isSaving
+                          ? const CupertinoActivityIndicator(
+                              color: CupertinoColors.white,
+                            )
+                          : const Text('Save'),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-        ],
+        ),
       ),
     );
   }

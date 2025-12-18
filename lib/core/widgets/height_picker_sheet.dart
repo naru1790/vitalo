@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 
 import '../theme.dart';
@@ -51,7 +51,7 @@ class HeightPickerSheet extends StatefulWidget {
   final HeightUnit initialUnit;
   final ValueChanged<HeightResult> onHeightSelected;
 
-  /// Shows the height picker as a modal bottom sheet.
+  /// Shows the height picker as a Cupertino modal popup.
   static Future<HeightResult?> show({
     required BuildContext context,
     double? initialHeightCm,
@@ -59,11 +59,8 @@ class HeightPickerSheet extends StatefulWidget {
   }) async {
     final effectiveHeight = initialHeightCm ?? 170.0;
 
-    return showModalBottomSheet<HeightResult>(
+    return showCupertinoModalPopup<HeightResult>(
       context: context,
-      isScrollControlled: true,
-      enableDrag: true,
-      backgroundColor: Colors.transparent,
       builder: (context) => HeightPickerSheet(
         initialHeightCm: effectiveHeight,
         initialUnit: initialUnit,
@@ -215,8 +212,7 @@ class _HeightPickerSheetState extends State<HeightPickerSheet>
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
+    final primaryColor = CupertinoTheme.of(context).primaryColor;
 
     return AnimatedBuilder(
       animation: _animationController,
@@ -226,7 +222,7 @@ class _HeightPickerSheetState extends State<HeightPickerSheet>
       },
       child: Container(
         decoration: BoxDecoration(
-          color: colorScheme.surface,
+          color: CupertinoColors.systemBackground.resolveFrom(context),
           borderRadius: const BorderRadius.vertical(
             top: Radius.circular(AppSpacing.cardRadiusLarge),
           ),
@@ -243,7 +239,7 @@ class _HeightPickerSheetState extends State<HeightPickerSheet>
                   width: 32,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: colorScheme.outlineVariant,
+                    color: CupertinoColors.separator.resolveFrom(context),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -265,30 +261,33 @@ class _HeightPickerSheetState extends State<HeightPickerSheet>
                         children: [
                           Text(
                             'Height',
-                            style: textTheme.titleLarge?.copyWith(
+                            style: TextStyle(
+                              fontSize: 22,
                               fontWeight: FontWeight.w600,
-                              color: colorScheme.onSurface,
+                              color: CupertinoColors.label.resolveFrom(context),
                             ),
                           ),
                           const SizedBox(height: AppSpacing.xxs),
                           Text(
                             'Scroll to set your height',
-                            style: textTheme.bodySmall?.copyWith(
-                              color: colorScheme.onSurfaceVariant,
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: CupertinoColors.secondaryLabel.resolveFrom(
+                                context,
+                              ),
                             ),
                           ),
                         ],
                       ),
                     ),
-                    FilledButton(
+                    CupertinoButton.filled(
                       onPressed: _confirmSelection,
-                      style: FilledButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.lg,
-                          vertical: AppSpacing.sm,
-                        ),
-                        minimumSize: Size.zero,
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.lg,
+                        vertical: AppSpacing.sm,
+                      ),
+                      borderRadius: BorderRadius.circular(
+                        AppSpacing.buttonRadius,
                       ),
                       child: const Text('Done'),
                     ),
@@ -301,9 +300,10 @@ class _HeightPickerSheetState extends State<HeightPickerSheet>
               // Large value display
               Text(
                 _displayValue,
-                style: textTheme.displayMedium?.copyWith(
+                style: TextStyle(
+                  fontSize: 45,
                   fontWeight: FontWeight.w600,
-                  color: colorScheme.primary,
+                  color: primaryColor,
                   height: 1,
                 ),
               ),
@@ -323,8 +323,8 @@ class _HeightPickerSheetState extends State<HeightPickerSheet>
               SizedBox(
                 height: 220,
                 child: _currentUnit == HeightUnit.cm
-                    ? _buildCmPicker(colorScheme, textTheme)
-                    : _buildFeetInchesPicker(colorScheme, textTheme),
+                    ? _buildCmPicker(context, primaryColor)
+                    : _buildFeetInchesPicker(context, primaryColor),
               ),
 
               const SizedBox(height: AppSpacing.xxl),
@@ -335,7 +335,7 @@ class _HeightPickerSheetState extends State<HeightPickerSheet>
     );
   }
 
-  Widget _buildCmPicker(ColorScheme colorScheme, TextTheme textTheme) {
+  Widget _buildCmPicker(BuildContext context, Color primaryColor) {
     return Column(
       children: [
         // Spacer to match ft/in header height
@@ -354,16 +354,19 @@ class _HeightPickerSheetState extends State<HeightPickerSheet>
                 onSelectedItemChanged: _onCmChanged,
                 childDelegate: ListWheelChildBuilderDelegate(
                   childCount: _maxCm - _minCm + 1,
-                  builder: (context, index) {
+                  builder: (ctx, index) {
                     final cm = index + _minCm;
                     final isSelected = cm == _cm.toInt();
                     return Center(
                       child: Text(
                         '$cm',
-                        style: textTheme.headlineMedium?.copyWith(
+                        style: TextStyle(
+                          fontSize: 28,
                           color: isSelected
-                              ? colorScheme.primary
-                              : colorScheme.onSurfaceVariant,
+                              ? primaryColor
+                              : CupertinoColors.secondaryLabel.resolveFrom(
+                                  context,
+                                ),
                           fontWeight: isSelected
                               ? FontWeight.w600
                               : FontWeight.w400,
@@ -401,7 +404,7 @@ class _HeightPickerSheetState extends State<HeightPickerSheet>
     );
   }
 
-  Widget _buildFeetInchesPicker(ColorScheme colorScheme, TextTheme textTheme) {
+  Widget _buildFeetInchesPicker(BuildContext context, Color primaryColor) {
     // Arrow width + padding for proper centering
     const arrowSpace = AppSpacing.lg + 12;
 
@@ -416,8 +419,11 @@ class _HeightPickerSheetState extends State<HeightPickerSheet>
                 child: Center(
                   child: Text(
                     'Feet',
-                    style: textTheme.labelMedium?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: CupertinoColors.secondaryLabel.resolveFrom(
+                        context,
+                      ),
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -427,8 +433,11 @@ class _HeightPickerSheetState extends State<HeightPickerSheet>
                 child: Center(
                   child: Text(
                     'Inches',
-                    style: textTheme.labelMedium?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: CupertinoColors.secondaryLabel.resolveFrom(
+                        context,
+                      ),
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -459,16 +468,18 @@ class _HeightPickerSheetState extends State<HeightPickerSheet>
                         onSelectedItemChanged: _onFeetChanged,
                         childDelegate: ListWheelChildBuilderDelegate(
                           childCount: _maxFeet - _minFeet + 1,
-                          builder: (context, index) {
+                          builder: (ctx, index) {
                             final feet = index + _minFeet;
                             final isSelected = feet == _feet;
                             return Center(
                               child: Text(
                                 "$feet'",
-                                style: textTheme.headlineMedium?.copyWith(
+                                style: TextStyle(
+                                  fontSize: 28,
                                   color: isSelected
-                                      ? colorScheme.primary
-                                      : colorScheme.onSurfaceVariant,
+                                      ? primaryColor
+                                      : CupertinoColors.secondaryLabel
+                                            .resolveFrom(context),
                                   fontWeight: isSelected
                                       ? FontWeight.w600
                                       : FontWeight.w400,
@@ -491,15 +502,17 @@ class _HeightPickerSheetState extends State<HeightPickerSheet>
                         onSelectedItemChanged: _onInchesChanged,
                         childDelegate: ListWheelChildBuilderDelegate(
                           childCount: 12, // 0-11 inches
-                          builder: (context, index) {
+                          builder: (ctx, index) {
                             final isSelected = index == _inches;
                             return Center(
                               child: Text(
                                 '$index"',
-                                style: textTheme.headlineMedium?.copyWith(
+                                style: TextStyle(
+                                  fontSize: 28,
                                   color: isSelected
-                                      ? colorScheme.primary
-                                      : colorScheme.onSurfaceVariant,
+                                      ? primaryColor
+                                      : CupertinoColors.secondaryLabel
+                                            .resolveFrom(context),
                                   fontWeight: isSelected
                                       ? FontWeight.w600
                                       : FontWeight.w400,

@@ -1,6 +1,7 @@
 import 'dart:io' show Platform;
+import 'dart:ui';
 
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../main.dart';
@@ -156,89 +157,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _handleSignOut() async {
     talker.info('Sign out initiated');
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
 
-    final confirmed = await showModalBottomSheet<bool>(
+    final confirmed = await showCupertinoModalPopup<bool>(
       context: context,
-      backgroundColor: colorScheme.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(AppSpacing.cardRadiusLarge),
+      builder: (context) => CupertinoActionSheet(
+        title: const Text('Sign Out'),
+        message: const Text(
+          'Are you sure you want to sign out of your account?',
         ),
-      ),
-      builder: (context) => Padding(
-        padding: const EdgeInsets.fromLTRB(
-          AppSpacing.xl,
-          AppSpacing.md,
-          AppSpacing.xl,
-          AppSpacing.xl,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Drag handle
-            Container(
-              width: 32,
-              height: 4,
-              decoration: BoxDecoration(
-                color: colorScheme.outlineVariant,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: AppSpacing.xl),
-            Icon(
-              Icons.logout_rounded,
-              color: colorScheme.error,
-              size: AppSpacing.touchTargetMin,
-            ),
-            const SizedBox(height: AppSpacing.md),
-            Text(
-              'Sign Out',
-              style: textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              'Are you sure you want to sign out?',
-              style: textTheme.bodyMedium?.copyWith(
-                color: colorScheme.onSurfaceVariant,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: AppSpacing.xl),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.pop(context, false),
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: AppSpacing.md,
-                      ),
-                    ),
-                    child: const Text('Cancel'),
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.md),
-                Expanded(
-                  child: FilledButton(
-                    onPressed: () => Navigator.pop(context, true),
-                    style: FilledButton.styleFrom(
-                      backgroundColor: colorScheme.error,
-                      foregroundColor: colorScheme.onError,
-                      padding: const EdgeInsets.symmetric(
-                        vertical: AppSpacing.md,
-                      ),
-                    ),
-                    child: const Text('Sign Out'),
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: MediaQuery.paddingOf(context).bottom),
-          ],
+        actions: [
+          CupertinoActionSheetAction(
+            isDestructiveAction: true,
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Sign Out'),
+          ),
+        ],
+        cancelButton: CupertinoActionSheetAction(
+          isDefaultAction: true,
+          onPressed: () => Navigator.pop(context, false),
+          child: const Text('Cancel'),
         ),
       ),
     );
@@ -257,22 +194,46 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _handleDeleteAccount() async {
     talker.info('Delete account initiated');
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
+    final isDark = CupertinoTheme.of(context).brightness == Brightness.dark;
 
-    // Single confirmation with DELETE typing
-    final confirmed = await showModalBottomSheet<bool>(
+    // Single confirmation with DELETE typing - Liquid Glass style
+    final confirmed = await showCupertinoModalPopup<bool>(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: colorScheme.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
+      builder: (context) => ClipRRect(
+        borderRadius: const BorderRadius.vertical(
           top: Radius.circular(AppSpacing.cardRadiusLarge),
         ),
-      ),
-      builder: (context) => _DeleteConfirmationSheet(
-        colorScheme: colorScheme,
-        textTheme: textTheme,
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+          child: Container(
+            decoration: BoxDecoration(
+              // Glass tint - more transparent in dark mode
+              color: isDark
+                  ? CupertinoColors.systemBackground
+                        .resolveFrom(context)
+                        .withValues(alpha: 0.7)
+                  : CupertinoColors.systemBackground
+                        .resolveFrom(context)
+                        .withValues(alpha: 0.85),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(AppSpacing.cardRadiusLarge),
+              ),
+              // Subtle glass edge
+              border: Border(
+                top: BorderSide(
+                  color: CupertinoColors.separator
+                      .resolveFrom(context)
+                      .withValues(alpha: 0.3),
+                  width: 0.5,
+                ),
+              ),
+            ),
+            child: const SafeArea(
+              top: false,
+              child: _DeleteConfirmationSheet(),
+            ),
+          ),
+        ),
       ),
     );
 
@@ -284,27 +245,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final primaryColor = CupertinoTheme.of(context).primaryColor;
+    final surfaceColor = CupertinoColors.systemBackground.resolveFrom(context);
 
-    return Scaffold(
-      backgroundColor: colorScheme.surface,
-      body: CustomScrollView(
+    return CupertinoPageScaffold(
+      backgroundColor: surfaceColor,
+      child: CustomScrollView(
         slivers: [
-          SliverAppBar(
-            expandedHeight: 200,
-            floating: false,
-            pinned: true,
-            backgroundColor: colorScheme.surface,
-            leading: IconButton(
-              icon: Icon(
-                Icons.arrow_back_rounded,
-                color: colorScheme.onSurface,
-              ),
+          CupertinoSliverNavigationBar(
+            largeTitle: const Text('Profile'),
+            backgroundColor: surfaceColor,
+            border: null,
+            leading: CupertinoButton(
+              padding: EdgeInsets.zero,
               onPressed: () => context.pop(),
+              child: Icon(CupertinoIcons.back, color: primaryColor),
             ),
-            flexibleSpace: FlexibleSpaceBar(
-              background: SafeArea(child: _buildHeader(colorScheme)),
-            ),
+          ),
+
+          SliverToBoxAdapter(
+            child: SafeArea(top: false, child: _buildHeader()),
           ),
 
           SliverPadding(
@@ -315,9 +275,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               delegate: SliverChildListDelegate([
                 const SizedBox(height: AppSpacing.lg),
 
-                _buildSectionTitle('Personal Info', colorScheme),
+                _buildSectionTitle('Personal Info'),
                 const SizedBox(height: AppSpacing.sm),
-                _buildPersonalInfoCard(colorScheme),
+                _buildPersonalInfoCard(),
 
                 const SizedBox(height: AppSpacing.xl),
 
@@ -355,32 +315,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                 const SizedBox(height: AppSpacing.xl),
 
-                _buildSectionTitle('Preferences', colorScheme),
+                _buildSectionTitle('Preferences'),
                 const SizedBox(height: AppSpacing.sm),
-                _buildPreferencesCard(colorScheme),
+                _buildPreferencesCard(),
 
                 const SizedBox(height: AppSpacing.xl),
 
-                _buildSectionTitle('Integrations', colorScheme),
+                _buildSectionTitle('Integrations'),
                 const SizedBox(height: AppSpacing.sm),
-                _buildIntegrationsCard(colorScheme),
+                _buildIntegrationsCard(),
 
                 const SizedBox(height: AppSpacing.xl),
 
-                _buildSectionTitle('Account', colorScheme),
+                _buildSectionTitle('Account'),
                 const SizedBox(height: AppSpacing.sm),
-                _buildAccountCard(colorScheme),
+                _buildAccountCard(),
 
                 const SizedBox(height: AppSpacing.xxl),
 
                 Center(
-                  child: TextButton(
+                  child: CupertinoButton(
+                    padding: EdgeInsets.zero,
                     onPressed: _handleDeleteAccount,
                     child: Text(
                       'Delete My Account',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                      ),
+                      style: AppleTextStyles.footnoteSecondary(context),
                     ),
                   ),
                 ),
@@ -394,9 +353,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildHeader(ColorScheme colorScheme) {
+  Widget _buildHeader() {
+    final primaryColor = CupertinoTheme.of(context).primaryColor;
+    final surfaceContainerLow = CupertinoColors.systemGrey6.resolveFrom(
+      context,
+    );
+    final displayName = _getDisplayName();
+
     return Padding(
-      padding: const EdgeInsets.only(top: 56),
+      padding: const EdgeInsets.only(top: AppSpacing.lg),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -405,23 +370,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
             height: AppSpacing.avatarSizeLarge,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: colorScheme.surfaceContainerLow,
-              border: Border.all(color: colorScheme.primary, width: 3),
+              color: surfaceContainerLow,
+              border: Border.all(color: primaryColor, width: 3),
             ),
             child: Center(
               child: Text(
-                _getDisplayName().isNotEmpty
-                    ? _getDisplayName()[0].toUpperCase()
-                    : '?',
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  color: colorScheme.primary,
-                ),
+                displayName.isNotEmpty ? displayName[0].toUpperCase() : '?',
+                style: AppleTextStyles.title2(
+                  context,
+                ).copyWith(color: primaryColor),
               ),
             ),
           ),
           const SizedBox(height: AppSpacing.sm),
           InlineEditableHeader(
-            initialText: _displayName ?? _getDisplayName(),
+            initialText: _displayName ?? displayName,
             onSave: _saveDisplayName,
             placeholder: 'Add your name',
             fontSize: 22,
@@ -429,29 +392,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
           const SizedBox(height: AppSpacing.xs),
           Text(
             _getUserEmail(),
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: colorScheme.onSurfaceVariant,
-            ),
+            style: AppleTextStyles.footnoteSecondary(context),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildSectionTitle(String title, ColorScheme colorScheme) {
+  Widget _buildSectionTitle(String title) {
     return Padding(
       padding: const EdgeInsets.only(left: AppSpacing.xxs),
-      child: Text(
-        title,
-        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-          color: colorScheme.onSurface,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
+      child: Text(title, style: AppleTextStyles.headline(context)),
     );
   }
 
-  Widget _buildPersonalInfoCard(ColorScheme colorScheme) {
+  Widget _buildPersonalInfoCard() {
     return ProfileCard(
       child: Column(
         children: [
@@ -466,7 +421,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           const ProfileRowDivider(),
 
           ProfileTappableRow(
-            icon: Icons.cake_outlined,
+            icon: CupertinoIcons.gift,
             label: 'Birth Year',
             value: _formatBirthYear(),
             onTap: _selectBirthYear,
@@ -475,7 +430,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           const ProfileRowDivider(),
 
           ProfileTappableRow(
-            icon: Icons.location_on_outlined,
+            icon: CupertinoIcons.location,
             label: 'Location',
             value: _formatLocation(),
             onTap: _selectLocation,
@@ -485,10 +440,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildPreferencesCard(ColorScheme colorScheme) {
+  Widget _buildPreferencesCard() {
     return ProfileCard(
       child: ProfileSwitchRow(
-        icon: Icons.notifications_outlined,
+        icon: CupertinoIcons.bell,
         label: 'Notifications',
         value: _notificationsEnabled,
         onChanged: (value) {
@@ -499,10 +454,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildIntegrationsCard(ColorScheme colorScheme) {
+  Widget _buildIntegrationsCard() {
     final isIOS = Platform.isIOS;
     final healthAppName = isIOS ? 'Apple Health' : 'Health Connect';
-    const healthIcon = Icons.favorite_rounded;
+    const healthIcon = CupertinoIcons.heart_fill;
     final healthIconColor = isIOS
         ? BrandColors.appleHealth
         : BrandColors.healthConnect;
@@ -528,22 +483,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _showHealthPermissionsInfo(String healthAppName) {
-    final colorScheme = Theme.of(context).colorScheme;
-    showDialog(
+    final primaryColor = CupertinoTheme.of(context).primaryColor;
+    showCupertinoDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        icon: Icon(Icons.info_outline_rounded, color: colorScheme.primary),
-        title: Text('$healthAppName Integration'),
-        content: const Text(
-          'Vitalo will request permission to read and write:\n\n'
-          '• Weight\n'
-          '• Height\n'
-          '• Steps\n'
-          '• Active calories\n\n'
-          'You can manage these permissions anytime in your device settings.',
+      builder: (context) => CupertinoAlertDialog(
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(CupertinoIcons.info, color: primaryColor, size: 20),
+            const SizedBox(width: AppSpacing.xs),
+            Text('$healthAppName Integration'),
+          ],
+        ),
+        content: const Padding(
+          padding: EdgeInsets.only(top: AppSpacing.sm),
+          child: Text(
+            'Vitalo will request permission to read and write:\n\n'
+            '• Weight\n'
+            '• Height\n'
+            '• Steps\n'
+            '• Active calories\n\n'
+            'You can manage these permissions anytime in your device settings.',
+          ),
         ),
         actions: [
-          FilledButton(
+          CupertinoDialogAction(
+            isDefaultAction: true,
             onPressed: () => Navigator.pop(context),
             child: const Text('Got it'),
           ),
@@ -552,27 +517,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildAccountCard(ColorScheme colorScheme) {
+  Widget _buildAccountCard() {
+    final errorColor = CupertinoColors.systemRed.resolveFrom(context);
+
     return ProfileCard(
       child: Column(
         children: [
           ProfileTappableRow(
-            icon: Icons.privacy_tip_outlined,
+            icon: CupertinoIcons.shield,
             label: 'Privacy Policy',
             onTap: () => context.push(AppRoutes.privacy),
           ),
           const ProfileRowDivider(),
           ProfileTappableRow(
-            icon: Icons.description_outlined,
+            icon: CupertinoIcons.doc_text,
             label: 'Terms of Service',
             onTap: () => context.push(AppRoutes.terms),
           ),
           const ProfileRowDivider(),
           ProfileTappableRow(
-            icon: Icons.logout_rounded,
+            icon: CupertinoIcons.square_arrow_right,
             label: 'Sign Out',
-            iconColor: colorScheme.error,
-            labelColor: colorScheme.error,
+            iconColor: errorColor,
+            labelColor: errorColor,
             onTap: _handleSignOut,
           ),
         ],
@@ -583,13 +550,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
 /// Bottom sheet for DELETE confirmation with real-time validation
 class _DeleteConfirmationSheet extends StatefulWidget {
-  final ColorScheme colorScheme;
-  final TextTheme textTheme;
-
-  const _DeleteConfirmationSheet({
-    required this.colorScheme,
-    required this.textTheme,
-  });
+  const _DeleteConfirmationSheet();
 
   @override
   State<_DeleteConfirmationSheet> createState() =>
@@ -623,6 +584,13 @@ class _DeleteConfirmationSheetState extends State<_DeleteConfirmationSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final primaryColor = CupertinoTheme.of(context).primaryColor;
+    final errorColor = CupertinoColors.systemRed.resolveFrom(context);
+    final secondaryLabel = CupertinoColors.secondaryLabel.resolveFrom(context);
+    final tertiaryLabel = CupertinoColors.tertiaryLabel.resolveFrom(context);
+    final separatorColor = CupertinoColors.separator.resolveFrom(context);
+    final isDark = CupertinoTheme.of(context).brightness == Brightness.dark;
+
     return Padding(
       padding: EdgeInsets.fromLTRB(
         AppSpacing.xl,
@@ -635,116 +603,131 @@ class _DeleteConfirmationSheetState extends State<_DeleteConfirmationSheet> {
         children: [
           // Drag handle
           Container(
-            width: 32,
-            height: 4,
+            width: 36,
+            height: 5,
             decoration: BoxDecoration(
-              color: widget.colorScheme.outlineVariant,
-              borderRadius: BorderRadius.circular(2),
+              color: separatorColor.withValues(alpha: 0.5),
+              borderRadius: BorderRadius.circular(2.5),
             ),
           ),
           const SizedBox(height: AppSpacing.xl),
-          Icon(
-            Icons.delete_forever_rounded,
-            color: widget.colorScheme.error,
-            size: AppSpacing.touchTargetMin,
-          ),
-          const SizedBox(height: AppSpacing.md),
-          Text(
-            'Delete Account',
-            style: widget.textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.w600,
-              color: widget.colorScheme.onSurface,
+          // Warning icon in a subtle container
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              color: errorColor.withValues(alpha: 0.12),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              CupertinoIcons.exclamationmark_triangle_fill,
+              color: errorColor,
+              size: 28,
             ),
           ),
+          const SizedBox(height: AppSpacing.md),
+          Text('Delete Account', style: AppleTextStyles.title3(context)),
           const SizedBox(height: AppSpacing.xs),
           Text(
             'This will permanently delete your account and all data. This action cannot be undone.',
-            style: widget.textTheme.bodyMedium?.copyWith(
-              color: widget.colorScheme.onSurfaceVariant,
-            ),
+            style: AppleTextStyles.subhead(
+              context,
+            ).copyWith(color: secondaryLabel),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: AppSpacing.lg),
-          Text(
-            'Type DELETE to confirm',
-            style: widget.textTheme.labelMedium?.copyWith(
-              color: widget.colorScheme.onSurfaceVariant,
-              fontWeight: FontWeight.w500,
+          const SizedBox(height: AppSpacing.xl),
+          // Input section with glass styling
+          Container(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            decoration: BoxDecoration(
+              color: isDark
+                  ? CupertinoColors.systemGrey6
+                        .resolveFrom(context)
+                        .withValues(alpha: 0.5)
+                  : CupertinoColors.systemGrey6.resolveFrom(context),
+              borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
+              border: Border.all(
+                color: separatorColor.withValues(alpha: 0.3),
+                width: 0.5,
+              ),
             ),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          TextField(
-            controller: _controller,
-            focusNode: _focusNode,
-            textCapitalization: TextCapitalization.characters,
-            textAlign: TextAlign.center,
-            style: widget.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-              letterSpacing: 2,
-              color: widget.colorScheme.onSurface,
-            ),
-            decoration: InputDecoration(
-              hintText: 'DELETE',
-              hintStyle: widget.textTheme.titleMedium?.copyWith(
-                color: widget.colorScheme.onSurfaceVariant.withValues(
-                  alpha: 0.4,
+            child: Column(
+              children: [
+                Text(
+                  'Type DELETE to confirm',
+                  style: AppleTextStyles.footnote(context).copyWith(
+                    color: secondaryLabel,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
-                letterSpacing: 2,
-              ),
-              filled: true,
-              fillColor: widget.colorScheme.surfaceContainerLow,
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.md,
-                vertical: AppSpacing.md,
-              ),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
-                borderSide: BorderSide.none,
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
-                borderSide: BorderSide(
-                  color: widget.colorScheme.error.withValues(alpha: 0.5),
-                  width: 1.5,
+                const SizedBox(height: AppSpacing.sm),
+                CupertinoTextField(
+                  controller: _controller,
+                  focusNode: _focusNode,
+                  textCapitalization: TextCapitalization.characters,
+                  textAlign: TextAlign.center,
+                  style: AppleTextStyles.headline(context).copyWith(
+                    letterSpacing: 4,
+                    color: _isValid ? errorColor : null,
+                  ),
+                  placeholder: 'DELETE',
+                  placeholderStyle: AppleTextStyles.headline(
+                    context,
+                  ).copyWith(color: tertiaryLabel, letterSpacing: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.md,
+                    vertical: AppSpacing.sm,
+                  ),
+                  decoration: BoxDecoration(
+                    color: CupertinoColors.systemBackground.resolveFrom(
+                      context,
+                    ),
+                    borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
+                    border: Border.all(
+                      color: _isValid
+                          ? errorColor.withValues(alpha: 0.6)
+                          : separatorColor,
+                      width: 0.5,
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
           ),
           const SizedBox(height: AppSpacing.xl),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: () => Navigator.pop(context, false),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: AppSpacing.md,
-                    ),
-                  ),
-                  child: const Text('Cancel'),
+          // Action buttons - Apple HIG style (stacked for destructive actions)
+          SizedBox(
+            width: double.infinity,
+            child: CupertinoButton(
+              padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+              color: _isValid ? errorColor : errorColor.withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
+              onPressed: _isValid ? () => Navigator.pop(context, true) : null,
+              child: Text(
+                'Delete Account',
+                style: TextStyle(
+                  color: _isValid
+                      ? CupertinoColors.white
+                      : CupertinoColors.white.withValues(alpha: 0.5),
+                  fontWeight: FontWeight.w600,
+                  fontSize: 17,
                 ),
               ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: FilledButton(
-                  onPressed: _isValid
-                      ? () => Navigator.pop(context, true)
-                      : null,
-                  style: FilledButton.styleFrom(
-                    backgroundColor: widget.colorScheme.error,
-                    foregroundColor: widget.colorScheme.onError,
-                    disabledBackgroundColor: widget.colorScheme.error
-                        .withValues(alpha: 0.38),
-                    disabledForegroundColor: widget.colorScheme.onError
-                        .withValues(alpha: 0.38),
-                    padding: const EdgeInsets.symmetric(
-                      vertical: AppSpacing.md,
-                    ),
-                  ),
-                  child: const Text('Delete Forever'),
-                ),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          SizedBox(
+            width: double.infinity,
+            child: CupertinoButton(
+              padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(
+                'Cancel',
+                style: AppleTextStyles.body(
+                  context,
+                ).copyWith(color: primaryColor, fontWeight: FontWeight.w600),
               ),
-            ],
+            ),
           ),
         ],
       ),

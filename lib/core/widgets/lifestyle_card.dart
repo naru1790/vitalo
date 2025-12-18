@@ -5,7 +5,10 @@
 // and dietary preferences. Follows soft minimalist design language.
 // =============================================================================
 
-import 'package:flutter/material.dart';
+import 'dart:ui';
+
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart' show TimeOfDay;
 import 'package:flutter/services.dart';
 
 import '../theme.dart';
@@ -22,28 +25,28 @@ enum ActivityLevel {
   deskBound(
     'Desk Bound',
     'Student, office work, remote job — mostly sitting with minimal movement',
-    Icons.desktop_windows_outlined,
+    CupertinoIcons.desktopcomputer,
     ActivityColors.deskBound,
     1.2,
   ),
   lightlyActive(
     'Lightly Active',
     'Teacher, retail, homemaker — on your feet with some walking',
-    Icons.directions_walk_outlined,
+    CupertinoIcons.person_2_fill,
     ActivityColors.lightlyActive,
     1.4,
   ),
   activeLifestyle(
     'Active Lifestyle',
     'Delivery, warehouse, healthcare — regular physical movement',
-    Icons.local_shipping_outlined,
+    CupertinoIcons.cube_box_fill,
     ActivityColors.activeLifestyle,
     1.6,
   ),
   veryActive(
     'Very Active',
     'Construction, farming, athlete — intense daily physical activity',
-    Icons.fitness_center_outlined,
+    CupertinoIcons.flame_fill,
     ActivityColors.veryActive,
     1.8,
   );
@@ -168,8 +171,7 @@ class LifestyleCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
+    final labelColor = CupertinoColors.label.resolveFrom(context);
     final hasDietPref = data.dietaryPreferences != null;
 
     return Column(
@@ -180,9 +182,10 @@ class LifestyleCard extends StatelessWidget {
           padding: const EdgeInsets.only(left: AppSpacing.xxs),
           child: Text(
             'Lifestyle',
-            style: textTheme.titleMedium?.copyWith(
-              color: colorScheme.onSurface,
+            style: TextStyle(
+              fontSize: 17,
               fontWeight: FontWeight.w600,
+              color: labelColor,
             ),
           ),
         ),
@@ -193,28 +196,28 @@ class LifestyleCard extends StatelessWidget {
           child: Column(
             children: [
               ProfileTappableRow(
-                icon: Icons.directions_run_outlined,
+                icon: CupertinoIcons.flame_fill,
                 label: 'Activity Level',
                 value: data.activityLevel?.label ?? '—',
                 onTap: () => _selectActivityLevel(context),
               ),
               const ProfileRowDivider(),
               ProfileTappableRow(
-                icon: Icons.bedtime_outlined,
+                icon: CupertinoIcons.moon_fill,
                 label: 'Bed Time',
                 value: data.formatBedTime(context),
                 onTap: () => _selectBedTime(context),
               ),
               const ProfileRowDivider(),
               ProfileTappableRow(
-                icon: Icons.hotel_outlined,
+                icon: CupertinoIcons.bed_double_fill,
                 label: 'Sleep Duration',
                 value: data.formattedSleepDuration,
                 onTap: () => _selectSleepDuration(context),
               ),
               const ProfileRowDivider(),
               ProfileTappableRow(
-                icon: Icons.restaurant_menu_rounded,
+                icon: CupertinoIcons.square_list_fill,
                 label: 'Dietary Preferences',
                 value: hasDietPref ? null : 'Set up',
                 subtitle: hasDietPref
@@ -243,16 +246,8 @@ class _ActivityLevelSheet extends StatefulWidget {
     required BuildContext context,
     ActivityLevel? initialValue,
   }) {
-    return showModalBottomSheet<ActivityLevel>(
+    return showCupertinoModalPopup<ActivityLevel>(
       context: context,
-      isScrollControlled: true,
-      enableDrag: true,
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(AppSpacing.cardRadiusLarge),
-        ),
-      ),
       builder: (context) => _ActivityLevelSheet(initialValue: initialValue),
     );
   }
@@ -278,54 +273,78 @@ class _ActivityLevelSheetState extends State<_ActivityLevelSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
+    final surfaceColor = CupertinoColors.systemBackground.resolveFrom(context);
+    final separatorColor = CupertinoColors.separator.resolveFrom(context);
+    final isDark = CupertinoTheme.brightnessOf(context) == Brightness.dark;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(AppSpacing.cardRadiusLarge),
-        ),
+    return ClipRRect(
+      borderRadius: const BorderRadius.vertical(
+        top: Radius.circular(AppSpacing.cardRadiusLarge),
       ),
-      child: SafeArea(
-        top: false,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Header with drag handle and Done button
-            SheetHeader(
-              title: 'Activity Level',
-              subtitle: 'Choose what best describes your typical day',
-              onDone: _confirm,
-              doneEnabled: _selected != null,
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+        child: Container(
+          decoration: BoxDecoration(
+            color: isDark
+                ? surfaceColor.withValues(alpha: 0.85)
+                : surfaceColor.withValues(alpha: 0.9),
+            borderRadius: const BorderRadius.vertical(
+              top: Radius.circular(AppSpacing.cardRadiusLarge),
             ),
-
-            const SizedBox(height: AppSpacing.lg),
-
-            // Activity level options as cards
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
-              child: Column(
-                children: ActivityLevel.values.map((level) {
-                  final isSelected = _selected == level;
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                    child: _ActivityLevelCard(
-                      level: level,
-                      isSelected: isSelected,
-                      onTap: () {
-                        HapticFeedback.selectionClick();
-                        setState(() => _selected = level);
-                      },
-                    ),
-                  );
-                }).toList(),
+            border: Border(
+              top: BorderSide(
+                color: separatorColor.withValues(alpha: 0.2),
+                width: LiquidGlass.borderWidth,
               ),
             ),
+            boxShadow: [
+              BoxShadow(
+                color: CupertinoColors.black.withValues(alpha: 0.1),
+                blurRadius: 20,
+                offset: const Offset(0, -8),
+              ),
+            ],
+          ),
+          child: SafeArea(
+            top: false,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Header with drag handle and Done button
+                SheetHeader(
+                  title: 'Activity Level',
+                  subtitle: 'Choose what best describes your typical day',
+                  onDone: _confirm,
+                  doneEnabled: _selected != null,
+                ),
+                const SizedBox(height: AppSpacing.lg),
 
-            const SizedBox(height: AppSpacing.xl),
-          ],
+                // Activity level options as cards
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.xl,
+                  ),
+                  child: Column(
+                    children: ActivityLevel.values.map((level) {
+                      final isSelected = _selected == level;
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                        child: _ActivityLevelCard(
+                          level: level,
+                          isSelected: isSelected,
+                          onTap: () {
+                            HapticFeedback.selectionClick();
+                            setState(() => _selected = level);
+                          },
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.xl),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -345,84 +364,77 @@ class _ActivityLevelCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-
-    // Use the activity's color for the icon container only
+    final primaryColor = CupertinoTheme.of(context).primaryColor;
+    final labelColor = CupertinoColors.label.resolveFrom(context);
+    final secondaryLabel = CupertinoColors.secondaryLabel.resolveFrom(context);
+    final tertiaryFill = CupertinoColors.tertiarySystemFill.resolveFrom(
+      context,
+    );
+    final separatorColor = CupertinoColors.separator.resolveFrom(context);
     final activityColor = level.color;
 
-    return Material(
-      color: isSelected
-          ? colorScheme.primaryContainer
-          : colorScheme.surfaceContainerLow,
-      borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-        child: Container(
-          padding: const EdgeInsets.all(AppSpacing.md),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-            border: Border.all(
-              color: isSelected
-                  ? colorScheme.primary
-                  : colorScheme.outlineVariant,
-              width: isSelected ? 2 : 1,
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? primaryColor.withValues(alpha: 0.15)
+              : tertiaryFill,
+          borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
+          border: Border.all(
+            color: isSelected ? primaryColor : separatorColor,
+            width: isSelected ? 1.5 : LiquidGlass.borderWidth,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: activityColor.withValues(alpha: isSelected ? 1.0 : 0.15),
+                borderRadius: BorderRadius.circular(AppSpacing.cardRadiusSmall),
+              ),
+              child: Icon(
+                level.icon,
+                color: isSelected ? CupertinoColors.white : activityColor,
+                size: AppSpacing.iconSize,
+              ),
             ),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: activityColor.withValues(
-                    alpha: isSelected ? 1.0 : 0.15,
-                  ),
-                  borderRadius: BorderRadius.circular(
-                    AppSpacing.cardRadiusSmall,
-                  ),
-                ),
-                child: Icon(
-                  level.icon,
-                  color: isSelected ? Colors.white : activityColor,
-                  size: AppSpacing.iconSize,
-                ),
-              ),
-              const SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      level.label,
-                      style: textTheme.titleSmall?.copyWith(
-                        color: isSelected
-                            ? colorScheme.onPrimaryContainer
-                            : colorScheme.onSurface,
-                        fontWeight: FontWeight.w600,
-                      ),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    level.label,
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: isSelected ? primaryColor : labelColor,
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      level.description,
-                      style: textTheme.bodySmall?.copyWith(
-                        color: isSelected
-                            ? colorScheme.onPrimaryContainer
-                            : colorScheme.onSurfaceVariant,
-                      ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    level.description,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: isSelected
+                          ? primaryColor.withValues(alpha: 0.8)
+                          : secondaryLabel,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-              if (isSelected)
-                Icon(
-                  Icons.check_circle_rounded,
-                  color: colorScheme.primary,
-                  size: AppSpacing.iconSize,
-                ),
-            ],
-          ),
+            ),
+            if (isSelected)
+              Icon(
+                CupertinoIcons.checkmark_circle_fill,
+                color: primaryColor,
+                size: AppSpacing.iconSize,
+              ),
+          ],
         ),
       ),
     );
@@ -442,11 +454,8 @@ class _BedTimeSheet extends StatefulWidget {
     required BuildContext context,
     TimeOfDay? initialTime,
   }) {
-    return showModalBottomSheet<TimeOfDay>(
+    return showCupertinoModalPopup<TimeOfDay>(
       context: context,
-      isScrollControlled: true,
-      enableDrag: true,
-      backgroundColor: Colors.transparent,
       builder: (context) => _BedTimeSheet(initialTime: initialTime),
     );
   }
@@ -530,202 +539,229 @@ class _BedTimeSheetState extends State<_BedTimeSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
+    final surfaceColor = CupertinoColors.systemBackground.resolveFrom(context);
+    final primaryColor = CupertinoTheme.of(context).primaryColor;
+    final secondaryLabel = CupertinoColors.secondaryLabel.resolveFrom(context);
+    final separatorColor = CupertinoColors.separator.resolveFrom(context);
+    final isDark = CupertinoTheme.brightnessOf(context) == Brightness.dark;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(AppSpacing.cardRadiusLarge),
-        ),
+    return ClipRRect(
+      borderRadius: const BorderRadius.vertical(
+        top: Radius.circular(AppSpacing.cardRadiusLarge),
       ),
-      child: SafeArea(
-        top: false,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Header with drag handle and Done button
-            SheetHeader(
-              title: 'Bed Time',
-              subtitle: 'When do you usually go to sleep?',
-              onDone: _confirm,
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+        child: Container(
+          decoration: BoxDecoration(
+            color: isDark
+                ? surfaceColor.withValues(alpha: 0.85)
+                : surfaceColor.withValues(alpha: 0.9),
+            borderRadius: const BorderRadius.vertical(
+              top: Radius.circular(AppSpacing.cardRadiusLarge),
             ),
-
-            const SizedBox(height: AppSpacing.lg),
-
-            // Large value display
-            Text(
-              _formattedTime,
-              style: textTheme.displayMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-                color: colorScheme.primary,
-                height: 1,
+            border: Border(
+              top: BorderSide(
+                color: separatorColor.withValues(alpha: 0.2),
+                width: LiquidGlass.borderWidth,
               ),
             ),
-
-            const SizedBox(height: AppSpacing.lg),
-
-            // AM/PM toggle using unified design
-            WheelUnitToggle(
-              options: const ['AM', 'PM'],
-              selectedIndex: _isPM ? 1 : 0,
-              onChanged: (index) {
-                HapticFeedback.selectionClick();
-                setState(() => _isPM = index == 1);
-              },
-            ),
-
-            const SizedBox(height: AppSpacing.lg),
-
-            // Headers for hour and minute - outside wheel area
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.lg + 12,
+            boxShadow: [
+              BoxShadow(
+                color: CupertinoColors.black.withValues(alpha: 0.1),
+                blurRadius: 20,
+                offset: const Offset(0, -8),
               ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Center(
-                      child: Text(
-                        'hr',
-                        style: textTheme.labelMedium?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
+            ],
+          ),
+          child: SafeArea(
+            top: false,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Header with drag handle and Done button
+                SheetHeader(
+                  title: 'Bed Time',
+                  subtitle: 'When do you usually go to sleep?',
+                  onDone: _confirm,
+                ),
+
+                const SizedBox(height: AppSpacing.lg),
+
+                // Large value display
+                Text(
+                  _formattedTime,
+                  style: TextStyle(
+                    fontSize: 48,
+                    fontWeight: FontWeight.w600,
+                    color: primaryColor,
+                    height: 1,
                   ),
-                  Expanded(
-                    child: Center(
-                      child: Text(
-                        'min',
-                        style: textTheme.labelMedium?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
+                ),
+                const SizedBox(height: AppSpacing.lg),
+
+                // AM/PM toggle using unified design
+                WheelUnitToggle(
+                  options: const ['AM', 'PM'],
+                  selectedIndex: _isPM ? 1 : 0,
+                  onChanged: (index) {
+                    HapticFeedback.selectionClick();
+                    setState(() => _isPM = index == 1);
+                  },
+                ),
+                const SizedBox(height: AppSpacing.lg),
+
+                // Headers for hour and minute - outside wheel area
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.lg + 12,
                   ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: AppSpacing.xs),
-
-            // Time picker wheels with arrow indicators
-            SizedBox(
-              height: WheelConstants.defaultHeight,
-              child: Stack(
-                children: [
-                  // Wheels row
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.lg + 12,
-                    ),
-                    child: Row(
-                      children: [
-                        // Hour wheel (12, 1, 2, ..., 11)
-                        Expanded(
-                          child: ListWheelScrollView.useDelegate(
-                            controller: _hourController,
-                            itemExtent: WheelConstants.itemExtent,
-                            physics: const FixedExtentScrollPhysics(),
-                            diameterRatio: WheelConstants.diameterRatio,
-                            perspective: WheelConstants.perspective,
-                            onSelectedItemChanged: (index) {
-                              HapticFeedback.selectionClick();
-                              setState(() => _hour = index);
-                            },
-                            childDelegate: ListWheelChildBuilderDelegate(
-                              childCount: 13, // 0, 1, 2, ..., 12
-                              builder: (context, index) {
-                                final isSelected = index == _hour;
-                                return Center(
-                                  child: Text(
-                                    index.toString().padLeft(2, '0'),
-                                    style: textTheme.headlineMedium?.copyWith(
-                                      color: isSelected
-                                          ? colorScheme.primary
-                                          : colorScheme.onSurfaceVariant,
-                                      fontWeight: isSelected
-                                          ? FontWeight.w600
-                                          : FontWeight.w400,
-                                    ),
-                                  ),
-                                );
-                              },
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Center(
+                          child: Text(
+                            'hr',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: secondaryLabel,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ),
-
-                        // Minute wheel (00-59)
-                        Expanded(
-                          child: ListWheelScrollView.useDelegate(
-                            controller: _minuteController,
-                            itemExtent: WheelConstants.itemExtent,
-                            physics: const FixedExtentScrollPhysics(),
-                            diameterRatio: WheelConstants.diameterRatio,
-                            perspective: WheelConstants.perspective,
-                            onSelectedItemChanged: (index) {
-                              HapticFeedback.selectionClick();
-                              setState(() => _minute = index);
-                            },
-                            childDelegate: ListWheelChildBuilderDelegate(
-                              childCount: 60,
-                              builder: (context, index) {
-                                final isSelected = index == _minute;
-                                return Center(
-                                  child: Text(
-                                    index.toString().padLeft(2, '0'),
-                                    style: textTheme.headlineMedium?.copyWith(
-                                      color: isSelected
-                                          ? colorScheme.primary
-                                          : colorScheme.onSurfaceVariant,
-                                      fontWeight: isSelected
-                                          ? FontWeight.w600
-                                          : FontWeight.w400,
-                                    ),
-                                  ),
-                                );
-                              },
+                      ),
+                      Expanded(
+                        child: Center(
+                          child: Text(
+                            'min',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: secondaryLabel,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-
-                  // Arrow indicators - outer edges
-                  Positioned(
-                    left: AppSpacing.lg,
-                    top: 0,
-                    bottom: 0,
-                    child: Center(
-                      child: WheelArrowIndicator(
-                        direction: ArrowDirection.right,
                       ),
-                    ),
+                    ],
                   ),
-                  Positioned(
-                    right: AppSpacing.lg,
-                    top: 0,
-                    bottom: 0,
-                    child: Center(
-                      child: WheelArrowIndicator(
-                        direction: ArrowDirection.left,
-                      ),
-                    ),
-                  ),
+                ),
+                const SizedBox(height: AppSpacing.xs),
 
-                  // Gradient fades
-                  const WheelGradientOverlay(),
-                ],
-              ),
+                // Time picker wheels with arrow indicators
+                SizedBox(
+                  height: WheelConstants.defaultHeight,
+                  child: Stack(
+                    children: [
+                      // Wheels row
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.lg + 12,
+                        ),
+                        child: Row(
+                          children: [
+                            // Hour wheel (12, 1, 2, ..., 11)
+                            Expanded(
+                              child: ListWheelScrollView.useDelegate(
+                                controller: _hourController,
+                                itemExtent: WheelConstants.itemExtent,
+                                physics: const FixedExtentScrollPhysics(),
+                                diameterRatio: WheelConstants.diameterRatio,
+                                perspective: WheelConstants.perspective,
+                                onSelectedItemChanged: (index) {
+                                  HapticFeedback.selectionClick();
+                                  setState(() => _hour = index);
+                                },
+                                childDelegate: ListWheelChildBuilderDelegate(
+                                  childCount: 13, // 0, 1, 2, ..., 12
+                                  builder: (context, index) {
+                                    final isSelected = index == _hour;
+                                    return Center(
+                                      child: Text(
+                                        index.toString().padLeft(2, '0'),
+                                        style: TextStyle(
+                                          fontSize: 28,
+                                          color: isSelected
+                                              ? primaryColor
+                                              : secondaryLabel,
+                                          fontWeight: isSelected
+                                              ? FontWeight.w600
+                                              : FontWeight.w400,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ),
+
+                            // Minute wheel (00-59)
+                            Expanded(
+                              child: ListWheelScrollView.useDelegate(
+                                controller: _minuteController,
+                                itemExtent: WheelConstants.itemExtent,
+                                physics: const FixedExtentScrollPhysics(),
+                                diameterRatio: WheelConstants.diameterRatio,
+                                perspective: WheelConstants.perspective,
+                                onSelectedItemChanged: (index) {
+                                  HapticFeedback.selectionClick();
+                                  setState(() => _minute = index);
+                                },
+                                childDelegate: ListWheelChildBuilderDelegate(
+                                  childCount: 60,
+                                  builder: (context, index) {
+                                    final isSelected = index == _minute;
+                                    return Center(
+                                      child: Text(
+                                        index.toString().padLeft(2, '0'),
+                                        style: TextStyle(
+                                          fontSize: 28,
+                                          color: isSelected
+                                              ? primaryColor
+                                              : secondaryLabel,
+                                          fontWeight: isSelected
+                                              ? FontWeight.w600
+                                              : FontWeight.w400,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // Arrow indicators - outer edges
+                      Positioned(
+                        left: AppSpacing.lg,
+                        top: 0,
+                        bottom: 0,
+                        child: Center(
+                          child: WheelArrowIndicator(
+                            direction: ArrowDirection.right,
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        right: AppSpacing.lg,
+                        top: 0,
+                        bottom: 0,
+                        child: Center(
+                          child: WheelArrowIndicator(
+                            direction: ArrowDirection.left,
+                          ),
+                        ),
+                      ),
+
+                      // Gradient fades
+                      const WheelGradientOverlay(),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.xxl),
+              ],
             ),
-
-            const SizedBox(height: AppSpacing.xxl),
-          ],
+          ),
         ),
       ),
     );
@@ -745,11 +781,8 @@ class _SleepDurationSheet extends StatefulWidget {
     required BuildContext context,
     int? initialMinutes,
   }) {
-    return showModalBottomSheet<int>(
+    return showCupertinoModalPopup<int>(
       context: context,
-      isScrollControlled: true,
-      enableDrag: true,
-      backgroundColor: Colors.transparent,
       builder: (context) => _SleepDurationSheet(initialMinutes: initialMinutes),
     );
   }
@@ -808,190 +841,219 @@ class _SleepDurationSheetState extends State<_SleepDurationSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
+    final surfaceColor = CupertinoColors.systemBackground.resolveFrom(context);
+    final primaryColor = CupertinoTheme.of(context).primaryColor;
+    final secondaryLabel = CupertinoColors.secondaryLabel.resolveFrom(context);
+    final separatorColor = CupertinoColors.separator.resolveFrom(context);
+    final isDark = CupertinoTheme.brightnessOf(context) == Brightness.dark;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(AppSpacing.cardRadiusLarge),
-        ),
+    return ClipRRect(
+      borderRadius: const BorderRadius.vertical(
+        top: Radius.circular(AppSpacing.cardRadiusLarge),
       ),
-      child: SafeArea(
-        top: false,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Header with drag handle and Done button
-            SheetHeader(
-              title: 'Sleep Duration',
-              subtitle: 'How long do you usually sleep?',
-              onDone: _confirm,
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+        child: Container(
+          decoration: BoxDecoration(
+            color: isDark
+                ? surfaceColor.withValues(alpha: 0.85)
+                : surfaceColor.withValues(alpha: 0.9),
+            borderRadius: const BorderRadius.vertical(
+              top: Radius.circular(AppSpacing.cardRadiusLarge),
             ),
-
-            const SizedBox(height: AppSpacing.lg),
-
-            // Large duration display
-            Text(
-              _formattedDuration,
-              style: textTheme.displayMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-                color: colorScheme.primary,
-                height: 1,
+            border: Border(
+              top: BorderSide(
+                color: separatorColor.withValues(alpha: 0.2),
+                width: LiquidGlass.borderWidth,
               ),
             ),
-
-            const SizedBox(height: AppSpacing.lg),
-
-            // Headers for hours and minutes
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.lg + 12,
+            boxShadow: [
+              BoxShadow(
+                color: CupertinoColors.black.withValues(alpha: 0.1),
+                blurRadius: 20,
+                offset: const Offset(0, -8),
               ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Center(
-                      child: Text(
-                        'hr',
-                        style: textTheme.labelMedium?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
+            ],
+          ),
+          child: SafeArea(
+            top: false,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Header with drag handle and Done button
+                SheetHeader(
+                  title: 'Sleep Duration',
+                  subtitle: 'How long do you usually sleep?',
+                  onDone: _confirm,
+                ),
+
+                const SizedBox(height: AppSpacing.lg),
+
+                // Large duration display
+                Text(
+                  _formattedDuration,
+                  style: TextStyle(
+                    fontSize: 48,
+                    fontWeight: FontWeight.w600,
+                    color: primaryColor,
+                    height: 1,
                   ),
-                  Expanded(
-                    child: Center(
-                      child: Text(
-                        'min',
-                        style: textTheme.labelMedium?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
+                ),
+
+                const SizedBox(height: AppSpacing.lg),
+
+                // Headers for hours and minutes
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.lg + 12,
                   ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: AppSpacing.xs),
-
-            // Duration picker wheels with arrow indicators
-            SizedBox(
-              height: WheelConstants.defaultHeight,
-              child: Stack(
-                children: [
-                  // Wheels
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.lg + 12,
-                    ),
-                    child: Row(
-                      children: [
-                        // Hours wheel (00-23)
-                        Expanded(
-                          child: ListWheelScrollView.useDelegate(
-                            controller: _hoursController,
-                            itemExtent: WheelConstants.itemExtent,
-                            physics: const FixedExtentScrollPhysics(),
-                            diameterRatio: WheelConstants.diameterRatio,
-                            perspective: WheelConstants.perspective,
-                            onSelectedItemChanged: (index) {
-                              HapticFeedback.selectionClick();
-                              setState(() => _hours = index);
-                            },
-                            childDelegate: ListWheelChildBuilderDelegate(
-                              childCount: _maxHours + 1, // 0-23
-                              builder: (context, index) {
-                                final isSelected = index == _hours;
-                                return Center(
-                                  child: Text(
-                                    index.toString().padLeft(2, '0'),
-                                    style: textTheme.headlineMedium?.copyWith(
-                                      color: isSelected
-                                          ? colorScheme.primary
-                                          : colorScheme.onSurfaceVariant,
-                                      fontWeight: isSelected
-                                          ? FontWeight.w600
-                                          : FontWeight.w400,
-                                    ),
-                                  ),
-                                );
-                              },
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Center(
+                          child: Text(
+                            'hr',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: secondaryLabel,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ),
-
-                        // Minutes wheel (00-59)
-                        Expanded(
-                          child: ListWheelScrollView.useDelegate(
-                            controller: _minutesController,
-                            itemExtent: WheelConstants.itemExtent,
-                            physics: const FixedExtentScrollPhysics(),
-                            diameterRatio: WheelConstants.diameterRatio,
-                            perspective: WheelConstants.perspective,
-                            onSelectedItemChanged: (index) {
-                              HapticFeedback.selectionClick();
-                              setState(() => _minutes = index);
-                            },
-                            childDelegate: ListWheelChildBuilderDelegate(
-                              childCount: 60, // 0-59
-                              builder: (context, index) {
-                                final isSelected = index == _minutes;
-                                return Center(
-                                  child: Text(
-                                    index.toString().padLeft(2, '0'),
-                                    style: textTheme.headlineMedium?.copyWith(
-                                      color: isSelected
-                                          ? colorScheme.primary
-                                          : colorScheme.onSurfaceVariant,
-                                      fontWeight: isSelected
-                                          ? FontWeight.w600
-                                          : FontWeight.w400,
-                                    ),
-                                  ),
-                                );
-                              },
+                      ),
+                      Expanded(
+                        child: Center(
+                          child: Text(
+                            'min',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: secondaryLabel,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-
-                  // Arrow indicators - outer edges
-                  Positioned(
-                    left: AppSpacing.lg,
-                    top: 0,
-                    bottom: 0,
-                    child: Center(
-                      child: WheelArrowIndicator(
-                        direction: ArrowDirection.right,
                       ),
-                    ),
+                    ],
                   ),
-                  Positioned(
-                    right: AppSpacing.lg,
-                    top: 0,
-                    bottom: 0,
-                    child: Center(
-                      child: WheelArrowIndicator(
-                        direction: ArrowDirection.left,
-                      ),
-                    ),
-                  ),
+                ),
+                const SizedBox(height: AppSpacing.xs),
 
-                  // Gradient fades
-                  const WheelGradientOverlay(),
-                ],
-              ),
+                // Duration picker wheels with arrow indicators
+                SizedBox(
+                  height: WheelConstants.defaultHeight,
+                  child: Stack(
+                    children: [
+                      // Wheels
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.lg + 12,
+                        ),
+                        child: Row(
+                          children: [
+                            // Hours wheel (00-23)
+                            Expanded(
+                              child: ListWheelScrollView.useDelegate(
+                                controller: _hoursController,
+                                itemExtent: WheelConstants.itemExtent,
+                                physics: const FixedExtentScrollPhysics(),
+                                diameterRatio: WheelConstants.diameterRatio,
+                                perspective: WheelConstants.perspective,
+                                onSelectedItemChanged: (index) {
+                                  HapticFeedback.selectionClick();
+                                  setState(() => _hours = index);
+                                },
+                                childDelegate: ListWheelChildBuilderDelegate(
+                                  childCount: _maxHours + 1, // 0-23
+                                  builder: (context, index) {
+                                    final isSelected = index == _hours;
+                                    return Center(
+                                      child: Text(
+                                        index.toString().padLeft(2, '0'),
+                                        style: TextStyle(
+                                          fontSize: 28,
+                                          color: isSelected
+                                              ? primaryColor
+                                              : secondaryLabel,
+                                          fontWeight: isSelected
+                                              ? FontWeight.w600
+                                              : FontWeight.w400,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ),
+
+                            // Minutes wheel (00-59)
+                            Expanded(
+                              child: ListWheelScrollView.useDelegate(
+                                controller: _minutesController,
+                                itemExtent: WheelConstants.itemExtent,
+                                physics: const FixedExtentScrollPhysics(),
+                                diameterRatio: WheelConstants.diameterRatio,
+                                perspective: WheelConstants.perspective,
+                                onSelectedItemChanged: (index) {
+                                  HapticFeedback.selectionClick();
+                                  setState(() => _minutes = index);
+                                },
+                                childDelegate: ListWheelChildBuilderDelegate(
+                                  childCount: 60, // 0-59
+                                  builder: (context, index) {
+                                    final isSelected = index == _minutes;
+                                    return Center(
+                                      child: Text(
+                                        index.toString().padLeft(2, '0'),
+                                        style: TextStyle(
+                                          fontSize: 28,
+                                          color: isSelected
+                                              ? primaryColor
+                                              : secondaryLabel,
+                                          fontWeight: isSelected
+                                              ? FontWeight.w600
+                                              : FontWeight.w400,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // Arrow indicators - outer edges
+                      Positioned(
+                        left: AppSpacing.lg,
+                        top: 0,
+                        bottom: 0,
+                        child: Center(
+                          child: WheelArrowIndicator(
+                            direction: ArrowDirection.right,
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        right: AppSpacing.lg,
+                        top: 0,
+                        bottom: 0,
+                        child: Center(
+                          child: WheelArrowIndicator(
+                            direction: ArrowDirection.left,
+                          ),
+                        ),
+                      ),
+
+                      // Gradient fades
+                      const WheelGradientOverlay(),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.xxl),
+              ],
             ),
-
-            const SizedBox(height: AppSpacing.xxl),
-          ],
+          ),
         ),
       ),
     );

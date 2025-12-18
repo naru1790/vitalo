@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:pinput/pinput.dart';
 
 import '../theme.dart';
@@ -23,21 +23,25 @@ class OtpInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final labelColor = CupertinoColors.label.resolveFrom(context);
+    final fillColor = CupertinoColors.tertiarySystemFill.resolveFrom(context);
+    final separatorColor = CupertinoColors.separator.resolveFrom(context);
+    final primaryColor = CupertinoTheme.of(context).primaryColor;
+    final errorColor = CupertinoColors.systemRed.resolveFrom(context);
 
     final defaultPinTheme = PinTheme(
       width: AppSpacing.touchTargetMin,
       height: AppSpacing.buttonHeight,
-      textStyle: theme.textTheme.headlineSmall?.copyWith(
+      textStyle: TextStyle(
+        fontSize: 22,
         fontWeight: FontWeight.bold,
-        color: colorScheme.onSurface,
+        color: labelColor,
       ),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLow,
+        color: fillColor,
         borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
         border: Border.all(
-          color: hasError ? colorScheme.error : colorScheme.outline,
+          color: hasError ? errorColor : separatorColor,
           width: 1.5,
         ),
       ),
@@ -45,17 +49,17 @@ class OtpInput extends StatelessWidget {
 
     final focusedPinTheme = defaultPinTheme.copyWith(
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerLow,
+        color: fillColor,
         borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
-        border: Border.all(color: colorScheme.primary, width: 1.5),
+        border: Border.all(color: primaryColor, width: 1.5),
       ),
     );
 
     final submittedPinTheme = defaultPinTheme.copyWith(
       decoration: BoxDecoration(
-        color: colorScheme.primaryContainer,
+        color: primaryColor.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
-        border: Border.all(color: colorScheme.primary, width: 1.5),
+        border: Border.all(color: primaryColor, width: 1.5),
       ),
     );
 

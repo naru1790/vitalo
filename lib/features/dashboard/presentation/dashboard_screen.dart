@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 import '../../../main.dart';
 import '../../../core/router.dart';
@@ -44,24 +44,36 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final primaryColor = CupertinoTheme.of(context).primaryColor;
+    final surfaceColor = CupertinoColors.systemBackground.resolveFrom(context);
 
-    return Scaffold(
-      backgroundColor: colorScheme.surface,
-      body: CustomScrollView(
-        slivers: [
-          SliverToBoxAdapter(child: _buildHeader(context, colorScheme)),
-          SliverToBoxAdapter(child: _buildCompanionHero(context, colorScheme)),
-          SliverToBoxAdapter(child: _buildVitalityGrid(context, colorScheme)),
-          SliverToBoxAdapter(child: _buildActionSection(context, colorScheme)),
-          const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.xxxl)),
+    return CupertinoPageScaffold(
+      backgroundColor: surfaceColor,
+      child: Column(
+        children: [
+          Expanded(
+            child: CustomScrollView(
+              slivers: [
+                SliverToBoxAdapter(child: _buildHeader(context)),
+                SliverToBoxAdapter(child: _buildCompanionHero(context)),
+                SliverToBoxAdapter(child: _buildVitalityGrid(context)),
+                SliverToBoxAdapter(child: _buildActionSection(context)),
+                const SliverToBoxAdapter(
+                  child: SizedBox(height: AppSpacing.xxxl),
+                ),
+              ],
+            ),
+          ),
+          _buildBottomNav(context),
         ],
       ),
-      bottomNavigationBar: _buildBottomNav(context, colorScheme),
     );
   }
 
-  Widget _buildHeader(BuildContext context, ColorScheme colorScheme) {
+  Widget _buildHeader(BuildContext context) {
+    final labelColor = CupertinoColors.label.resolveFrom(context);
+    final secondaryLabel = CupertinoColors.secondaryLabel.resolveFrom(context);
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.pageHorizontalPadding,
@@ -77,74 +89,82 @@ class _DashboardScreenState extends State<DashboardScreen> {
               children: [
                 Text(
                   '${_getGreeting()}, ${_getFirstName()} 👋',
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    color: colorScheme.onSurface,
-                  ),
+                  style: AppleTextStyles.title3(context),
                 ),
                 const SizedBox(height: AppSpacing.xxs),
                 Text(
                   'Ready to crush your goals?',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
+                  style: AppleTextStyles.callout(
+                    context,
+                  ).copyWith(color: secondaryLabel),
                 ),
               ],
             ),
           ),
           const SizedBox(width: AppSpacing.md),
-          _buildCoinCounter(context, colorScheme),
+          _buildCoinCounter(context),
           const SizedBox(width: AppSpacing.sm),
-          _buildNotificationBell(context, colorScheme),
+          _buildNotificationBell(context),
         ],
       ),
     );
   }
 
-  Widget _buildCoinCounter(BuildContext context, ColorScheme colorScheme) {
+  Widget _buildCoinCounter(BuildContext context) {
+    final primaryColor = CupertinoTheme.of(context).primaryColor;
+    final surfaceColor = CupertinoColors.systemBackground.resolveFrom(context);
+    final separatorColor = CupertinoColors.separator.resolveFrom(context);
+    final labelColor = CupertinoColors.label.resolveFrom(context);
+
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.md,
         vertical: AppSpacing.xs,
       ),
       decoration: BoxDecoration(
-        color: colorScheme.surface,
+        color: surfaceColor,
         borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-        border: Border.all(color: colorScheme.outline, width: 1),
+        border: Border.all(color: separatorColor, width: 0.5),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
-            Icons.stars_rounded,
-            color: colorScheme.primary,
+            CupertinoIcons.star_fill,
+            color: primaryColor,
             size: AppSpacing.iconSizeSmall,
           ),
           const SizedBox(width: AppSpacing.xs),
           Text(
             '250',
-            style: Theme.of(
+            style: AppleTextStyles.footnote(
               context,
-            ).textTheme.labelLarge?.copyWith(color: colorScheme.onSurface),
+            ).copyWith(fontWeight: FontWeight.w600),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildNotificationBell(BuildContext context, ColorScheme colorScheme) {
+  Widget _buildNotificationBell(BuildContext context) {
+    final primaryColor = CupertinoTheme.of(context).primaryColor;
+    final surfaceColor = CupertinoColors.systemBackground.resolveFrom(context);
+    final separatorColor = CupertinoColors.separator.resolveFrom(context);
+    final labelColor = CupertinoColors.label.resolveFrom(context);
+
     return Stack(
       children: [
         Container(
           width: AppSpacing.xxxl,
           height: AppSpacing.xxxl,
           decoration: BoxDecoration(
-            color: colorScheme.surface,
+            color: surfaceColor,
             borderRadius: BorderRadius.circular(AppSpacing.cardRadiusSmall),
-            border: Border.all(color: colorScheme.outline, width: 1),
+            border: Border.all(color: separatorColor, width: 0.5),
           ),
           child: Icon(
-            Icons.notifications_outlined,
-            color: colorScheme.onSurface,
+            CupertinoIcons.bell,
+            color: labelColor,
             size: AppSpacing.xl,
           ),
         ),
@@ -155,7 +175,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             width: AppSpacing.xs,
             height: AppSpacing.xs,
             decoration: BoxDecoration(
-              color: colorScheme.primary,
+              color: primaryColor,
               shape: BoxShape.circle,
             ),
           ),
@@ -164,7 +184,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildCompanionHero(BuildContext context, ColorScheme colorScheme) {
+  Widget _buildCompanionHero(BuildContext context) {
+    final primaryColor = CupertinoTheme.of(context).primaryColor;
+    final surfaceColor = CupertinoColors.systemBackground.resolveFrom(context);
+    final separatorColor = CupertinoColors.separator.resolveFrom(context);
+    // Use a tinted background for the hero card
+    final heroBackground = primaryColor.withValues(alpha: 0.1);
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.pageHorizontalPadding,
@@ -174,9 +200,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
       child: Container(
         decoration: BoxDecoration(
-          color: colorScheme.primaryContainer,
+          color: heroBackground,
           borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-          border: Border.all(color: colorScheme.outlineVariant, width: 1),
+          border: Border.all(
+            color: separatorColor.withValues(alpha: 0.3),
+            width: 0.5,
+          ),
         ),
         padding: const EdgeInsets.all(AppSpacing.lg),
         child: Row(
@@ -186,9 +215,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
               width: AppSpacing.xxxl,
               height: AppSpacing.xxxl,
               decoration: BoxDecoration(
-                color: colorScheme.surface,
+                color: surfaceColor,
                 shape: BoxShape.circle,
-                border: Border.all(color: colorScheme.primary, width: 3),
+                border: Border.all(color: primaryColor, width: 3),
               ),
               child: const Center(
                 child: Text('🌟', style: TextStyle(fontSize: AppSpacing.xl)),
@@ -201,19 +230,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 children: [
                   Text(
                     'Your AI Companion',
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: colorScheme.onPrimaryContainer,
-                      letterSpacing: 0.5,
-                    ),
+                    style: AppleTextStyles.caption1(
+                      context,
+                    ).copyWith(color: primaryColor, letterSpacing: 0.5),
                   ),
                   const SizedBox(height: AppSpacing.xs),
                   Text(
                     'You slept great! Let\'s hit 10k steps today and keep that momentum going. 💪',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w500,
-                      color: colorScheme.onPrimaryContainer,
-                      height: 1.5,
-                    ),
+                    style: AppleTextStyles.callout(
+                      context,
+                    ).copyWith(fontWeight: FontWeight.w500, height: 1.5),
                   ),
                 ],
               ),
@@ -224,7 +250,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildVitalityGrid(BuildContext context, ColorScheme colorScheme) {
+  Widget _buildVitalityGrid(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.pageHorizontalPadding,
@@ -235,20 +261,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Your Vitality',
-            style: Theme.of(
-              context,
-            ).textTheme.titleLarge?.copyWith(color: colorScheme.onSurface),
-          ),
+          Text('Your Vitality', style: AppleTextStyles.title3(context)),
           const SizedBox(height: AppSpacing.md),
-          _buildCalorieCard(context, colorScheme),
+          _buildCalorieCard(context),
           const SizedBox(height: AppSpacing.md),
           Row(
             children: [
-              Expanded(child: _buildStepsCard(context, colorScheme)),
+              Expanded(child: _buildStepsCard(context)),
               const SizedBox(width: AppSpacing.md),
-              Expanded(child: _buildHealthScoreCard(context, colorScheme)),
+              Expanded(child: _buildHealthScoreCard(context)),
             ],
           ),
         ],
@@ -256,7 +277,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildCalorieCard(BuildContext context, ColorScheme colorScheme) {
+  Widget _buildCalorieCard(BuildContext context) {
+    final primaryColor = CupertinoTheme.of(context).primaryColor;
+    final surfaceColor = CupertinoColors.systemBackground.resolveFrom(context);
+    final separatorColor = CupertinoColors.separator.resolveFrom(context);
+    final labelColor = CupertinoColors.label.resolveFrom(context);
+    final secondaryLabel = CupertinoColors.secondaryLabel.resolveFrom(context);
+    final tertiaryFill = CupertinoColors.tertiarySystemFill.resolveFrom(
+      context,
+    );
+
     const eaten = 1450;
     const burned = 2100;
     const progress = eaten / burned;
@@ -264,24 +294,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: colorScheme.surface,
+        color: surfaceColor,
         borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-        border: Border.all(color: colorScheme.outline, width: 1),
+        border: Border.all(color: separatorColor, width: 0.5),
       ),
       child: Column(
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Calorie Budget',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleSmall?.copyWith(color: colorScheme.onSurface),
-              ),
+              Text('Calorie Budget', style: AppleTextStyles.headline(context)),
               Icon(
-                Icons.local_fire_department_rounded,
-                color: colorScheme.primary,
+                CupertinoIcons.flame_fill,
+                color: primaryColor,
                 size: AppSpacing.xl,
               ),
             ],
@@ -296,11 +321,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 SizedBox(
                   width: AppSpacing.cardHeightSmall,
                   height: AppSpacing.cardHeightSmall,
-                  child: CircularProgressIndicator(
-                    value: progress,
+                  child: CupertinoActivityIndicator.partiallyRevealed(
+                    progress: progress,
+                    radius: AppSpacing.cardHeightSmall / 2 - AppSpacing.sm,
+                  ),
+                ),
+                // Custom circular progress
+                CustomPaint(
+                  size: Size(
+                    AppSpacing.cardHeightSmall,
+                    AppSpacing.cardHeightSmall,
+                  ),
+                  painter: _CircularProgressPainter(
+                    progress: progress,
+                    backgroundColor: tertiaryFill,
+                    progressColor: primaryColor,
                     strokeWidth: AppSpacing.sm,
-                    backgroundColor: colorScheme.surfaceContainerHighest,
-                    color: colorScheme.primary,
                   ),
                 ),
                 Column(
@@ -308,17 +344,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   children: [
                     Text(
                       '${(burned - eaten).toInt()}',
-                      style: Theme.of(context).textTheme.headlineMedium
-                          ?.copyWith(
-                            fontWeight: FontWeight.w700,
-                            color: colorScheme.onSurface,
-                          ),
+                      style: AppleTextStyles.title2(
+                        context,
+                      ).copyWith(fontWeight: FontWeight.w700),
                     ),
                     Text(
                       'cal left',
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                      ),
+                      style: AppleTextStyles.caption1(
+                        context,
+                      ).copyWith(color: secondaryLabel),
                     ),
                   ],
                 ),
@@ -329,23 +363,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildCalorieStat(
-                context,
-                'Eaten',
-                eaten.toString(),
-                colorScheme,
-              ),
+              _buildCalorieStat(context, 'Eaten', eaten.toString()),
               Container(
-                width: 1,
+                width: 0.5,
                 height: AppSpacing.xxl,
-                color: colorScheme.outline,
+                color: separatorColor,
               ),
-              _buildCalorieStat(
-                context,
-                'Burned',
-                burned.toString(),
-                colorScheme,
-              ),
+              _buildCalorieStat(context, 'Burned', burned.toString()),
             ],
           ),
         ],
@@ -353,32 +377,32 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildCalorieStat(
-    BuildContext context,
-    String label,
-    String value,
-    ColorScheme colorScheme,
-  ) {
+  Widget _buildCalorieStat(BuildContext context, String label, String value) {
+    final secondaryLabel = CupertinoColors.secondaryLabel.resolveFrom(context);
+
     return Column(
       children: [
-        Text(
-          value,
-          style: Theme.of(
-            context,
-          ).textTheme.titleMedium?.copyWith(color: colorScheme.onSurface),
-        ),
+        Text(value, style: AppleTextStyles.headline(context)),
         const SizedBox(height: AppSpacing.xxs),
         Text(
           label,
-          style: Theme.of(
+          style: AppleTextStyles.caption1(
             context,
-          ).textTheme.labelSmall?.copyWith(color: colorScheme.onSurfaceVariant),
+          ).copyWith(color: secondaryLabel),
         ),
       ],
     );
   }
 
-  Widget _buildStepsCard(BuildContext context, ColorScheme colorScheme) {
+  Widget _buildStepsCard(BuildContext context) {
+    final surfaceColor = CupertinoColors.systemBackground.resolveFrom(context);
+    final separatorColor = CupertinoColors.separator.resolveFrom(context);
+    final secondaryLabel = CupertinoColors.secondaryLabel.resolveFrom(context);
+    final tertiaryFill = CupertinoColors.tertiarySystemFill.resolveFrom(
+      context,
+    );
+    final accentColor = CupertinoColors.systemGreen.resolveFrom(context);
+
     const steps = 6842;
     const goal = 10000;
     const progress = steps / goal;
@@ -387,41 +411,51 @@ class _DashboardScreenState extends State<DashboardScreen> {
       height: AppSpacing.cardHeightMedium,
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: colorScheme.surface,
+        color: surfaceColor,
         borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-        border: Border.all(color: colorScheme.outline, width: 1),
+        border: Border.all(color: separatorColor, width: 0.5),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(
-            Icons.directions_walk_rounded,
-            color: colorScheme.tertiary,
+            CupertinoIcons.person_2_fill,
+            color: accentColor,
             size: AppSpacing.xxl,
           ),
           const Spacer(),
           Text(
             steps.toString(),
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.w700,
-              color: colorScheme.onSurface,
-            ),
+            style: AppleTextStyles.title2(
+              context,
+            ).copyWith(fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: AppSpacing.xxs),
           Text(
             'Steps',
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: colorScheme.onSurfaceVariant,
-            ),
+            style: AppleTextStyles.caption1(
+              context,
+            ).copyWith(color: secondaryLabel),
           ),
           const SizedBox(height: AppSpacing.sm),
           ClipRRect(
             borderRadius: BorderRadius.circular(AppSpacing.xxs),
-            child: LinearProgressIndicator(
-              value: progress,
-              minHeight: AppSpacing.xs,
-              backgroundColor: colorScheme.surfaceContainerHighest,
-              color: colorScheme.tertiary,
+            child: Container(
+              height: AppSpacing.xs,
+              decoration: BoxDecoration(
+                color: tertiaryFill,
+                borderRadius: BorderRadius.circular(AppSpacing.xxs),
+              ),
+              child: FractionallySizedBox(
+                alignment: Alignment.centerLeft,
+                widthFactor: progress,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: accentColor,
+                    borderRadius: BorderRadius.circular(AppSpacing.xxs),
+                  ),
+                ),
+              ),
             ),
           ),
         ],
@@ -429,21 +463,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildHealthScoreCard(BuildContext context, ColorScheme colorScheme) {
+  Widget _buildHealthScoreCard(BuildContext context) {
+    final surfaceColor = CupertinoColors.systemBackground.resolveFrom(context);
+    final separatorColor = CupertinoColors.separator.resolveFrom(context);
+    final secondaryLabel = CupertinoColors.secondaryLabel.resolveFrom(context);
+    final errorColor = CupertinoColors.systemRed.resolveFrom(context);
+
     return Container(
       height: AppSpacing.cardHeightMedium,
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: colorScheme.surface,
+        color: surfaceColor,
         borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-        border: Border.all(color: colorScheme.outline, width: 1),
+        border: Border.all(color: separatorColor, width: 0.5),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Icon(
-            Icons.favorite_rounded,
-            color: colorScheme.error,
+            CupertinoIcons.heart_fill,
+            color: errorColor,
             size: AppSpacing.xxl,
           ),
           const Spacer(),
@@ -452,10 +491,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
             children: [
               Text(
                 '85',
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: colorScheme.onSurface,
-                ),
+                style: AppleTextStyles.title2(
+                  context,
+                ).copyWith(fontWeight: FontWeight.w700),
               ),
               Padding(
                 padding: const EdgeInsets.only(
@@ -464,9 +502,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
                 child: Text(
                   '/100',
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
+                  style: AppleTextStyles.subhead(
+                    context,
+                  ).copyWith(color: secondaryLabel),
                 ),
               ),
             ],
@@ -474,16 +512,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
           const SizedBox(height: AppSpacing.xxs),
           Text(
             'Health Index',
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: colorScheme.onSurfaceVariant,
-            ),
+            style: AppleTextStyles.caption1(
+              context,
+            ).copyWith(color: secondaryLabel),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildActionSection(BuildContext context, ColorScheme colorScheme) {
+  Widget _buildActionSection(BuildContext context) {
+    final primaryColor = CupertinoTheme.of(context).primaryColor;
+    final accentGreen = CupertinoColors.systemGreen.resolveFrom(context);
+    final accentOrange = CupertinoColors.systemOrange.resolveFrom(context);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -493,9 +535,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
           child: Text(
             'Your Today Plan',
-            style: Theme.of(
-              context,
-            ).textTheme.titleLarge?.copyWith(color: colorScheme.onSurface),
+            style: AppleTextStyles.title3(context),
           ),
         ),
         const SizedBox(height: AppSpacing.md),
@@ -512,28 +552,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
             itemBuilder: (context, index) {
               final items = [
                 (
-                  icon: Icons.fitness_center_rounded,
+                  icon: CupertinoIcons.sportscourt,
                   title: 'Morning Workout',
                   subtitle: '20 min',
-                  color: colorScheme.tertiary,
+                  color: accentGreen,
                 ),
                 (
-                  icon: Icons.restaurant_rounded,
+                  icon: CupertinoIcons.leaf_arrow_circlepath,
                   title: 'Lunch',
                   subtitle: 'Quinoa Salad',
-                  color: colorScheme.primary,
+                  color: primaryColor,
                 ),
                 (
-                  icon: Icons.mood_rounded,
+                  icon: CupertinoIcons.smiley,
                   title: 'Log Mood',
                   subtitle: 'Quick check-in',
-                  color: colorScheme.secondary,
+                  color: accentOrange,
                 ),
               ];
               final item = items[index];
               return _buildActionCard(
                 context,
-                colorScheme,
                 icon: item.icon,
                 title: item.title,
                 subtitle: item.subtitle,
@@ -547,21 +586,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildActionCard(
-    BuildContext context,
-    ColorScheme colorScheme, {
+    BuildContext context, {
     required IconData icon,
     required String title,
     required String subtitle,
     required Color color,
   }) {
+    final surfaceColor = CupertinoColors.systemBackground.resolveFrom(context);
+    final separatorColor = CupertinoColors.separator.resolveFrom(context);
+    final secondaryLabel = CupertinoColors.secondaryLabel.resolveFrom(context);
+
     return SizedBox(
       width: AppSpacing.cardHeightMedium,
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.sm),
         decoration: BoxDecoration(
-          color: colorScheme.surface,
+          color: surfaceColor,
           borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-          border: Border.all(color: colorScheme.outline, width: 1),
+          border: Border.all(color: separatorColor, width: 0.5),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -578,18 +620,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
             const Spacer(),
             Text(
               title,
-              style: Theme.of(
-                context,
-              ).textTheme.titleSmall?.copyWith(color: colorScheme.onSurface),
+              style: AppleTextStyles.subhead(context),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: AppSpacing.xxs),
             Text(
               subtitle,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: colorScheme.onSurfaceVariant,
-              ),
+              style: AppleTextStyles.caption1(
+                context,
+              ).copyWith(color: secondaryLabel),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
@@ -599,11 +639,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildBottomNav(BuildContext context, ColorScheme colorScheme) {
+  Widget _buildBottomNav(BuildContext context) {
+    final primaryColor = CupertinoTheme.of(context).primaryColor;
+    final surfaceColor = CupertinoColors.systemBackground.resolveFrom(context);
+    final separatorColor = CupertinoColors.separator.resolveFrom(context);
+
     return Container(
       decoration: BoxDecoration(
-        color: colorScheme.surface,
-        border: Border(top: BorderSide(color: colorScheme.outline, width: 1)),
+        color: surfaceColor,
+        border: Border(top: BorderSide(color: separatorColor, width: 0.5)),
       ),
       child: SafeArea(
         child: Padding(
@@ -616,28 +660,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
             children: [
               _buildNavItem(
                 context,
-                colorScheme,
-                Icons.home_rounded,
+                CupertinoIcons.house_fill,
                 'Home',
                 isActive: true,
               ),
+              _buildNavItem(context, CupertinoIcons.calendar, 'Plan'),
+              _buildNavItemFAB(context),
+              _buildNavItem(context, CupertinoIcons.chat_bubble_fill, 'Coach'),
               _buildNavItem(
                 context,
-                colorScheme,
-                Icons.calendar_today_rounded,
-                'Plan',
-              ),
-              _buildNavItemFAB(context, colorScheme),
-              _buildNavItem(
-                context,
-                colorScheme,
-                Icons.chat_bubble_rounded,
-                'Coach',
-              ),
-              _buildNavItem(
-                context,
-                colorScheme,
-                Icons.person_rounded,
+                CupertinoIcons.person_fill,
                 'Profile',
                 onTap: () {
                   talker.info('Profile tapped from dashboard');
@@ -653,15 +685,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildNavItem(
     BuildContext context,
-    ColorScheme colorScheme,
     IconData icon,
     String label, {
     bool isActive = false,
     VoidCallback? onTap,
   }) {
-    return InkWell(
+    final primaryColor = CupertinoTheme.of(context).primaryColor;
+    final secondaryLabel = CupertinoColors.secondaryLabel.resolveFrom(context);
+
+    return GestureDetector(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(AppSpacing.cardRadiusSmall),
+      behavior: HitTestBehavior.opaque,
       child: Container(
         padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.md,
@@ -672,19 +706,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
           children: [
             Icon(
               icon,
-              color: isActive
-                  ? colorScheme.primary
-                  : colorScheme.onSurfaceVariant,
+              color: isActive ? primaryColor : secondaryLabel,
               size: AppSpacing.xl,
             ),
             const SizedBox(height: AppSpacing.xxs),
             Text(
               label,
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              style: AppleTextStyles.caption2(context).copyWith(
                 fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
-                color: isActive
-                    ? colorScheme.primary
-                    : colorScheme.onSurfaceVariant,
+                color: isActive ? primaryColor : secondaryLabel,
               ),
             ),
           ],
@@ -693,26 +723,84 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildNavItemFAB(BuildContext context, ColorScheme colorScheme) {
+  Widget _buildNavItemFAB(BuildContext context) {
+    final primaryColor = CupertinoTheme.of(context).primaryColor;
+
     return Container(
       width: AppSpacing.xxxl,
       height: AppSpacing.xxxl,
       decoration: BoxDecoration(
-        color: colorScheme.primary,
+        color: primaryColor,
         borderRadius: BorderRadius.circular(AppSpacing.md),
         boxShadow: [
           BoxShadow(
-            color: colorScheme.primary.withValues(alpha: 0.3),
+            color: primaryColor.withValues(alpha: 0.3),
             blurRadius: AppSpacing.sm,
             offset: const Offset(0, AppSpacing.xxs),
           ),
         ],
       ),
-      child: Icon(
-        Icons.qr_code_scanner_rounded,
-        color: colorScheme.onPrimary,
+      child: const Icon(
+        CupertinoIcons.qrcode_viewfinder,
+        color: CupertinoColors.white,
         size: AppSpacing.xl,
       ),
     );
+  }
+}
+
+/// Custom circular progress painter for iOS-style calorie tracking
+class _CircularProgressPainter extends CustomPainter {
+  _CircularProgressPainter({
+    required this.progress,
+    required this.backgroundColor,
+    required this.progressColor,
+    required this.strokeWidth,
+  });
+
+  final double progress;
+  final Color backgroundColor;
+  final Color progressColor;
+  final double strokeWidth;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = (size.width - strokeWidth) / 2;
+
+    // Background circle
+    final backgroundPaint = Paint()
+      ..color = backgroundColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.round;
+
+    canvas.drawCircle(center, radius, backgroundPaint);
+
+    // Progress arc
+    final progressPaint = Paint()
+      ..color = progressColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.round;
+
+    const startAngle = -90 * (3.14159 / 180); // Start from top
+    final sweepAngle = 2 * 3.14159 * progress.clamp(0.0, 1.0);
+
+    canvas.drawArc(
+      Rect.fromCircle(center: center, radius: radius),
+      startAngle,
+      sweepAngle,
+      false,
+      progressPaint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_CircularProgressPainter oldDelegate) {
+    return oldDelegate.progress != progress ||
+        oldDelegate.backgroundColor != backgroundColor ||
+        oldDelegate.progressColor != progressColor ||
+        oldDelegate.strokeWidth != strokeWidth;
   }
 }

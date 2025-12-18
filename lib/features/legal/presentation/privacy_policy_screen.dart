@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/theme.dart';
@@ -8,58 +8,53 @@ class PrivacyPolicyScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final primaryColor = CupertinoTheme.of(context).primaryColor;
+    final surfaceColor = CupertinoColors.systemBackground.resolveFrom(context);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Privacy Policy'),
-        backgroundColor: colorScheme.surface,
-        leading: IconButton(
-          icon: const Icon(Icons.close),
+    return CupertinoPageScaffold(
+      navigationBar: CupertinoNavigationBar(
+        middle: const Text('Privacy Policy'),
+        backgroundColor: surfaceColor,
+        border: null,
+        leading: CupertinoButton(
+          padding: EdgeInsets.zero,
           onPressed: () => context.pop(),
+          child: Icon(CupertinoIcons.xmark, color: primaryColor),
         ),
       ),
-      body: SafeArea(
+      child: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(AppSpacing.pageHorizontalPadding),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Privacy Policy',
-                style: theme.textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+              Text('Privacy Policy', style: AppleTextStyles.title1(context)),
               const SizedBox(height: AppSpacing.sm),
               Text(
                 'Last updated: December 14, 2025',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
+                style: AppleTextStyles.captionSecondary(context),
               ),
               const SizedBox(height: AppSpacing.xl),
               _buildSection(
-                theme,
+                context,
                 'Information We Collect',
                 'Vitalo collects information you provide directly, including your health data, '
                     'fitness metrics, and personal preferences to deliver personalized wellness insights.',
               ),
               _buildSection(
-                theme,
+                context,
                 'How We Use Your Data',
                 'Your data is used exclusively to provide and improve your wellness experience. '
                     'We use AI to analyze patterns and provide intelligent recommendations.',
               ),
               _buildSection(
-                theme,
+                context,
                 'Data Security',
                 'We employ industry-standard encryption and security measures to protect your '
                     'personal information. Your health data is stored securely and never sold to third parties.',
               ),
               _buildSection(
-                theme,
+                context,
                 'Your Rights',
                 'You have the right to access, modify, or delete your data at any time. '
                     'Contact us at privacy@vitalo.app for any data-related requests.',
@@ -72,20 +67,15 @@ class PrivacyPolicyScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSection(ThemeData theme, String title, String content) {
+  Widget _buildSection(BuildContext context, String title, String content) {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.lg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
-          ),
+          Text(title, style: AppleTextStyles.headline(context)),
           const SizedBox(height: AppSpacing.sm),
-          Text(content, style: theme.textTheme.bodyMedium),
+          Text(content, style: AppleTextStyles.body(context)),
         ],
       ),
     );
