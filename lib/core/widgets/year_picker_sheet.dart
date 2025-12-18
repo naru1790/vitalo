@@ -1,7 +1,8 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../theme.dart';
+import 'wheel_picker.dart';
 
 /// A styled bottom sheet with a year picker.
 /// Matches Vitalo's soft minimalistic design language.
@@ -44,6 +45,7 @@ class YearPickerSheet extends StatefulWidget {
     return showModalBottomSheet<int>(
       context: context,
       isScrollControlled: true,
+      enableDrag: false,
       backgroundColor: Colors.transparent,
       builder: (context) => YearPickerSheet(
         initialYear: effectiveInitialYear,
@@ -164,69 +166,129 @@ class _YearPickerSheetState extends State<YearPickerSheet> {
               ),
             ),
 
-            // Divider
-            Divider(height: 1, thickness: 1, color: colorScheme.outlineVariant),
+            const SizedBox(height: AppSpacing.lg),
+
+            // Large value display
+            Text(
+              '$_selectedYear',
+              style: textTheme.displayMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: colorScheme.primary,
+                height: 1,
+              ),
+            ),
+
+            const SizedBox(height: AppSpacing.lg),
 
             // Year Picker
             SizedBox(
               height: 200,
-              child: ShaderMask(
-                shaderCallback: (bounds) {
-                  return LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      colorScheme.surface.withValues(alpha: 0),
-                      colorScheme.surface,
-                      colorScheme.surface,
-                      colorScheme.surface.withValues(alpha: 0),
-                    ],
-                    stops: const [0.0, 0.15, 0.85, 1.0],
-                  ).createShader(bounds);
-                },
-                blendMode: BlendMode.dstIn,
-                child: CupertinoPicker(
-                  scrollController: _scrollController,
-                  itemExtent: 44,
-                  diameterRatio: 1.2,
-                  squeeze: 1.0,
-                  selectionOverlay: Container(
-                    decoration: BoxDecoration(
-                      border: Border.symmetric(
-                        horizontal: BorderSide(
-                          color: colorScheme.outlineVariant,
-                          width: 1,
-                        ),
+              child: Stack(
+                children: [
+                  // Year wheel
+                  ListWheelScrollView.useDelegate(
+                    controller: _scrollController,
+                    itemExtent: 50,
+                    physics: const FixedExtentScrollPhysics(),
+                    diameterRatio: 1.5,
+                    perspective: 0.003,
+                    onSelectedItemChanged: (index) {
+                      HapticFeedback.selectionClick();
+                      setState(() => _selectedYear = _indexToYear(index));
+                    },
+                    childDelegate: ListWheelChildBuilderDelegate(
+                      childCount: _yearCount,
+                      builder: (context, index) {
+                        final year = _indexToYear(index);
+                        final isSelected = year == _selectedYear;
+                        return Center(
+                          child: Text(
+                            year.toString(),
+                            style: textTheme.headlineMedium?.copyWith(
+                              color: isSelected
+                                  ? colorScheme.primary
+                                  : colorScheme.onSurfaceVariant,
+                              fontWeight: isSelected
+                                  ? FontWeight.w600
+                                  : FontWeight.w400,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+
+                  // Arrow indicators
+                  Positioned(
+                    left: AppSpacing.lg,
+                    top: 0,
+                    bottom: 0,
+                    child: Center(
+                      child: WheelArrowIndicator(
+                        direction: ArrowDirection.right,
                       ),
                     ),
                   ),
-                  onSelectedItemChanged: (index) {
-                    setState(() => _selectedYear = _indexToYear(index));
-                  },
-                  children: List.generate(_yearCount, (index) {
-                    final year = _indexToYear(index);
-                    final isSelected = year == _selectedYear;
-
-                    return Center(
-                      child: Text(
-                        year.toString(),
-                        style: textTheme.headlineSmall?.copyWith(
-                          fontWeight: isSelected
-                              ? FontWeight.w600
-                              : FontWeight.w400,
-                          color: isSelected
-                              ? colorScheme.primary
-                              : colorScheme.onSurfaceVariant,
-                        ),
+                  Positioned(
+                    right: AppSpacing.lg,
+                    top: 0,
+                    bottom: 0,
+                    child: Center(
+                      child: WheelArrowIndicator(
+                        direction: ArrowDirection.left,
                       ),
-                    );
-                  }),
-                ),
+                    ),
+                  ),
+
+                  // Gradient fades
+                  IgnorePointer(
+                    child: Stack(
+                      children: [
+                        Positioned(
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          height: 60,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  colorScheme.surface,
+                                  colorScheme.surface.withValues(alpha: 0),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          height: 60,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  colorScheme.surface.withValues(alpha: 0),
+                                  colorScheme.surface,
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
 
             // Bottom padding
-            const SizedBox(height: AppSpacing.lg),
+            const SizedBox(height: AppSpacing.xxl),
           ],
         ),
       ),

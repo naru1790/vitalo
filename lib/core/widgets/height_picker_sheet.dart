@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../theme.dart';
-import 'horizontal_ruler_picker.dart';
+import 'wheel_picker.dart';
 
 /// Height unit for the picker.
 enum HeightUnit {
@@ -37,37 +38,7 @@ class HeightResult {
   String toString() => unit == HeightUnit.cm ? '${valueCm.toInt()} cm' : asFtIn;
 }
 
-/// Unit configurations for height.
-const _cmUnit = RulerUnit(
-  label: 'cm',
-  minValue: 100.0,
-  maxValue: 250.0,
-  defaultValue: 170.0,
-  precision: 0, // whole numbers only
-  majorTickInterval: 10.0,
-  minorTickInterval: 5.0,
-);
-
-/// Formats inches as feet'inches" for ruler labels
-String _formatInchesLabel(double inches) {
-  final feet = (inches / 12).floor();
-  final remainingInches = (inches % 12).round();
-  return "$feet'$remainingInches\"";
-}
-
-/// Feet ruler - values in inches for precision, displayed as feet'inches"
-const _inchesUnit = RulerUnit(
-  label: 'in',
-  minValue: 39.0, // ~100cm = 39.4 inches
-  maxValue: 98.0, // ~250cm = 98.4 inches
-  defaultValue: 67.0, // ~170cm = 66.9 inches
-  precision: 0,
-  majorTickInterval: 6.0, // Every 6 inches (half foot)
-  minorTickInterval: 1.0, // Every inch
-  labelFormatter: _formatInchesLabel,
-);
-
-/// A horizontal scrollable scale for height selection.
+/// A Cupertino-style wheel picker for height selection.
 class HeightPickerSheet extends StatefulWidget {
   const HeightPickerSheet({
     super.key,
@@ -86,11 +57,12 @@ class HeightPickerSheet extends StatefulWidget {
     double? initialHeightCm,
     HeightUnit initialUnit = HeightUnit.cm,
   }) async {
-    final effectiveHeight = initialHeightCm ?? _cmUnit.defaultValue;
+    final effectiveHeight = initialHeightCm ?? 170.0;
 
     return showModalBottomSheet<HeightResult>(
       context: context,
       isScrollControlled: true,
+      enableDrag: false,
       backgroundColor: Colors.transparent,
       builder: (context) => HeightPickerSheet(
         initialHeightCm: effectiveHeight,
@@ -106,28 +78,43 @@ class HeightPickerSheet extends StatefulWidget {
 
 class _HeightPickerSheetState extends State<HeightPickerSheet>
     with SingleTickerProviderStateMixin {
-  double _currentValueCm = 170.0;
-  double _currentValueInches = 67.0;
-  HeightUnit _currentUnit = HeightUnit.cm;
-  AnimationController? _animationController;
+  late int _feet;
+  late int _inches;
+  late double _cm;
+  late HeightUnit _currentUnit;
+  late AnimationController _animationController;
 
-  RulerUnit get _unit => _currentUnit == HeightUnit.cm ? _cmUnit : _inchesUnit;
+  late FixedExtentScrollController _feetController;
+  late FixedExtentScrollController _inchesController;
+  late FixedExtentScrollController _cmController;
 
-  double get _rulerValue =>
-      _currentUnit == HeightUnit.cm ? _currentValueCm : _currentValueInches;
+  // CM range: 100-250cm
+  static const _minCm = 100;
+  static const _maxCm = 250;
+
+  // Feet range: 3-8 feet
+  static const _minFeet = 3;
+  static const _maxFeet = 8;
 
   @override
   void initState() {
     super.initState();
-    _currentValueCm = widget.initialHeightCm.clamp(
-      _cmUnit.minValue,
-      _cmUnit.maxValue,
-    );
-    _currentValueInches = (_currentValueCm / 2.54).roundToDouble().clamp(
-      _inchesUnit.minValue,
-      _inchesUnit.maxValue,
-    );
     _currentUnit = widget.initialUnit;
+
+    // Initialize values
+    _cm = widget.initialHeightCm.clamp(_minCm.toDouble(), _maxCm.toDouble());
+    final totalInches = _cm / 2.54;
+    _feet = (totalInches / 12).floor().clamp(_minFeet, _maxFeet);
+    _inches = (totalInches % 12).round().clamp(0, 11);
+
+    // Initialize controllers
+    _cmController = FixedExtentScrollController(
+      initialItem: _cm.toInt() - _minCm,
+    );
+    _feetController = FixedExtentScrollController(
+      initialItem: _feet - _minFeet,
+    );
+    _inchesController = FixedExtentScrollController(initialItem: _inches);
 
     _animationController = AnimationController(
       vsync: this,
@@ -135,64 +122,95 @@ class _HeightPickerSheetState extends State<HeightPickerSheet>
     );
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _animationController?.forward();
+      _animationController.forward();
     });
   }
 
   @override
   void dispose() {
-    _animationController?.dispose();
+    _animationController.dispose();
+    _cmController.dispose();
+    _feetController.dispose();
+    _inchesController.dispose();
     super.dispose();
   }
 
   void _toggleUnit() {
-    setState(() {
-      if (_currentUnit == HeightUnit.cm) {
-        // Switching to ft/in - convert cm to inches
-        _currentValueInches = (_currentValueCm / 2.54).roundToDouble().clamp(
-          _inchesUnit.minValue,
-          _inchesUnit.maxValue,
-        );
+    if (_currentUnit == HeightUnit.cm) {
+      // Sync feet/inches from current cm
+      final totalInches = _cm / 2.54;
+      _feet = (totalInches / 12).floor().clamp(_minFeet, _maxFeet);
+      _inches = (totalInches % 12).round().clamp(0, 11);
+
+      setState(() {
         _currentUnit = HeightUnit.ftIn;
-      } else {
-        // Switching to cm - convert inches to cm
-        _currentValueCm = (_currentValueInches * 2.54).roundToDouble().clamp(
-          _cmUnit.minValue,
-          _cmUnit.maxValue,
-        );
+      });
+
+      // Jump after frame renders (controller attached to new widget)
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _feetController.jumpToItem(_feet - _minFeet);
+        _inchesController.jumpToItem(_inches);
+      });
+    } else {
+      // Sync cm from current feet/inches
+      _cm = ((_feet * 12 + _inches) * 2.54).roundToDouble().clamp(
+        _minCm.toDouble(),
+        _maxCm.toDouble(),
+      );
+
+      setState(() {
         _currentUnit = HeightUnit.cm;
-      }
+      });
+
+      // Jump after frame renders
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _cmController.jumpToItem(_cm.toInt() - _minCm);
+      });
+    }
+  }
+
+  void _onCmChanged(int index) {
+    HapticFeedback.selectionClick();
+    setState(() {
+      _cm = (index + _minCm).toDouble();
+      // Keep feet/inches in sync
+      final totalInches = _cm / 2.54;
+      _feet = (totalInches / 12).floor().clamp(_minFeet, _maxFeet);
+      _inches = (totalInches % 12).round().clamp(0, 11);
     });
   }
 
-  void _onRulerChanged(double value) {
+  void _onFeetChanged(int index) {
+    HapticFeedback.selectionClick();
     setState(() {
-      if (_currentUnit == HeightUnit.cm) {
-        _currentValueCm = value;
-        _currentValueInches = (value / 2.54).roundToDouble().clamp(
-          _inchesUnit.minValue,
-          _inchesUnit.maxValue,
-        );
-      } else {
-        _currentValueInches = value;
-        _currentValueCm = (value * 2.54).roundToDouble().clamp(
-          _cmUnit.minValue,
-          _cmUnit.maxValue,
-        );
-      }
+      _feet = index + _minFeet;
+      _cm = ((_feet * 12 + _inches) * 2.54).roundToDouble().clamp(
+        _minCm.toDouble(),
+        _maxCm.toDouble(),
+      );
+    });
+  }
+
+  void _onInchesChanged(int index) {
+    HapticFeedback.selectionClick();
+    setState(() {
+      _inches = index;
+      _cm = ((_feet * 12 + _inches) * 2.54).roundToDouble().clamp(
+        _minCm.toDouble(),
+        _maxCm.toDouble(),
+      );
     });
   }
 
   void _confirmSelection() {
-    widget.onHeightSelected(
-      HeightResult(valueCm: _currentValueCm, unit: _currentUnit),
-    );
+    widget.onHeightSelected(HeightResult(valueCm: _cm, unit: _currentUnit));
   }
 
-  String _formatFeetInches(double inches) {
-    final feet = (inches / 12).floor();
-    final remainingInches = (inches % 12).round();
-    return "$feet'$remainingInches\"";
+  String get _displayValue {
+    if (_currentUnit == HeightUnit.cm) {
+      return '${_cm.toInt()} cm';
+    }
+    return "$_feet'$_inches\"";
   }
 
   @override
@@ -200,176 +218,374 @@ class _HeightPickerSheetState extends State<HeightPickerSheet>
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    final controller = _animationController;
-    if (controller == null) {
-      return _buildContent(colorScheme, textTheme);
-    }
-
     return AnimatedBuilder(
-      animation: controller,
+      animation: _animationController,
       builder: (context, child) {
-        final slideOffset = Offset(0, 1 - controller.value);
+        final slideOffset = Offset(0, 1 - _animationController.value);
         return FractionalTranslation(translation: slideOffset, child: child);
       },
-      child: _buildContent(colorScheme, textTheme),
-    );
-  }
-
-  Widget _buildContent(ColorScheme colorScheme, TextTheme textTheme) {
-    return Container(
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(AppSpacing.cardRadiusLarge),
+      child: Container(
+        decoration: BoxDecoration(
+          color: colorScheme.surface,
+          borderRadius: const BorderRadius.vertical(
+            top: Radius.circular(AppSpacing.cardRadiusLarge),
+          ),
         ),
-      ),
-      child: SafeArea(
-        top: false,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Drag handle
-            Padding(
-              padding: const EdgeInsets.only(top: AppSpacing.sm),
-              child: Container(
-                width: 32,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: colorScheme.outlineVariant,
-                  borderRadius: BorderRadius.circular(2),
+        child: SafeArea(
+          top: false,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Drag handle
+              Padding(
+                padding: const EdgeInsets.only(top: AppSpacing.sm),
+                child: Container(
+                  width: 32,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: colorScheme.outlineVariant,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
               ),
-            ),
 
-            // Header with Done button
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.xl,
-                AppSpacing.lg,
-                AppSpacing.xl,
-                AppSpacing.sm,
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Height',
-                          style: textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: colorScheme.onSurface,
+              // Header with Done button
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.xl,
+                  AppSpacing.lg,
+                  AppSpacing.xl,
+                  AppSpacing.sm,
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Height',
+                            style: textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.w600,
+                              color: colorScheme.onSurface,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: AppSpacing.xxs),
-                        Text(
-                          'Slide the scale to set your height',
-                          style: textTheme.bodySmall?.copyWith(
-                            color: colorScheme.onSurfaceVariant,
+                          const SizedBox(height: AppSpacing.xxs),
+                          Text(
+                            'Scroll to set your height',
+                            style: textTheme.bodySmall?.copyWith(
+                              color: colorScheme.onSurfaceVariant,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  FilledButton(
-                    onPressed: _confirmSelection,
-                    style: FilledButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.lg,
-                        vertical: AppSpacing.sm,
+                        ],
                       ),
-                      minimumSize: Size.zero,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
-                    child: const Text('Done'),
-                  ),
-                ],
+                    FilledButton(
+                      onPressed: _confirmSelection,
+                      style: FilledButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.lg,
+                          vertical: AppSpacing.sm,
+                        ),
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      child: const Text('Done'),
+                    ),
+                  ],
+                ),
               ),
-            ),
 
-            const SizedBox(height: AppSpacing.xl),
+              const SizedBox(height: AppSpacing.lg),
 
-            // Large value display - fixed height to prevent layout shifts
-            SizedBox(
-              height: 80,
-              child: _buildHeightDisplay(colorScheme, textTheme),
-            ),
+              // Large value display
+              Text(
+                _displayValue,
+                style: textTheme.displayMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: colorScheme.primary,
+                  height: 1,
+                ),
+              ),
 
-            const SizedBox(height: AppSpacing.lg),
+              const SizedBox(height: AppSpacing.lg),
 
-            // Unit toggle
-            RulerUnitToggle(
-              options: const ['cm', 'ft/in'],
-              selectedIndex: _currentUnit == HeightUnit.cm ? 0 : 1,
-              onChanged: (_) => _toggleUnit(),
-            ),
+              // Unit toggle
+              WheelUnitToggle(
+                options: const ['cm', 'ft/in'],
+                selectedIndex: _currentUnit == HeightUnit.cm ? 0 : 1,
+                onChanged: (_) => _toggleUnit(),
+              ),
 
-            const SizedBox(height: AppSpacing.xl),
+              const SizedBox(height: AppSpacing.lg),
 
-            // Horizontal scale
-            HorizontalRulerPicker(
-              key: ValueKey(_currentUnit),
-              value: _rulerValue,
-              unit: _unit,
-              onChanged: _onRulerChanged,
-            ),
+              // Wheel picker - uniform height container
+              SizedBox(
+                height: 220,
+                child: _currentUnit == HeightUnit.cm
+                    ? _buildCmPicker(colorScheme, textTheme)
+                    : _buildFeetInchesPicker(colorScheme, textTheme),
+              ),
 
-            const SizedBox(height: AppSpacing.xxl),
-          ],
+              const SizedBox(height: AppSpacing.xxl),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildHeightDisplay(ColorScheme colorScheme, TextTheme textTheme) {
-    if (_currentUnit == HeightUnit.ftIn) {
-      // Display as feet'inches"
-      return Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.baseline,
-        textBaseline: TextBaseline.alphabetic,
-        children: [
-          Text(
-            _formatFeetInches(_currentValueInches),
-            style: textTheme.displayLarge?.copyWith(
-              fontSize: 72,
-              fontWeight: FontWeight.w600,
-              color: colorScheme.onSurface,
-              height: 1,
-            ),
-          ),
-        ],
-      );
-    }
-
-    // Display as cm (whole number)
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.baseline,
-      textBaseline: TextBaseline.alphabetic,
+  Widget _buildCmPicker(ColorScheme colorScheme, TextTheme textTheme) {
+    return Column(
       children: [
-        Text(
-          '${_currentValueCm.toInt()}',
-          style: textTheme.displayLarge?.copyWith(
-            fontSize: 72,
-            fontWeight: FontWeight.w600,
-            color: colorScheme.onSurface,
-            height: 1,
-          ),
-        ),
-        const SizedBox(width: AppSpacing.xs),
-        Padding(
-          padding: const EdgeInsets.only(bottom: 8),
-          child: Text(
-            'cm',
-            style: textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.w500,
-              color: colorScheme.onSurfaceVariant,
-            ),
+        // Spacer to match ft/in header height
+        SizedBox(height: AppSpacing.xs + 20), // labelMedium height + spacing
+        // Wheel with arrows
+        Expanded(
+          child: Stack(
+            children: [
+              // CM wheel
+              ListWheelScrollView.useDelegate(
+                controller: _cmController,
+                itemExtent: 50,
+                physics: const FixedExtentScrollPhysics(),
+                diameterRatio: 1.5,
+                perspective: 0.003,
+                onSelectedItemChanged: _onCmChanged,
+                childDelegate: ListWheelChildBuilderDelegate(
+                  childCount: _maxCm - _minCm + 1,
+                  builder: (context, index) {
+                    final cm = index + _minCm;
+                    final isSelected = cm == _cm.toInt();
+                    return Center(
+                      child: Text(
+                        '$cm',
+                        style: textTheme.headlineMedium?.copyWith(
+                          color: isSelected
+                              ? colorScheme.primary
+                              : colorScheme.onSurfaceVariant,
+                          fontWeight: isSelected
+                              ? FontWeight.w600
+                              : FontWeight.w400,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+
+              // Arrow indicators on both sides
+              Positioned(
+                left: AppSpacing.lg,
+                top: 0,
+                bottom: 0,
+                child: Center(
+                  child: WheelArrowIndicator(direction: ArrowDirection.right),
+                ),
+              ),
+              Positioned(
+                right: AppSpacing.lg,
+                top: 0,
+                bottom: 0,
+                child: Center(
+                  child: WheelArrowIndicator(direction: ArrowDirection.left),
+                ),
+              ),
+
+              // Gradient fades
+              _buildGradientOverlays(colorScheme),
+            ],
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildFeetInchesPicker(ColorScheme colorScheme, TextTheme textTheme) {
+    // Arrow width + padding for proper centering
+    const arrowSpace = AppSpacing.lg + 12;
+
+    return Column(
+      children: [
+        // Headers for feet and inches - aligned with wheels
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: arrowSpace),
+          child: Row(
+            children: [
+              Expanded(
+                child: Center(
+                  child: Text(
+                    'Feet',
+                    style: textTheme.labelMedium?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Center(
+                  child: Text(
+                    'Inches',
+                    style: textTheme.labelMedium?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: AppSpacing.xs),
+
+        // Wheels with arrows
+        Expanded(
+          child: Stack(
+            children: [
+              // Feet and inches wheels side by side - with padding for arrows
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: arrowSpace),
+                child: Row(
+                  children: [
+                    // Feet wheel
+                    Expanded(
+                      child: ListWheelScrollView.useDelegate(
+                        controller: _feetController,
+                        itemExtent: 50,
+                        physics: const FixedExtentScrollPhysics(),
+                        diameterRatio: 1.5,
+                        perspective: 0.003,
+                        onSelectedItemChanged: _onFeetChanged,
+                        childDelegate: ListWheelChildBuilderDelegate(
+                          childCount: _maxFeet - _minFeet + 1,
+                          builder: (context, index) {
+                            final feet = index + _minFeet;
+                            final isSelected = feet == _feet;
+                            return Center(
+                              child: Text(
+                                "$feet'",
+                                style: textTheme.headlineMedium?.copyWith(
+                                  color: isSelected
+                                      ? colorScheme.primary
+                                      : colorScheme.onSurfaceVariant,
+                                  fontWeight: isSelected
+                                      ? FontWeight.w600
+                                      : FontWeight.w400,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+
+                    // Inches wheel
+                    Expanded(
+                      child: ListWheelScrollView.useDelegate(
+                        controller: _inchesController,
+                        itemExtent: 50,
+                        physics: const FixedExtentScrollPhysics(),
+                        diameterRatio: 1.5,
+                        perspective: 0.003,
+                        onSelectedItemChanged: _onInchesChanged,
+                        childDelegate: ListWheelChildBuilderDelegate(
+                          childCount: 12, // 0-11 inches
+                          builder: (context, index) {
+                            final isSelected = index == _inches;
+                            return Center(
+                              child: Text(
+                                '$index"',
+                                style: textTheme.headlineMedium?.copyWith(
+                                  color: isSelected
+                                      ? colorScheme.primary
+                                      : colorScheme.onSurfaceVariant,
+                                  fontWeight: isSelected
+                                      ? FontWeight.w600
+                                      : FontWeight.w400,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Arrow indicators - outer edges only
+              Positioned(
+                left: AppSpacing.lg,
+                top: 0,
+                bottom: 0,
+                child: Center(
+                  child: WheelArrowIndicator(direction: ArrowDirection.right),
+                ),
+              ),
+              Positioned(
+                right: AppSpacing.lg,
+                top: 0,
+                bottom: 0,
+                child: Center(
+                  child: WheelArrowIndicator(direction: ArrowDirection.left),
+                ),
+              ),
+
+              // Gradient fades
+              _buildGradientOverlays(colorScheme),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildGradientOverlays(ColorScheme colorScheme) {
+    return IgnorePointer(
+      child: Stack(
+        children: [
+          // Top gradient
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 60,
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    colorScheme.surface,
+                    colorScheme.surface.withValues(alpha: 0),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          // Bottom gradient
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: 60,
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    colorScheme.surface.withValues(alpha: 0),
+                    colorScheme.surface,
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

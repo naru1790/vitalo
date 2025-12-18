@@ -2,7 +2,7 @@
 // BODY & HEALTH SECTION - Soft Minimalist Design
 // =============================================================================
 // Matches the standard profile section design (same as Personal Info, etc.)
-// Uses HorizontalRulerPicker for waist measurement.
+// Uses WheelPicker for waist measurement (Cupertino-style wheel).
 // Follows dietary preferences pattern for "+Other" chip with inline input.
 // =============================================================================
 
@@ -11,9 +11,9 @@ import 'package:flutter/services.dart';
 import 'package:vitalo/core/theme.dart';
 import 'package:vitalo/core/widgets/app_segmented_button.dart';
 import 'package:vitalo/core/widgets/height_picker_sheet.dart';
-import 'package:vitalo/core/widgets/horizontal_ruler_picker.dart';
 import 'package:vitalo/core/widgets/profile_row.dart';
 import 'package:vitalo/core/widgets/weight_picker_sheet.dart';
+import 'package:vitalo/core/widgets/wheel_picker.dart';
 
 /// Predefined health conditions with simple, user-friendly labels
 /// Focus on conditions that significantly impact diet/nutrition recommendations
@@ -169,6 +169,7 @@ class _BodyHealthCardState extends State<BodyHealthCard> {
     final result = await showModalBottomSheet<double?>(
       context: context,
       isScrollControlled: true,
+      enableDrag: false,
       backgroundColor: colorScheme.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(
@@ -554,6 +555,11 @@ class _HealthConditionsSheetState extends State<_HealthConditionsSheet> {
                           ? colorScheme.primary
                           : colorScheme.outlineVariant,
                     ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(
+                        AppSpacing.buttonRadius,
+                      ),
+                    ),
                     labelStyle: textTheme.labelMedium?.copyWith(
                       color: !_hasAnyCondition
                           ? colorScheme.onPrimaryContainer
@@ -577,6 +583,11 @@ class _HealthConditionsSheetState extends State<_HealthConditionsSheet> {
                         color: isSelected
                             ? colorScheme.primary
                             : colorScheme.outlineVariant,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(
+                          AppSpacing.buttonRadius,
+                        ),
                       ),
                       labelStyle: textTheme.labelMedium?.copyWith(
                         color: isSelected
@@ -721,7 +732,7 @@ class _HealthConditionsSheetState extends State<_HealthConditionsSheet> {
   }
 }
 
-/// Waist picker sheet matching weight/height picker design
+/// Waist picker sheet using Cupertino-style wheel picker
 class _WaistPickerSheet extends StatefulWidget {
   final double? initialValue;
   final bool isMetric;
@@ -742,56 +753,65 @@ class _WaistPickerSheet extends StatefulWidget {
 class _WaistPickerSheetState extends State<_WaistPickerSheet> {
   late double _valueCm;
   late bool _isMetric;
+  late FixedExtentScrollController _controller;
 
-  // Ruler units for waist - realistic ranges
+  // Waist ranges
   // Men: 65-130 cm (26-51 in), Women: 55-115 cm (22-45 in)
   // Using combined range to cover both
-  static const _cmUnit = RulerUnit(
-    label: 'cm',
-    minValue: 50,
-    maxValue: 150,
-    defaultValue: 80,
-    precision: 0,
-    majorTickInterval: 10,
-    minorTickInterval: 1,
-  );
-
-  static const _inchUnit = RulerUnit(
-    label: 'in',
-    minValue: 20,
-    maxValue: 59,
-    defaultValue: 32,
-    precision: 0,
-    majorTickInterval: 5,
-    minorTickInterval: 1,
-  );
-
-  RulerUnit get _unit => _isMetric ? _cmUnit : _inchUnit;
+  static const _minCm = 50;
+  static const _maxCm = 150;
+  static const _minInch = 20;
+  static const _maxInch = 59;
 
   @override
   void initState() {
     super.initState();
-    _valueCm = widget.initialValue ?? 80.0;
+    _valueCm =
+        widget.initialValue?.clamp(_minCm.toDouble(), _maxCm.toDouble()) ??
+        80.0;
     _isMetric = widget.isMetric;
+    _controller = FixedExtentScrollController(
+      initialItem: _isMetric
+          ? _valueCm.toInt() - _minCm
+          : (_valueCm / 2.54).round() - _minInch,
+    );
   }
 
-  double get _displayValue {
-    if (_isMetric) return _valueCm;
-    return _valueCm / 2.54; // Convert to inches
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
+
+  int get _displayValue {
+    if (_isMetric) return _valueCm.toInt();
+    return (_valueCm / 2.54).round();
+  }
+
+  String get _unitLabel => _isMetric ? 'cm' : 'in';
 
   void _toggleUnit() {
     setState(() {
       _isMetric = !_isMetric;
     });
+
+    // Jump after frame renders (controller needs to be attached)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_isMetric) {
+        _controller.jumpToItem(_valueCm.toInt() - _minCm);
+      } else {
+        _controller.jumpToItem((_valueCm / 2.54).round() - _minInch);
+      }
+    });
   }
 
-  void _onValueChanged(double value) {
+  void _onValueChanged(int index) {
+    HapticFeedback.selectionClick();
     setState(() {
       if (_isMetric) {
-        _valueCm = value;
+        _valueCm = (index + _minCm).toDouble();
       } else {
-        _valueCm = value * 2.54; // Convert to cm for storage
+        _valueCm = (index + _minInch) * 2.54;
       }
     });
   }
@@ -804,6 +824,9 @@ class _WaistPickerSheetState extends State<_WaistPickerSheet> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+
+    final itemCount = _isMetric ? _maxCm - _minCm + 1 : _maxInch - _minInch + 1;
+    final minVal = _isMetric ? _minCm : _minInch;
 
     return Container(
       decoration: BoxDecoration(
@@ -853,7 +876,7 @@ class _WaistPickerSheetState extends State<_WaistPickerSheet> {
                         ),
                         const SizedBox(height: AppSpacing.xxs),
                         Text(
-                          'Slide the scale to set your waist size',
+                          'Scroll to set your waist size',
                           style: textTheme.bodySmall?.copyWith(
                             color: colorScheme.onSurfaceVariant,
                           ),
@@ -908,32 +931,134 @@ class _WaistPickerSheetState extends State<_WaistPickerSheet> {
               ),
             ),
 
-            const SizedBox(height: AppSpacing.xl),
+            const SizedBox(height: AppSpacing.lg),
 
             // Large value display
-            RulerValueDisplay(
-              value: _displayValue,
-              unitLabel: _unit.label,
-              precision: _unit.precision,
+            Text(
+              '$_displayValue $_unitLabel',
+              style: textTheme.displayMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: colorScheme.primary,
+                height: 1,
+              ),
             ),
 
             const SizedBox(height: AppSpacing.lg),
 
             // Unit toggle
-            RulerUnitToggle(
+            WheelUnitToggle(
               options: const ['cm', 'in'],
               selectedIndex: _isMetric ? 0 : 1,
               onChanged: (_) => _toggleUnit(),
             ),
 
-            const SizedBox(height: AppSpacing.xl),
+            const SizedBox(height: AppSpacing.lg),
 
-            // Horizontal scale
-            HorizontalRulerPicker(
-              key: ValueKey(_isMetric),
-              value: _displayValue,
-              unit: _unit,
-              onChanged: _onValueChanged,
+            // Wheel picker
+            SizedBox(
+              height: 200,
+              child: Stack(
+                children: [
+                  // Value wheel
+                  ListWheelScrollView.useDelegate(
+                    controller: _controller,
+                    itemExtent: 50,
+                    physics: const FixedExtentScrollPhysics(),
+                    diameterRatio: 1.5,
+                    perspective: 0.003,
+                    onSelectedItemChanged: _onValueChanged,
+                    childDelegate: ListWheelChildBuilderDelegate(
+                      childCount: itemCount,
+                      builder: (context, index) {
+                        final value = index + minVal;
+                        final isSelected = value == _displayValue;
+                        return Center(
+                          child: Text(
+                            '$value',
+                            style: textTheme.headlineMedium?.copyWith(
+                              color: isSelected
+                                  ? colorScheme.primary
+                                  : colorScheme.onSurfaceVariant,
+                              fontWeight: isSelected
+                                  ? FontWeight.w600
+                                  : FontWeight.w400,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+
+                  // Arrow indicators
+                  Positioned(
+                    left: AppSpacing.lg,
+                    top: 0,
+                    bottom: 0,
+                    child: Center(
+                      child: WheelArrowIndicator(
+                        direction: ArrowDirection.right,
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    right: AppSpacing.lg,
+                    top: 0,
+                    bottom: 0,
+                    child: Center(
+                      child: WheelArrowIndicator(
+                        direction: ArrowDirection.left,
+                      ),
+                    ),
+                  ),
+
+                  // Gradient fades
+                  IgnorePointer(
+                    child: Stack(
+                      children: [
+                        // Top gradient
+                        Positioned(
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          height: 60,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  colorScheme.surface,
+                                  colorScheme.surface.withValues(alpha: 0),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        // Bottom gradient
+                        Positioned(
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          height: 60,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  colorScheme.surface.withValues(alpha: 0),
+                                  colorScheme.surface,
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
 
             const SizedBox(height: AppSpacing.xxl),

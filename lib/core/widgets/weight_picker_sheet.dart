@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../theme.dart';
-import 'horizontal_ruler_picker.dart';
+import 'wheel_picker.dart';
 
 /// Weight unit for the picker.
 enum WeightUnit {
@@ -26,32 +27,12 @@ class WeightResult {
   double get asLbs => unit == WeightUnit.lbs ? value : value * 2.20462;
 
   @override
-  String toString() => '${value.toStringAsFixed(1)} ${unit.label}';
+  String toString() =>
+      '${value.toStringAsFixed(unit == WeightUnit.kg ? 2 : 0)} ${unit.label}';
 }
 
-/// Unit configurations for weight.
-const _kgUnit = RulerUnit(
-  label: 'kg',
-  minValue: 20.0,
-  maxValue: 250.0,
-  defaultValue: 70.0,
-  precision: 1,
-  majorTickInterval: 1.0,
-  minorTickInterval: 0.5,
-);
-
-const _lbsUnit = RulerUnit(
-  label: 'lbs',
-  minValue: 44.0,
-  maxValue: 551.0,
-  defaultValue: 154.0,
-  precision: 1,
-  majorTickInterval: 1.0,
-  minorTickInterval: 0.5,
-);
-
-/// A horizontal scrollable scale for weight selection.
-/// Mimics a physical medical scale for intuitive input.
+/// A Cupertino-style wheel picker for weight selection.
+/// Uses dual wheels for kg (whole kg + grams) and single wheel for lbs.
 class WeightPickerSheet extends StatefulWidget {
   const WeightPickerSheet({
     super.key,
@@ -70,12 +51,12 @@ class WeightPickerSheet extends StatefulWidget {
     double? initialWeight,
     WeightUnit initialUnit = WeightUnit.kg,
   }) async {
-    final unit = initialUnit == WeightUnit.kg ? _kgUnit : _lbsUnit;
-    final effectiveWeight = initialWeight ?? unit.defaultValue;
+    final effectiveWeight = initialWeight ?? 70.0;
 
     return showModalBottomSheet<WeightResult>(
       context: context,
       isScrollControlled: true,
+      enableDrag: false,
       backgroundColor: Colors.transparent,
       builder: (context) => WeightPickerSheet(
         initialWeight: effectiveWeight,
@@ -91,17 +72,52 @@ class WeightPickerSheet extends StatefulWidget {
 
 class _WeightPickerSheetState extends State<WeightPickerSheet>
     with SingleTickerProviderStateMixin {
-  late double _currentValue;
   late WeightUnit _currentUnit;
   late AnimationController _animationController;
 
-  RulerUnit get _unit => _currentUnit == WeightUnit.kg ? _kgUnit : _lbsUnit;
+  // For kg mode: dual wheels (whole kg + grams)
+  late int _wholeKg;
+  late int _grams; // 0-99
+  late FixedExtentScrollController _kgController;
+  late FixedExtentScrollController _gramsController;
+
+  // For lbs mode: single wheel
+  late int _lbs;
+  late FixedExtentScrollController _lbsController;
+
+  // Ranges
+  static const _minKg = 20;
+  static const _maxKg = 250;
+  static const _minLbs = 44;
+  static const _maxLbs = 551;
+
+  double get _currentValueKg => _wholeKg + (_grams / 100);
+  double get _currentValueLbs => _lbs.toDouble();
+  double get _currentValue =>
+      _currentUnit == WeightUnit.kg ? _currentValueKg : _currentValueLbs;
 
   @override
   void initState() {
     super.initState();
-    _currentValue = widget.initialWeight;
     _currentUnit = widget.initialUnit;
+
+    // Initialize kg values
+    final kgValue = widget.initialUnit == WeightUnit.kg
+        ? widget.initialWeight
+        : widget.initialWeight * 0.453592;
+    _wholeKg = kgValue.floor().clamp(_minKg, _maxKg);
+    _grams = ((kgValue - _wholeKg) * 100).round().clamp(0, 99);
+
+    // Initialize lbs value
+    final lbsValue = widget.initialUnit == WeightUnit.lbs
+        ? widget.initialWeight
+        : widget.initialWeight * 2.20462;
+    _lbs = lbsValue.round().clamp(_minLbs, _maxLbs);
+
+    // Initialize controllers
+    _kgController = FixedExtentScrollController(initialItem: _wholeKg - _minKg);
+    _gramsController = FixedExtentScrollController(initialItem: _grams);
+    _lbsController = FixedExtentScrollController(initialItem: _lbs - _minLbs);
 
     _animationController = AnimationController(
       vsync: this,
@@ -116,19 +132,57 @@ class _WeightPickerSheetState extends State<WeightPickerSheet>
   @override
   void dispose() {
     _animationController.dispose();
+    _kgController.dispose();
+    _gramsController.dispose();
+    _lbsController.dispose();
     super.dispose();
   }
 
   void _toggleUnit() {
     setState(() {
       if (_currentUnit == WeightUnit.kg) {
-        _currentValue = (_currentValue * 2.20462 * 10).round() / 10;
+        // Convert kg to lbs
+        _lbs = (_currentValueKg * 2.20462).round().clamp(_minLbs, _maxLbs);
+        _lbsController.jumpToItem(_lbs - _minLbs);
         _currentUnit = WeightUnit.lbs;
       } else {
-        _currentValue = (_currentValue * 0.453592 * 10).round() / 10;
+        // Convert lbs to kg
+        final kgValue = _lbs * 0.453592;
+        _wholeKg = kgValue.floor().clamp(_minKg, _maxKg);
+        _grams = ((kgValue - _wholeKg) * 100).round().clamp(0, 99);
+        _kgController.jumpToItem(_wholeKg - _minKg);
+        _gramsController.jumpToItem(_grams);
         _currentUnit = WeightUnit.kg;
       }
-      _currentValue = _currentValue.clamp(_unit.minValue, _unit.maxValue);
+    });
+  }
+
+  void _onKgChanged(int index) {
+    HapticFeedback.selectionClick();
+    setState(() {
+      _wholeKg = index + _minKg;
+      // Keep lbs in sync
+      _lbs = (_currentValueKg * 2.20462).round().clamp(_minLbs, _maxLbs);
+    });
+  }
+
+  void _onGramsChanged(int index) {
+    HapticFeedback.selectionClick();
+    setState(() {
+      _grams = index;
+      // Keep lbs in sync
+      _lbs = (_currentValueKg * 2.20462).round().clamp(_minLbs, _maxLbs);
+    });
+  }
+
+  void _onLbsChanged(int index) {
+    HapticFeedback.selectionClick();
+    setState(() {
+      _lbs = index + _minLbs;
+      // Keep kg in sync
+      final kgValue = _lbs * 0.453592;
+      _wholeKg = kgValue.floor().clamp(_minKg, _maxKg);
+      _grams = ((kgValue - _wholeKg) * 100).round().clamp(0, 99);
     });
   }
 
@@ -136,6 +190,13 @@ class _WeightPickerSheetState extends State<WeightPickerSheet>
     widget.onWeightSelected(
       WeightResult(value: _currentValue, unit: _currentUnit),
     );
+  }
+
+  String get _displayValue {
+    if (_currentUnit == WeightUnit.kg) {
+      return '$_wholeKg.${_grams.toString().padLeft(2, '0')} kg';
+    }
+    return '$_lbs lbs';
   }
 
   @override
@@ -197,7 +258,7 @@ class _WeightPickerSheetState extends State<WeightPickerSheet>
                           ),
                           const SizedBox(height: AppSpacing.xxs),
                           Text(
-                            'Slide the scale to set your weight',
+                            'Scroll to set your weight',
                             style: textTheme.bodySmall?.copyWith(
                               color: colorScheme.onSurfaceVariant,
                             ),
@@ -221,38 +282,307 @@ class _WeightPickerSheetState extends State<WeightPickerSheet>
                 ),
               ),
 
-              const SizedBox(height: AppSpacing.xl),
+              const SizedBox(height: AppSpacing.lg),
 
               // Large value display
-              RulerValueDisplay(
-                value: _currentValue,
-                unitLabel: _unit.label,
-                precision: _unit.precision,
+              Text(
+                _displayValue,
+                style: textTheme.displayMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: colorScheme.primary,
+                  height: 1,
+                ),
               ),
 
               const SizedBox(height: AppSpacing.lg),
 
               // Unit toggle
-              RulerUnitToggle(
+              WheelUnitToggle(
                 options: const ['kg', 'lbs'],
                 selectedIndex: _currentUnit == WeightUnit.kg ? 0 : 1,
                 onChanged: (_) => _toggleUnit(),
               ),
 
-              const SizedBox(height: AppSpacing.xl),
+              const SizedBox(height: AppSpacing.lg),
 
-              // Horizontal scale
-              HorizontalRulerPicker(
-                key: ValueKey(_currentUnit),
-                value: _currentValue,
-                unit: _unit,
-                onChanged: (value) => setState(() => _currentValue = value),
+              // Wheel picker - different layout for kg vs lbs
+              SizedBox(
+                height: 220,
+                child: _currentUnit == WeightUnit.kg
+                    ? _buildKgPicker(colorScheme, textTheme)
+                    : _buildLbsPicker(colorScheme, textTheme),
               ),
 
               const SizedBox(height: AppSpacing.xxl),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildKgPicker(ColorScheme colorScheme, TextTheme textTheme) {
+    const arrowSpace = AppSpacing.lg + 12;
+
+    return Column(
+      children: [
+        // Headers for kg and grams - aligned with wheels
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: arrowSpace),
+          child: Row(
+            children: [
+              Expanded(
+                child: Center(
+                  child: Text(
+                    'kg',
+                    style: textTheme.labelMedium?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Center(
+                  child: Text(
+                    'g',
+                    style: textTheme.labelMedium?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: AppSpacing.xs),
+
+        // Wheels with arrows
+        Expanded(
+          child: Stack(
+            children: [
+              // Kg and grams wheels side by side - with padding for arrows
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: arrowSpace),
+                child: Row(
+                  children: [
+                    // Whole kg wheel
+                    Expanded(
+                      child: ListWheelScrollView.useDelegate(
+                        controller: _kgController,
+                        itemExtent: 50,
+                        physics: const FixedExtentScrollPhysics(),
+                        diameterRatio: 1.5,
+                        perspective: 0.003,
+                        onSelectedItemChanged: _onKgChanged,
+                        childDelegate: ListWheelChildBuilderDelegate(
+                          childCount: _maxKg - _minKg + 1,
+                          builder: (context, index) {
+                            final kg = index + _minKg;
+                            final isSelected = kg == _wholeKg;
+                            return Center(
+                              child: Text(
+                                '$kg',
+                                style: textTheme.headlineMedium?.copyWith(
+                                  color: isSelected
+                                      ? colorScheme.primary
+                                      : colorScheme.onSurfaceVariant,
+                                  fontWeight: isSelected
+                                      ? FontWeight.w600
+                                      : FontWeight.w400,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+
+                    // Decimal point indicator
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Text(
+                        '.',
+                        style: textTheme.headlineMedium?.copyWith(
+                          color: colorScheme.primary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+
+                    // Grams wheel (00-99)
+                    Expanded(
+                      child: ListWheelScrollView.useDelegate(
+                        controller: _gramsController,
+                        itemExtent: 50,
+                        physics: const FixedExtentScrollPhysics(),
+                        diameterRatio: 1.5,
+                        perspective: 0.003,
+                        onSelectedItemChanged: _onGramsChanged,
+                        childDelegate: ListWheelChildBuilderDelegate(
+                          childCount: 100, // 00-99
+                          builder: (context, index) {
+                            final isSelected = index == _grams;
+                            return Center(
+                              child: Text(
+                                index.toString().padLeft(2, '0'),
+                                style: textTheme.headlineMedium?.copyWith(
+                                  color: isSelected
+                                      ? colorScheme.primary
+                                      : colorScheme.onSurfaceVariant,
+                                  fontWeight: isSelected
+                                      ? FontWeight.w600
+                                      : FontWeight.w400,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Arrow indicators - outer edges only
+              Positioned(
+                left: AppSpacing.lg,
+                top: 0,
+                bottom: 0,
+                child: Center(
+                  child: WheelArrowIndicator(direction: ArrowDirection.right),
+                ),
+              ),
+              Positioned(
+                right: AppSpacing.lg,
+                top: 0,
+                bottom: 0,
+                child: Center(
+                  child: WheelArrowIndicator(direction: ArrowDirection.left),
+                ),
+              ),
+
+              // Gradient fades
+              _buildGradientOverlays(colorScheme),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLbsPicker(ColorScheme colorScheme, TextTheme textTheme) {
+    return Column(
+      children: [
+        // Spacer to match kg header height
+        const SizedBox(height: AppSpacing.xs + 20),
+
+        // Wheel with arrows
+        Expanded(
+          child: Stack(
+            children: [
+              // Lbs wheel
+              ListWheelScrollView.useDelegate(
+                controller: _lbsController,
+                itemExtent: 50,
+                physics: const FixedExtentScrollPhysics(),
+                diameterRatio: 1.5,
+                perspective: 0.003,
+                onSelectedItemChanged: _onLbsChanged,
+                childDelegate: ListWheelChildBuilderDelegate(
+                  childCount: _maxLbs - _minLbs + 1,
+                  builder: (context, index) {
+                    final lbs = index + _minLbs;
+                    final isSelected = lbs == _lbs;
+                    return Center(
+                      child: Text(
+                        '$lbs',
+                        style: textTheme.headlineMedium?.copyWith(
+                          color: isSelected
+                              ? colorScheme.primary
+                              : colorScheme.onSurfaceVariant,
+                          fontWeight: isSelected
+                              ? FontWeight.w600
+                              : FontWeight.w400,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+
+              // Arrow indicators on both sides
+              Positioned(
+                left: AppSpacing.lg,
+                top: 0,
+                bottom: 0,
+                child: Center(
+                  child: WheelArrowIndicator(direction: ArrowDirection.right),
+                ),
+              ),
+              Positioned(
+                right: AppSpacing.lg,
+                top: 0,
+                bottom: 0,
+                child: Center(
+                  child: WheelArrowIndicator(direction: ArrowDirection.left),
+                ),
+              ),
+
+              // Gradient fades
+              _buildGradientOverlays(colorScheme),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildGradientOverlays(ColorScheme colorScheme) {
+    return IgnorePointer(
+      child: Stack(
+        children: [
+          // Top gradient
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 60,
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    colorScheme.surface,
+                    colorScheme.surface.withValues(alpha: 0),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          // Bottom gradient
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: 60,
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    colorScheme.surface.withValues(alpha: 0),
+                    colorScheme.surface,
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
