@@ -69,8 +69,8 @@ class _YearPickerSheetState extends State<YearPickerSheet> {
   @override
   void initState() {
     super.initState();
-    // Only allow years at least 3 years ago (minimum age: 3)
-    _maxYear = DateTime.now().year - 3;
+    // Only allow years at least 13 years ago (minimum age: 13 for COPPA/GDPR compliance)
+    _maxYear = DateTime.now().year - 13;
     _selectedYear = widget.initialYear.clamp(widget.minYear, _maxYear);
 
     // Calculate initial scroll position (years go from max to min, descending)

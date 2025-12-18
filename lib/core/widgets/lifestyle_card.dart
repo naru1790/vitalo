@@ -494,15 +494,31 @@ class _BedTimeSheetState extends State<_BedTimeSheet> {
   }
 
   TimeOfDay get _selectedTime {
-    int h24 = _isPM ? (_hour == 0 ? 12 : _hour + 12) : _hour;
-    if (h24 == 24) h24 = 12; // 12 PM edge case
+    // Convert 0-12 hour to 24-hour format
+    int h24;
+    if (_isPM) {
+      // PM: 0=12 PM, 1=1 PM, ..., 12=12 AM (midnight)
+      if (_hour == 0) {
+        h24 = 12; // 0 PM = 12 PM (noon)
+      } else if (_hour == 12) {
+        h24 = 0; // 12 PM = 12 AM (midnight)
+      } else {
+        h24 = _hour + 12; // 1-11 PM
+      }
+    } else {
+      // AM: 0=12 AM, 1=1 AM, ..., 12=12 PM
+      if (_hour == 12) {
+        h24 = 12; // 12 AM = 12 PM (noon)
+      } else {
+        h24 = _hour; // 0-11 AM
+      }
+    }
     return TimeOfDay(hour: h24, minute: _minute);
   }
 
   String get _formattedTime {
-    // Display as 12-hour format with leading zeros
-    final displayHour = _hour == 0 ? 12 : _hour;
-    final hourStr = displayHour.toString().padLeft(2, '0');
+    // Display as selected format (0-12)
+    final hourStr = _hour.toString().padLeft(2, '0');
     final minuteStr = _minute.toString().padLeft(2, '0');
     final period = _isPM ? 'PM' : 'AM';
     return '$hourStr:$minuteStr $period';
@@ -622,14 +638,12 @@ class _BedTimeSheetState extends State<_BedTimeSheet> {
                               setState(() => _hour = index);
                             },
                             childDelegate: ListWheelChildBuilderDelegate(
-                              childCount: 12, // 12, 1, 2, ..., 11
+                              childCount: 13, // 0, 1, 2, ..., 12
                               builder: (context, index) {
                                 final isSelected = index == _hour;
-                                // Display: index 0 = 12, index 1 = 1, ..., index 11 = 11
-                                final displayHour = index == 0 ? 12 : index;
                                 return Center(
                                   child: Text(
-                                    displayHour.toString().padLeft(2, '0'),
+                                    index.toString().padLeft(2, '0'),
                                     style: textTheme.headlineMedium?.copyWith(
                                       color: isSelected
                                           ? colorScheme.primary

@@ -757,11 +757,11 @@ class _WaistPickerSheetState extends State<_WaistPickerSheet> {
 
   // Waist ranges
   // Men: 65-130 cm (26-51 in), Women: 55-115 cm (22-45 in)
-  // Using combined range to cover both
+  // Using expanded range to accommodate all body types
   static const _minCm = 50;
-  static const _maxCm = 150;
+  static const _maxCm = 200;
   static const _minInch = 20;
-  static const _maxInch = 59;
+  static const _maxInch = 79;
 
   @override
   void initState() {

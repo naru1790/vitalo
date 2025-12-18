@@ -82,9 +82,7 @@ enum DietExclusion {
 
   // Lifestyle choices - omnivores only (meat/seafood related)
   noSeafood('No Seafood', ExclusionCategory.lifestyle, omnivoreOnly: true),
-  noRedMeat('No Red Meat', ExclusionCategory.lifestyle, omnivoreOnly: true),
-  halal('Halal', ExclusionCategory.lifestyle, omnivoreOnly: true),
-  kosher('Kosher', ExclusionCategory.lifestyle, omnivoreOnly: true);
+  noRedMeat('No Red Meat', ExclusionCategory.lifestyle, omnivoreOnly: true);
 
   const DietExclusion(this.label, this.category, {this.omnivoreOnly = false});
   final String label;
