@@ -64,11 +64,11 @@ class VitaloApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Smart Companion font pairing: Outfit (headings) + Inter (body)
-    // Outfit: Geometric precision with warmth - confident, modern headers
-    // Inter: Designed for screens - incredible legibility at all sizes
-    TextTheme textTheme = createTextTheme(context, 'Inter', 'Outfit');
-    MaterialTheme theme = MaterialTheme(textTheme);
+    // Platform-adaptive typography:
+    // iOS: SF Pro (system font) — Apple's native typeface
+    // Android: Outfit (headings) + Inter (body) via Google Fonts
+    TextTheme textTheme = createTextTheme(context);
+    VitaloTheme theme = VitaloTheme(textTheme);
 
     return MaterialApp.router(
       title: 'Vitalo',

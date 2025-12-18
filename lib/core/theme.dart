@@ -1,165 +1,254 @@
+import 'dart:io' show Platform;
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 // ═══════════════════════════════════════════════════════════════════════════
-// VITALO THEME - Soft Minimalistic Design
-// Monochromatic palette with warm, desaturated tones
-// Philosophy: Calm, approachable, clean
+// VITALO THEME - iOS 26 Liquid Glass Design
+// Bright, vibrant colors with translucent glass materials
+// Philosophy: Clarity, Depth, Vibrancy — Apple HIG iOS 26
+//
+// Typography (Platform-Adaptive):
+// - iOS: SF Pro (system font) — Apple's native typeface
+// - Android: Outfit (headings) + Inter (body) via Google Fonts
+//
+// Apple HIG Typography Scale:
+// - Large Title: 34pt Bold
+// - Title 1: 28pt Bold
+// - Title 2: 22pt Bold
+// - Title 3: 20pt Semibold
+// - Headline: 17pt Semibold
+// - Body: 17pt Regular
+// - Callout: 16pt Regular
+// - Subhead: 15pt Regular
+// - Footnote: 13pt Regular
+// - Caption 1: 12pt Regular
+// - Caption 2: 11pt Regular
 // ═══════════════════════════════════════════════════════════════════════════
 
-/// Creates a text theme using Google Fonts
-/// "Smart Companion" pairing - Modern, confident, distinctive
-/// Heading: Outfit (SemiBold/Medium) - Geometric precision with warmth
-/// Body: Inter (Regular/Medium) - Designed for screens, incredible legibility
-TextTheme createTextTheme(
-  BuildContext context,
-  String bodyFontString,
-  String displayFontString,
-) {
+/// Creates platform-adaptive text theme
+/// iOS: SF Pro (system font) with Apple HIG sizes
+/// Android: Outfit (headings) + Inter (body) via Google Fonts
+TextTheme createTextTheme(BuildContext context) {
+  if (Platform.isIOS || Platform.isMacOS) {
+    return _createAppleTextTheme();
+  }
+  return _createAndroidTextTheme(context);
+}
+
+/// Apple SF Pro typography following iOS HIG exactly
+TextTheme _createAppleTextTheme() {
+  // SF Pro is the system font on iOS/macOS - no fontFamily needed
+  return const TextTheme(
+    // Large Title - 34pt Bold
+    displayLarge: TextStyle(
+      fontSize: 34,
+      fontWeight: FontWeight.bold,
+      letterSpacing: 0.37,
+    ),
+    // Title 1 - 28pt Bold
+    displayMedium: TextStyle(
+      fontSize: 28,
+      fontWeight: FontWeight.bold,
+      letterSpacing: 0.36,
+    ),
+    // Title 2 - 22pt Bold
+    displaySmall: TextStyle(
+      fontSize: 22,
+      fontWeight: FontWeight.bold,
+      letterSpacing: 0.35,
+    ),
+    // Title 3 - 20pt Semibold
+    headlineLarge: TextStyle(
+      fontSize: 20,
+      fontWeight: FontWeight.w600,
+      letterSpacing: 0.38,
+    ),
+    // Headline - 17pt Semibold
+    headlineMedium: TextStyle(
+      fontSize: 17,
+      fontWeight: FontWeight.w600,
+      letterSpacing: -0.41,
+    ),
+    // Subheadline - 15pt Regular
+    headlineSmall: TextStyle(
+      fontSize: 15,
+      fontWeight: FontWeight.w400,
+      letterSpacing: -0.24,
+    ),
+    // Title Large - 20pt Semibold (for nav bars)
+    titleLarge: TextStyle(
+      fontSize: 20,
+      fontWeight: FontWeight.w600,
+      letterSpacing: 0.38,
+    ),
+    // Headline - 17pt Semibold
+    titleMedium: TextStyle(
+      fontSize: 17,
+      fontWeight: FontWeight.w600,
+      letterSpacing: -0.41,
+    ),
+    // Subheadline - 15pt Medium
+    titleSmall: TextStyle(
+      fontSize: 15,
+      fontWeight: FontWeight.w500,
+      letterSpacing: -0.24,
+    ),
+    // Body - 17pt Regular
+    bodyLarge: TextStyle(
+      fontSize: 17,
+      fontWeight: FontWeight.w400,
+      letterSpacing: -0.41,
+    ),
+    // Callout - 16pt Regular
+    bodyMedium: TextStyle(
+      fontSize: 16,
+      fontWeight: FontWeight.w400,
+      letterSpacing: -0.32,
+    ),
+    // Subhead - 15pt Regular
+    bodySmall: TextStyle(
+      fontSize: 15,
+      fontWeight: FontWeight.w400,
+      letterSpacing: -0.24,
+    ),
+    // Button text - 17pt Semibold (iOS standard for buttons)
+    labelLarge: TextStyle(
+      fontSize: 17,
+      fontWeight: FontWeight.w600,
+      letterSpacing: -0.41,
+    ),
+    // Caption 1 - 12pt Regular
+    labelMedium: TextStyle(
+      fontSize: 12,
+      fontWeight: FontWeight.w400,
+      letterSpacing: 0,
+    ),
+    // Caption 2 - 11pt Regular
+    labelSmall: TextStyle(
+      fontSize: 11,
+      fontWeight: FontWeight.w400,
+      letterSpacing: 0.07,
+    ),
+  );
+}
+
+/// Android typography using Google Fonts (Outfit + Inter)
+TextTheme _createAndroidTextTheme(BuildContext context) {
   TextTheme baseTextTheme = Theme.of(context).textTheme;
 
   // Body text: Inter - designed specifically for screen legibility
-  TextTheme bodyTextTheme = GoogleFonts.getTextTheme(
-    bodyFontString,
-    baseTextTheme,
-  );
+  TextTheme bodyTextTheme = GoogleFonts.getTextTheme('Inter', baseTextTheme);
 
-  // Smart Companion Typography Scale
-  // ─────────────────────────────────────────────────────────────────────────
-  // UI Element          | Font   | Weight        | Usage
-  // ─────────────────────────────────────────────────────────────────────────
-  // Main Page Titles    | Outfit | SemiBold (600)| Confident, modern headers
-  // Section Headers     | Outfit | SemiBold (600)| "Today's Progress", "Your Goals"
-  // Big Data/Stats      | Outfit | SemiBold (600)| Step counts, heart rate
-  // Body Text           | Inter  | Regular (400) | Instructions, descriptions
-  // Data Labels         | Inter  | Medium (500)  | "Steps", "Calories", "Sleep"
-  // Data Values         | Inter  | SemiBold (600)| Actual metric numbers
-  // Buttons             | Outfit | SemiBold (600)| Action-oriented CTAs
-  // ─────────────────────────────────────────────────────────────────────────
-
-  TextTheme textTheme = TextTheme(
-    // Display styles - Outfit SemiBold (w600) for main page titles
-    displayLarge: GoogleFonts.outfit(
-      fontSize: baseTextTheme.displayLarge?.fontSize,
-      fontWeight: FontWeight.w600,
-    ),
+  // Outfit for headings + Inter for body
+  return TextTheme(
+    // Display styles - Outfit SemiBold for main page titles
+    displayLarge: GoogleFonts.outfit(fontSize: 34, fontWeight: FontWeight.w600),
     displayMedium: GoogleFonts.outfit(
-      fontSize: baseTextTheme.displayMedium?.fontSize,
+      fontSize: 28,
       fontWeight: FontWeight.w600,
     ),
-    displaySmall: GoogleFonts.outfit(
-      fontSize: baseTextTheme.displaySmall?.fontSize,
-      fontWeight: FontWeight.w600,
-    ),
-    // Headline styles - Outfit SemiBold (w600) for section headers
+    displaySmall: GoogleFonts.outfit(fontSize: 22, fontWeight: FontWeight.w600),
+    // Headline styles - Outfit SemiBold for section headers
     headlineLarge: GoogleFonts.outfit(
-      fontSize: baseTextTheme.headlineLarge?.fontSize,
+      fontSize: 20,
       fontWeight: FontWeight.w600,
     ),
     headlineMedium: GoogleFonts.outfit(
-      fontSize: baseTextTheme.headlineMedium?.fontSize,
+      fontSize: 17,
       fontWeight: FontWeight.w600,
     ),
     headlineSmall: GoogleFonts.outfit(
-      fontSize: baseTextTheme.headlineSmall?.fontSize,
-      fontWeight: FontWeight.w600,
+      fontSize: 15,
+      fontWeight: FontWeight.w400,
     ),
-    // Title styles - Outfit SemiBold for big stats and subtitles
-    titleLarge: GoogleFonts.outfit(
-      fontSize: baseTextTheme.titleLarge?.fontSize,
-      fontWeight: FontWeight.w600,
-    ),
-    titleMedium: GoogleFonts.outfit(
-      fontSize: baseTextTheme.titleMedium?.fontSize,
-      fontWeight: FontWeight.w500,
-    ),
-    titleSmall: GoogleFonts.outfit(
-      fontSize: baseTextTheme.titleSmall?.fontSize,
-      fontWeight: FontWeight.w500,
-    ),
-    // Body styles - Inter Regular (w400) for readable content
-    bodyLarge: bodyTextTheme.bodyLarge,
-    bodyMedium: bodyTextTheme.bodyMedium,
-    bodySmall: bodyTextTheme.bodySmall,
-    // Label styles - Outfit SemiBold for buttons, Inter for data labels
-    labelLarge: GoogleFonts.outfit(
-      fontSize: bodyTextTheme.labelLarge?.fontSize,
-      fontWeight: FontWeight.w600, // Buttons: confident action
-    ),
+    // Title styles - Outfit for subtitles
+    titleLarge: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.w600),
+    titleMedium: GoogleFonts.outfit(fontSize: 17, fontWeight: FontWeight.w500),
+    titleSmall: GoogleFonts.outfit(fontSize: 15, fontWeight: FontWeight.w500),
+    // Body styles - Inter for readable content
+    bodyLarge: bodyTextTheme.bodyLarge?.copyWith(fontSize: 17),
+    bodyMedium: bodyTextTheme.bodyMedium?.copyWith(fontSize: 16),
+    bodySmall: bodyTextTheme.bodySmall?.copyWith(fontSize: 15),
+    // Label styles - Outfit for buttons (17pt iOS standard), Inter for captions
+    labelLarge: GoogleFonts.outfit(fontSize: 17, fontWeight: FontWeight.w600),
     labelMedium: bodyTextTheme.labelMedium?.copyWith(
-      fontWeight: FontWeight.w500, // Data labels: "Steps", "Calories"
+      fontSize: 12,
+      fontWeight: FontWeight.w500,
     ),
     labelSmall: bodyTextTheme.labelSmall?.copyWith(
-      fontWeight: FontWeight.w600, // Data values: actual numbers
+      fontSize: 11,
+      fontWeight: FontWeight.w400,
     ),
   );
-  return textTheme;
 }
 
-class MaterialTheme {
+/// Vitalo iOS-first theme configuration
+/// Provides light/dark themes with iOS 26 Liquid Glass design language
+class VitaloTheme {
   final TextTheme textTheme;
 
-  const MaterialTheme(this.textTheme);
+  const VitaloTheme(this.textTheme);
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // LIGHT THEME - Vibrant Analogous Warm Harmony
+  // LIGHT THEME - iOS 26 Liquid Glass (Bright & Vibrant)
   // ═══════════════════════════════════════════════════════════════════════════
   static ColorScheme lightScheme() {
     return const ColorScheme(
       brightness: Brightness.light,
-      // ───── Primary (Solar Orange - Vibrant Energy) ─────
-      primary: Color(0xFFF97316), // Solar Orange 500 - Bright brand
+      // ───── Primary (Vibrant Orange - Energy & Vitality) ─────
+      primary: Color(0xFFF97316), // Orange 500 - Bright brand
       onPrimary: Color(0xFFFFFFFF),
-      primaryContainer: Color(0xFFFFE5CC), // Bright light orange
-      onPrimaryContainer: Color(0xFF7C2D12), // Deep contrast
-      // ───── Secondary (Vibrant Coral - Warm Adjacent) ─────
-      secondary: Color(0xFFFF5733), // Bright coral red-orange
+      primaryContainer: Color(0xFFFFF7ED), // Orange 50 - Glass tint
+      onPrimaryContainer: Color(0xFFC2410C), // Orange 700
+      // ───── Secondary (Vibrant Pink - Fresh & Modern) ─────
+      secondary: Color(0xFFEC4899), // Pink 500 - Bright accent
       onSecondary: Color(0xFFFFFFFF),
-      secondaryContainer: Color(0xFFFFDAD4), // Bright light coral
-      onSecondaryContainer: Color(0xFF8B1F0F), // Deep red-brown
-      // ───── Tertiary (Bright Amber - Cool Adjacent) ─────
-      tertiary: Color(0xFFFFB627), // Vibrant golden amber
-      onTertiary: Color(0xFF000000),
-      tertiaryContainer: Color(0xFFFFEDC2), // Bright light amber
-      onTertiaryContainer: Color(0xFF5C3D00), // Deep amber brown
+      secondaryContainer: Color(0xFFFDF2F8), // Pink 50 - Glass tint
+      onSecondaryContainer: Color(0xFFBE185D), // Pink 700
+      // ───── Tertiary (Cyan - Cool Balance) ─────
+      tertiary: Color(0xFF06B6D4), // Cyan 500 - Success/positive
+      onTertiary: Color(0xFFFFFFFF),
+      tertiaryContainer: Color(0xFFECFEFF), // Cyan 50 - Glass tint
+      onTertiaryContainer: Color(0xFF0E7490), // Cyan 700
       // ───── Error (Vibrant Red) ─────
-      error: Color(0xFFDC2626), // Bright red
+      error: Color(0xFFEF4444), // Red 500
       onError: Color(0xFFFFFFFF),
-      errorContainer: Color(0xFFFFE5E5), // Light red
-      onErrorContainer: Color(0xFF7F1D1D), // Deep red
-      // ───── Surface (Clean White with Subtle Warmth) ─────
-      surface: Color(0xFFFFFBF5), // Very light warm white
-      onSurface: Color(0xFF1C1B1A), // Near black for contrast
-      onSurfaceVariant: Color(0xFF52443D), // Darker warm grey
-      // ───── Outline (Clear Borders) ─────
-      outline: Color(0xFFA89A8E), // Clear warm outline
-      outlineVariant: Color(0xFFD6CEC4), // Light warm outline
+      errorContainer: Color(0xFFFEF2F2), // Red 50
+      onErrorContainer: Color(0xFFB91C1C), // Red 700
+      // ───── Surface (Pure White for Liquid Glass) ─────
+      surface: Color(0xFFFFFFFF), // Pure white - glass base
+      onSurface: Color(0xFF0F172A), // Slate 900 - crisp text
+      onSurfaceVariant: Color(0xFF64748B), // Slate 500
+      // ───── Outline (Subtle Glass Edges) ─────
+      outline: Color(0xFFCBD5E1), // Slate 300
+      outlineVariant: Color(0xFFE2E8F0), // Slate 200 - glass borders
       // ───── System ─────
-      shadow: Color(0x26000000), // Visible shadow (15% opacity)
-      scrim: Color(0x66000000), // Clear scrim (40% opacity)
-      inverseSurface: Color(0xFF31302E), // Dark surface
+      shadow: Color(0x14000000), // 8% opacity - soft shadow
+      scrim: Color(0x66000000), // 40% opacity
+      inverseSurface: Color(0xFF1E293B), // Slate 800
       inversePrimary: Color(0xFFFDBA74), // Orange 300
-      // ───── Fixed Colors (Vibrant Analogous) ─────
-      primaryFixed: Color(0xFFFFE5CC),
+      // ───── Fixed Colors (Vibrant Trio) ─────
+      primaryFixed: Color(0xFFFFF7ED),
       onPrimaryFixed: Color(0xFF7C2D12),
       primaryFixedDim: Color(0xFFFDBA74),
       onPrimaryFixedVariant: Color(0xFFEA580C),
-      secondaryFixed: Color(0xFFFFDAD4),
-      onSecondaryFixed: Color(0xFF8B1F0F),
-      secondaryFixedDim: Color(0xFFFFAA99),
-      onSecondaryFixedVariant: Color(0xFFCC3D1F),
-      tertiaryFixed: Color(0xFFFFEDC2),
-      onTertiaryFixed: Color(0xFF5C3D00),
-      tertiaryFixedDim: Color(0xFFFFD780),
-      onTertiaryFixedVariant: Color(0xFFCC9320),
-      // ───── Surface Containers (Clear Elevation) ─────
-      surfaceDim: Color(0xFFF0EBE3), // Clear dim
-      surfaceBright: Color(0xFFFFFBF5),
-      surfaceContainerLowest: Color(0xFFFFFFFF), // Pure white
-      surfaceContainerLow: Color(0xFFFFFAF3), // Very light
-      surfaceContainer: Color(0xFFFAF4EB), // Light warm
-      surfaceContainerHigh: Color(0xFFF0EBE3), // Medium warm
-      surfaceContainerHighest: Color(0xFFE6E0D8), // Noticeable warm
+      secondaryFixed: Color(0xFFFDF2F8),
+      onSecondaryFixed: Color(0xFF9D174D),
+      secondaryFixedDim: Color(0xFFF472B6),
+      onSecondaryFixedVariant: Color(0xFFDB2777),
+      tertiaryFixed: Color(0xFFECFEFF),
+      onTertiaryFixed: Color(0xFF155E75),
+      tertiaryFixedDim: Color(0xFF22D3EE),
+      onTertiaryFixedVariant: Color(0xFF0891B2),
+      // ───── Surface Containers (Liquid Glass Layers) ─────
+      surfaceDim: Color(0xFFF1F5F9), // Slate 100
+      surfaceBright: Color(0xFFFFFFFF), // Pure white
+      surfaceContainerLowest: Color(0xFFFFFFFF), // Glass base
+      surfaceContainerLow: Color(0xFFFAFAFA), // Subtle elevation
+      surfaceContainer: Color(0xFFF8FAFC), // Slate 50 - cards
+      surfaceContainerHigh: Color(0xFFF1F5F9), // Slate 100
+      surfaceContainerHighest: Color(0xFFE2E8F0), // Slate 200
     );
   }
 
@@ -173,50 +262,50 @@ class MaterialTheme {
   static ColorScheme lightMediumContrastScheme() {
     return const ColorScheme(
       brightness: Brightness.light,
-      primary: Color(0xFFEA580C), // Orange 600 - Darker for contrast
+      primary: Color(0xFFEA580C), // Orange 600
       onPrimary: Color(0xFFFFFFFF),
       primaryContainer: Color(0xFFFB923C), // Orange 400
       onPrimaryContainer: Color(0xFF431407),
-      secondary: Color(0xFFCC3D1F), // Darker coral - Higher contrast
+      secondary: Color(0xFFDB2777), // Pink 600
       onSecondary: Color(0xFFFFFFFF),
-      secondaryContainer: Color(0xFFFF7A5C), // Brighter coral
-      onSecondaryContainer: Color(0xFF5D1609),
-      tertiary: Color(0xFFCC9320), // Darker amber - Higher contrast
-      onTertiary: Color(0xFF000000),
-      tertiaryContainer: Color(0xFFFFD780), // Brighter amber
-      onTertiaryContainer: Color(0xFF3D2800),
-      error: Color(0xFFB91C1C), // Red 700
+      secondaryContainer: Color(0xFFF472B6), // Pink 400
+      onSecondaryContainer: Color(0xFF500724),
+      tertiary: Color(0xFF0891B2), // Cyan 600
+      onTertiary: Color(0xFFFFFFFF),
+      tertiaryContainer: Color(0xFF22D3EE), // Cyan 400
+      onTertiaryContainer: Color(0xFF083344),
+      error: Color(0xFFDC2626), // Red 600
       onError: Color(0xFFFFFFFF),
-      errorContainer: Color(0xFFFF6B6B), // Bright red
+      errorContainer: Color(0xFFF87171), // Red 400
       onErrorContainer: Color(0xFF450A0A),
-      surface: Color(0xFFFFFBF5),
-      onSurface: Color(0xFF0F0E0D), // Near black - Higher contrast
-      onSurfaceVariant: Color(0xFF3D352E), // Darker warm grey
-      outline: Color(0xFF6B5D52), // Darker outline
-      outlineVariant: Color(0xFFA89A8E), // Clear outline
-      shadow: Color(0x33000000), // 20% opacity
-      scrim: Color(0x80000000), // 50% opacity
-      inverseSurface: Color(0xFF2B2724),
+      surface: Color(0xFFFFFFFF),
+      onSurface: Color(0xFF020617), // Slate 950
+      onSurfaceVariant: Color(0xFF475569), // Slate 600
+      outline: Color(0xFF64748B), // Slate 500
+      outlineVariant: Color(0xFFCBD5E1), // Slate 300
+      shadow: Color(0x1A000000),
+      scrim: Color(0x80000000),
+      inverseSurface: Color(0xFF1E293B),
       inversePrimary: Color(0xFFFDBA74),
-      primaryFixed: Color(0xFFFFE5CC),
+      primaryFixed: Color(0xFFFFF7ED),
       onPrimaryFixed: Color(0xFF000000),
       primaryFixedDim: Color(0xFFFB923C),
-      onPrimaryFixedVariant: Color(0xFF4D1F07),
-      secondaryFixed: Color(0xFFFFDAD4),
+      onPrimaryFixedVariant: Color(0xFF7C2D12),
+      secondaryFixed: Color(0xFFFDF2F8),
       onSecondaryFixed: Color(0xFF000000),
-      secondaryFixedDim: Color(0xFFFF7A5C),
-      onSecondaryFixedVariant: Color(0xFF5D1609),
-      tertiaryFixed: Color(0xFFFFEDC2),
+      secondaryFixedDim: Color(0xFFF472B6),
+      onSecondaryFixedVariant: Color(0xFF9D174D),
+      tertiaryFixed: Color(0xFFECFEFF),
       onTertiaryFixed: Color(0xFF000000),
-      tertiaryFixedDim: Color(0xFFFFCC5C),
-      onTertiaryFixedVariant: Color(0xFF3D2800),
-      surfaceDim: Color(0xFFE6E0D8),
-      surfaceBright: Color(0xFFFFFBF5),
+      tertiaryFixedDim: Color(0xFF22D3EE),
+      onTertiaryFixedVariant: Color(0xFF0E7490),
+      surfaceDim: Color(0xFFE2E8F0),
+      surfaceBright: Color(0xFFFFFFFF),
       surfaceContainerLowest: Color(0xFFFFFFFF),
-      surfaceContainerLow: Color(0xFFFFFAF3),
-      surfaceContainer: Color(0xFFFAF4EB),
-      surfaceContainerHigh: Color(0xFFF0EBE3),
-      surfaceContainerHighest: Color(0xFFE6E0D8),
+      surfaceContainerLow: Color(0xFFF8FAFC),
+      surfaceContainer: Color(0xFFF1F5F9),
+      surfaceContainerHigh: Color(0xFFE2E8F0),
+      surfaceContainerHighest: Color(0xFFCBD5E1),
     );
   }
 
@@ -230,50 +319,50 @@ class MaterialTheme {
   static ColorScheme lightHighContrastScheme() {
     return const ColorScheme(
       brightness: Brightness.light,
-      primary: Color(0xFFC2410C), // Orange 700 - Maximum contrast
+      primary: Color(0xFFC2410C), // Orange 700
       onPrimary: Color(0xFFFFFFFF),
       primaryContainer: Color(0xFF7C2D12), // Orange 900
       onPrimaryContainer: Color(0xFFFFFFFF),
-      secondary: Color(0xFF991F0D), // Deep coral - Maximum contrast
+      secondary: Color(0xFFBE185D), // Pink 700
       onSecondary: Color(0xFFFFFFFF),
-      secondaryContainer: Color(0xFF5D1609), // Very deep coral
+      secondaryContainer: Color(0xFF9D174D), // Pink 800
       onSecondaryContainer: Color(0xFFFFFFFF),
-      tertiary: Color(0xFF996D00), // Deep amber - Maximum contrast
+      tertiary: Color(0xFF0E7490), // Cyan 700
       onTertiary: Color(0xFFFFFFFF),
-      tertiaryContainer: Color(0xFF5C3D00), // Very deep amber
+      tertiaryContainer: Color(0xFF155E75), // Cyan 800
       onTertiaryContainer: Color(0xFFFFFFFF),
-      error: Color(0xFF991B1B), // Red 800
+      error: Color(0xFFB91C1C), // Red 700
       onError: Color(0xFFFFFFFF),
-      errorContainer: Color(0xFF7F1D1D), // Red 900
+      errorContainer: Color(0xFF991B1B), // Red 800
       onErrorContainer: Color(0xFFFFFFFF),
-      surface: Color(0xFFFFFFFF), // Pure white
-      onSurface: Color(0xFF000000), // Pure black - Maximum contrast
-      onSurfaceVariant: Color(0xFF1C1814), // Near black
-      outline: Color(0xFF3D352E), // Very dark outline
-      outlineVariant: Color(0xFF52443D), // Dark outline
-      shadow: Color(0x4D000000), // 30% opacity
-      scrim: Color(0x99000000), // 60% opacity
-      inverseSurface: Color(0xFF1A1816),
+      surface: Color(0xFFFFFFFF),
+      onSurface: Color(0xFF000000),
+      onSurfaceVariant: Color(0xFF1E293B), // Slate 800
+      outline: Color(0xFF334155), // Slate 700
+      outlineVariant: Color(0xFF475569), // Slate 600
+      shadow: Color(0x33000000),
+      scrim: Color(0x99000000),
+      inverseSurface: Color(0xFF0F172A),
       inversePrimary: Color(0xFFFDBA74),
       primaryFixed: Color(0xFF7C2D12),
       onPrimaryFixed: Color(0xFFFFFFFF),
       primaryFixedDim: Color(0xFF431407),
       onPrimaryFixedVariant: Color(0xFFFFFFFF),
-      secondaryFixed: Color(0xFF5D1609), // Very deep coral
+      secondaryFixed: Color(0xFF9D174D),
       onSecondaryFixed: Color(0xFFFFFFFF),
-      secondaryFixedDim: Color(0xFF3D0D05), // Deepest coral
+      secondaryFixedDim: Color(0xFF500724),
       onSecondaryFixedVariant: Color(0xFFFFFFFF),
-      tertiaryFixed: Color(0xFF5C3D00), // Very deep amber
+      tertiaryFixed: Color(0xFF155E75),
       onTertiaryFixed: Color(0xFFFFFFFF),
-      tertiaryFixedDim: Color(0xFF3D2600), // Deepest amber
+      tertiaryFixedDim: Color(0xFF083344),
       onTertiaryFixedVariant: Color(0xFFFFFFFF),
-      surfaceDim: Color(0xFFD6D3D1),
-      surfaceBright: Color(0xFFFFFBF7),
+      surfaceDim: Color(0xFFCBD5E1),
+      surfaceBright: Color(0xFFFFFFFF),
       surfaceContainerLowest: Color(0xFFFFFFFF),
-      surfaceContainerLow: Color(0xFFF5F5F4),
-      surfaceContainer: Color(0xFFE7E5E4),
-      surfaceContainerHigh: Color(0xFFD6D3D1),
-      surfaceContainerHighest: Color(0xFFA8A29E),
+      surfaceContainerLow: Color(0xFFF1F5F9),
+      surfaceContainer: Color(0xFFE2E8F0),
+      surfaceContainerHigh: Color(0xFFCBD5E1),
+      surfaceContainerHighest: Color(0xFF94A3B8),
     );
   }
 
@@ -282,64 +371,64 @@ class MaterialTheme {
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // DARK THEME - Vibrant Analogous Warm Harmony
+  // DARK THEME - iOS 26 Liquid Glass (Bright on Dark)
   // ═══════════════════════════════════════════════════════════════════════════
   static ColorScheme darkScheme() {
     return const ColorScheme(
       brightness: Brightness.dark,
-      // ───── Primary (Bright Orange for dark mode) ─────
-      primary: Color(0xFFFB923C), // Bright Orange 400
-      onPrimary: Color(0xFF4D1F07), // Deep orange brown
-      primaryContainer: Color(0xFFC2410C), // Orange 700
-      onPrimaryContainer: Color(0xFFFFE5CC), // Bright light orange
-      // ───── Secondary (Vibrant Coral) ─────
-      secondary: Color(0xFFFF7A5C), // Bright coral
-      onSecondary: Color(0xFF4D1309), // Deep coral
-      secondaryContainer: Color(0xFF992B17), // Medium coral
-      onSecondaryContainer: Color(0xFFFFDAD4), // Bright light coral
-      // ───── Tertiary (Bright Amber) ─────
-      tertiary: Color(0xFFFFCC5C), // Bright golden amber
-      onTertiary: Color(0xFF3D2800), // Deep amber
-      tertiaryContainer: Color(0xFF6B4D00), // Medium amber
-      onTertiaryContainer: Color(0xFFFFEDC2), // Bright light amber
-      // ───── Error (Vibrant Red) ─────
-      error: Color(0xFFFF6B6B), // Bright red
-      onError: Color(0xFF5D2020), // Deep red
-      errorContainer: Color(0xFF993333), // Medium red
-      onErrorContainer: Color(0xFFFFE5E5), // Light red
-      // ───── Surface (Deep Dark with Warmth) ─────
-      surface: Color(0xFF1A1816), // Deep dark warm
-      onSurface: Color(0xFFF0E7DF), // Light warm text
-      onSurfaceVariant: Color(0xFFCDBEB3), // Light warm grey
-      // ───── Outline (Clear Dark Borders) ─────
-      outline: Color(0xFF6B5D52), // Clear warm outline
-      outlineVariant: Color(0xFF3D352E), // Dark warm outline
+      // ───── Primary (Bright Orange on dark) ─────
+      primary: Color(0xFFFB923C), // Orange 400 - pops on dark
+      onPrimary: Color(0xFF431407), // Orange 950
+      primaryContainer: Color(0xFF7C2D12), // Orange 900
+      onPrimaryContainer: Color(0xFFFED7AA), // Orange 200
+      // ───── Secondary (Vibrant Pink on dark) ─────
+      secondary: Color(0xFFF472B6), // Pink 400
+      onSecondary: Color(0xFF500724), // Pink 950
+      secondaryContainer: Color(0xFF9D174D), // Pink 800
+      onSecondaryContainer: Color(0xFFFBCFE8), // Pink 200
+      // ───── Tertiary (Bright Cyan on dark) ─────
+      tertiary: Color(0xFF22D3EE), // Cyan 400
+      onTertiary: Color(0xFF083344), // Cyan 950
+      tertiaryContainer: Color(0xFF0E7490), // Cyan 700
+      onTertiaryContainer: Color(0xFFCFFAFE), // Cyan 100
+      // ───── Error (Bright Red on dark) ─────
+      error: Color(0xFFF87171), // Red 400
+      onError: Color(0xFF450A0A), // Red 950
+      errorContainer: Color(0xFF991B1B), // Red 800
+      onErrorContainer: Color(0xFFFECACA), // Red 200
+      // ───── Surface (Deep Dark for Glass) ─────
+      surface: Color(0xFF0F172A), // Slate 900 - deep base
+      onSurface: Color(0xFFF8FAFC), // Slate 50 - crisp text
+      onSurfaceVariant: Color(0xFF94A3B8), // Slate 400
+      // ───── Outline (Subtle Glass Edges) ─────
+      outline: Color(0xFF475569), // Slate 600
+      outlineVariant: Color(0xFF334155), // Slate 700
       // ───── System ─────
-      shadow: Color(0x40000000), // Visible shadow (25% opacity)
-      scrim: Color(0x80000000), // Clear scrim (50% opacity)
-      inverseSurface: Color(0xFFF0E7DF), // Light warm
+      shadow: Color(0x40000000), // 25% opacity
+      scrim: Color(0x80000000), // 50% opacity
+      inverseSurface: Color(0xFFF1F5F9), // Slate 100
       inversePrimary: Color(0xFFEA580C), // Orange 600
-      // ───── Fixed Colors (Vibrant Analogous) ─────
-      primaryFixed: Color(0xFFFFE5CC),
+      // ───── Fixed Colors (Bright Trio) ─────
+      primaryFixed: Color(0xFFFFF7ED),
       onPrimaryFixed: Color(0xFF7C2D12),
       primaryFixedDim: Color(0xFFFDBA74),
       onPrimaryFixedVariant: Color(0xFFEA580C),
-      secondaryFixed: Color(0xFFFFDAD4),
-      onSecondaryFixed: Color(0xFF8B1F0F),
-      secondaryFixedDim: Color(0xFFFFAA99),
-      onSecondaryFixedVariant: Color(0xFFCC3D1F),
-      tertiaryFixed: Color(0xFFFFEDC2),
-      onTertiaryFixed: Color(0xFF5C3D00),
-      tertiaryFixedDim: Color(0xFFFFD780),
-      onTertiaryFixedVariant: Color(0xFFCC9320),
-      // ───── Surface Containers (Clear Elevation) ─────
-      surfaceDim: Color(0xFF1A1816), // Base dark
-      surfaceBright: Color(0xFF3D352E), // Elevated dark
-      surfaceContainerLowest: Color(0xFF0F0E0D), // Deep black
-      surfaceContainerLow: Color(0xFF221F1D), // Very dark
-      surfaceContainer: Color(0xFF2B2724), // Dark warm
-      surfaceContainerHigh: Color(0xFF36322E), // Medium dark
-      surfaceContainerHighest: Color(0xFF4A4541), // Lighter dark
+      secondaryFixed: Color(0xFFFDF2F8),
+      onSecondaryFixed: Color(0xFF9D174D),
+      secondaryFixedDim: Color(0xFFF472B6),
+      onSecondaryFixedVariant: Color(0xFFDB2777),
+      tertiaryFixed: Color(0xFFECFEFF),
+      onTertiaryFixed: Color(0xFF155E75),
+      tertiaryFixedDim: Color(0xFF22D3EE),
+      onTertiaryFixedVariant: Color(0xFF0891B2),
+      // ───── Surface Containers (Liquid Glass Layers) ─────
+      surfaceDim: Color(0xFF020617), // Slate 950
+      surfaceBright: Color(0xFF334155), // Slate 700
+      surfaceContainerLowest: Color(0xFF020617), // Slate 950
+      surfaceContainerLow: Color(0xFF0F172A), // Slate 900
+      surfaceContainer: Color(0xFF1E293B), // Slate 800 - cards
+      surfaceContainerHigh: Color(0xFF334155), // Slate 700
+      surfaceContainerHighest: Color(0xFF475569), // Slate 600
     );
   }
 
@@ -353,50 +442,50 @@ class MaterialTheme {
   static ColorScheme darkMediumContrastScheme() {
     return const ColorScheme(
       brightness: Brightness.dark,
-      primary: Color(0xFFFDBA74), // Orange 300 - Brighter for dark mode
+      primary: Color(0xFFFDBA74), // Orange 300
       onPrimary: Color(0xFF431407),
       primaryContainer: Color(0xFFF97316), // Orange 500
       onPrimaryContainer: Color(0xFF1C0800),
-      secondary: Color(0xFFFFAA99), // Bright coral - Lighter for dark mode
-      onSecondary: Color(0xFF3D0D05),
-      secondaryContainer: Color(0xFFFF5733), // Bright Coral 500
-      onSecondaryContainer: Color(0xFF1A0400),
-      tertiary: Color(0xFFFFD780), // Bright amber - Lighter for dark mode
-      onTertiary: Color(0xFF3D2600),
-      tertiaryContainer: Color(0xFFFFB627), // Vibrant Amber 500
-      onTertiaryContainer: Color(0xFF1A1000),
+      secondary: Color(0xFFF9A8D4), // Pink 300
+      onSecondary: Color(0xFF500724),
+      secondaryContainer: Color(0xFFEC4899), // Pink 500
+      onSecondaryContainer: Color(0xFF1A0412),
+      tertiary: Color(0xFF67E8F9), // Cyan 300
+      onTertiary: Color(0xFF083344),
+      tertiaryContainer: Color(0xFF06B6D4), // Cyan 500
+      onTertiaryContainer: Color(0xFF041F26),
       error: Color(0xFFFCA5A5), // Red 300
       onError: Color(0xFF450A0A),
       errorContainer: Color(0xFFEF4444), // Red 500
       onErrorContainer: Color(0xFF1A0000),
-      surface: Color(0xFF1A1816),
-      onSurface: Color(0xFFFFFFFF), // Pure white for contrast
-      onSurfaceVariant: Color(0xFFE0D6CC), // Very light warm
-      outline: Color(0xFF8A7B70), // Lighter outline
-      outlineVariant: Color(0xFF52443D), // Medium outline
-      shadow: Color(0x59000000), // 35% opacity
-      scrim: Color(0x99000000), // 60% opacity
-      inverseSurface: Color(0xFFF0E7DF),
+      surface: Color(0xFF0F172A),
+      onSurface: Color(0xFFFFFFFF),
+      onSurfaceVariant: Color(0xFFE2E8F0), // Slate 200
+      outline: Color(0xFF94A3B8), // Slate 400
+      outlineVariant: Color(0xFF64748B), // Slate 500
+      shadow: Color(0x59000000),
+      scrim: Color(0x99000000),
+      inverseSurface: Color(0xFFF1F5F9),
       inversePrimary: Color(0xFFEA580C),
-      primaryFixed: Color(0xFFFFEDD5),
+      primaryFixed: Color(0xFFFFF7ED),
       onPrimaryFixed: Color(0xFF2C0E06),
       primaryFixedDim: Color(0xFFFDBA74),
       onPrimaryFixedVariant: Color(0xFFC2410C),
-      secondaryFixed: Color(0xFFFFE5E0), // Very light coral
-      onSecondaryFixed: Color(0xFF2C0800),
-      secondaryFixedDim: Color(0xFFFFAA99), // Bright coral
-      onSecondaryFixedVariant: Color(0xFF991F0D), // Deep coral
-      tertiaryFixed: Color(0xFFFFF5D6), // Very light amber
-      onTertiaryFixed: Color(0xFF241800),
-      tertiaryFixedDim: Color(0xFFFFD780), // Bright amber
-      onTertiaryFixedVariant: Color(0xFF996D00), // Deep amber
-      surfaceDim: Color(0xFF0C0A09),
-      surfaceBright: Color(0xFF44403C),
+      secondaryFixed: Color(0xFFFDF2F8),
+      onSecondaryFixed: Color(0xFF2C0412),
+      secondaryFixedDim: Color(0xFFF9A8D4),
+      onSecondaryFixedVariant: Color(0xFFBE185D),
+      tertiaryFixed: Color(0xFFECFEFF),
+      onTertiaryFixed: Color(0xFF041F26),
+      tertiaryFixedDim: Color(0xFF67E8F9),
+      onTertiaryFixedVariant: Color(0xFF0E7490),
+      surfaceDim: Color(0xFF020617),
+      surfaceBright: Color(0xFF475569),
       surfaceContainerLowest: Color(0xFF000000),
-      surfaceContainerLow: Color(0xFF1C1917),
-      surfaceContainer: Color(0xFF292524),
-      surfaceContainerHigh: Color(0xFF44403C),
-      surfaceContainerHighest: Color(0xFF57534E),
+      surfaceContainerLow: Color(0xFF0F172A),
+      surfaceContainer: Color(0xFF1E293B),
+      surfaceContainerHigh: Color(0xFF334155),
+      surfaceContainerHighest: Color(0xFF475569),
     );
   }
 
@@ -410,50 +499,50 @@ class MaterialTheme {
   static ColorScheme darkHighContrastScheme() {
     return const ColorScheme(
       brightness: Brightness.dark,
-      primary: Color(0xFFFFEDD5), // Orange 100
+      primary: Color(0xFFFFF7ED), // Orange 50
       onPrimary: Color(0xFF000000),
       primaryContainer: Color(0xFFFB923C), // Orange 400
       onPrimaryContainer: Color(0xFF1C0800),
-      secondary: Color(0xFFFFE5E0), // Very light coral
+      secondary: Color(0xFFFDF2F8), // Pink 50
       onSecondary: Color(0xFF000000),
-      secondaryContainer: Color(0xFFFF7A5C), // Light bright coral
-      onSecondaryContainer: Color(0xFF1A0400),
-      tertiary: Color(0xFFFFF5D6), // Very light amber
+      secondaryContainer: Color(0xFFF472B6), // Pink 400
+      onSecondaryContainer: Color(0xFF1A0412),
+      tertiary: Color(0xFFECFEFF), // Cyan 50
       onTertiary: Color(0xFF000000),
-      tertiaryContainer: Color(0xFFFFCC5C), // Light vibrant amber
-      onTertiaryContainer: Color(0xFF1A1000),
-      error: Color(0xFFFEE2E2), // Red 100
+      tertiaryContainer: Color(0xFF22D3EE), // Cyan 400
+      onTertiaryContainer: Color(0xFF041F26),
+      error: Color(0xFFFEF2F2), // Red 50
       onError: Color(0xFF000000),
       errorContainer: Color(0xFFF87171), // Red 400
       onErrorContainer: Color(0xFF0F0000),
-      surface: Color(0xFF0C0A09),
+      surface: Color(0xFF020617), // Slate 950
       onSurface: Color(0xFFFFFFFF),
       onSurfaceVariant: Color(0xFFFFFFFF),
-      outline: Color(0xFFE7E5E4), // Stone 200
-      outlineVariant: Color(0xFFA8A29E), // Stone 400
+      outline: Color(0xFFF1F5F9), // Slate 100
+      outlineVariant: Color(0xFFCBD5E1), // Slate 300
       shadow: Color(0xFF000000),
       scrim: Color(0xFF000000),
-      inverseSurface: Color(0xFFFAFAF9),
+      inverseSurface: Color(0xFFF8FAFC),
       inversePrimary: Color(0xFFC2410C),
-      primaryFixed: Color(0xFFFFEDD5),
+      primaryFixed: Color(0xFFFFF7ED),
       onPrimaryFixed: Color(0xFF000000),
       primaryFixedDim: Color(0xFFFDBA74),
       onPrimaryFixedVariant: Color(0xFF2C0E06),
-      secondaryFixed: Color(0xFFFFF0ED), // Lightest coral
+      secondaryFixed: Color(0xFFFDF2F8),
       onSecondaryFixed: Color(0xFF000000),
-      secondaryFixedDim: Color(0xFFFFCBB8), // Very bright coral
-      onSecondaryFixedVariant: Color(0xFF2C0800),
-      tertiaryFixed: Color(0xFFFFFAE5), // Lightest amber
+      secondaryFixedDim: Color(0xFFFBCFE8),
+      onSecondaryFixedVariant: Color(0xFF2C0412),
+      tertiaryFixed: Color(0xFFECFEFF),
       onTertiaryFixed: Color(0xFF000000),
-      tertiaryFixedDim: Color(0xFFFFE5A8), // Very bright amber
-      onTertiaryFixedVariant: Color(0xFF241800),
-      surfaceDim: Color(0xFF0C0A09),
-      surfaceBright: Color(0xFF57534E),
+      tertiaryFixedDim: Color(0xFFA5F3FC),
+      onTertiaryFixedVariant: Color(0xFF041F26),
+      surfaceDim: Color(0xFF020617),
+      surfaceBright: Color(0xFF64748B),
       surfaceContainerLowest: Color(0xFF000000),
-      surfaceContainerLow: Color(0xFF292524),
-      surfaceContainer: Color(0xFF44403C),
-      surfaceContainerHigh: Color(0xFF57534E),
-      surfaceContainerHighest: Color(0xFF78716C),
+      surfaceContainerLow: Color(0xFF1E293B),
+      surfaceContainer: Color(0xFF334155),
+      surfaceContainerHigh: Color(0xFF475569),
+      surfaceContainerHighest: Color(0xFF64748B),
     );
   }
 
@@ -471,40 +560,42 @@ class MaterialTheme {
     ),
     scaffoldBackgroundColor: colorScheme.surface,
     canvasColor: colorScheme.surface,
-    // ───── Input Decoration Theme ─────
+    // ───── Input Decoration Theme (iOS 26 Style) ─────
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
       fillColor: colorScheme.surfaceContainerLow,
-      floatingLabelBehavior: FloatingLabelBehavior.always,
+      floatingLabelBehavior: FloatingLabelBehavior.auto,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
-        borderSide: BorderSide(color: colorScheme.outline, width: 1.5),
+        borderSide: BorderSide(color: colorScheme.outlineVariant, width: 0.5),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
-        borderSide: BorderSide(color: colorScheme.outline, width: 1.5),
+        borderSide: BorderSide(color: colorScheme.outlineVariant, width: 0.5),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
-        borderSide: BorderSide(color: colorScheme.primary, width: 1.5),
+        borderSide: BorderSide(color: colorScheme.primary, width: 1.0),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
-        borderSide: BorderSide(color: colorScheme.error, width: 1.5),
+        borderSide: BorderSide(color: colorScheme.error, width: 1.0),
       ),
       focusedErrorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
-        borderSide: BorderSide(color: colorScheme.error, width: 1.5),
+        borderSide: BorderSide(color: colorScheme.error, width: 1.0),
       ),
       floatingLabelStyle: TextStyle(color: colorScheme.primary),
       labelStyle: TextStyle(color: colorScheme.onSurfaceVariant),
-      hintStyle: TextStyle(color: colorScheme.onSurfaceVariant),
+      hintStyle: TextStyle(
+        color: colorScheme.onSurfaceVariant.withOpacity(0.6),
+      ),
       contentPadding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.lg,
-        vertical: AppSpacing.lg,
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.sm,
       ),
     ),
-    // ───── Filled Button Theme (Primary Actions) ─────
+    // ───── Filled Button Theme (iOS 26 Primary Actions) ─────
     filledButtonTheme: FilledButtonThemeData(
       style: ButtonStyle(
         minimumSize: WidgetStateProperty.all(
@@ -512,8 +603,8 @@ class MaterialTheme {
         ),
         padding: WidgetStateProperty.all(
           const EdgeInsets.symmetric(
-            horizontal: AppSpacing.xl,
-            vertical: AppSpacing.md,
+            horizontal: AppSpacing.lg,
+            vertical: AppSpacing.sm,
           ),
         ),
         shape: WidgetStateProperty.all(
@@ -525,13 +616,13 @@ class MaterialTheme {
         textStyle: WidgetStateProperty.all(
           textTheme.labelLarge?.copyWith(
             fontWeight: FontWeight.w600,
-            fontSize: 16,
-            letterSpacing: 0.2,
+            fontSize: 17, // iOS standard
+            letterSpacing: 0,
           ),
         ),
       ),
     ),
-    // ───── Outlined Button Theme (Secondary Actions) ─────
+    // ───── Outlined Button Theme (iOS 26 Secondary Actions) ─────
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: ButtonStyle(
         minimumSize: WidgetStateProperty.all(
@@ -539,8 +630,8 @@ class MaterialTheme {
         ),
         padding: WidgetStateProperty.all(
           const EdgeInsets.symmetric(
-            horizontal: AppSpacing.xl,
-            vertical: AppSpacing.md,
+            horizontal: AppSpacing.lg,
+            vertical: AppSpacing.sm,
           ),
         ),
         shape: WidgetStateProperty.all(
@@ -550,72 +641,70 @@ class MaterialTheme {
         ),
         side: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.pressed)) {
-            return BorderSide(color: colorScheme.primary, width: 1.5);
+            return BorderSide(color: colorScheme.primary, width: 1.0);
           }
-          return BorderSide(color: colorScheme.outline, width: 1.5);
+          return BorderSide(color: colorScheme.outlineVariant, width: 0.5);
         }),
-        foregroundColor: WidgetStateProperty.all(colorScheme.onSurface),
+        foregroundColor: WidgetStateProperty.all(colorScheme.primary),
         elevation: WidgetStateProperty.all(0),
         textStyle: WidgetStateProperty.all(
           textTheme.labelLarge?.copyWith(
             fontWeight: FontWeight.w600,
-            fontSize: 16,
-            letterSpacing: 0.2,
+            fontSize: 17,
+            letterSpacing: 0,
           ),
         ),
       ),
     ),
-    // ───── Text Button Theme (Tertiary Actions) ─────
+    // ───── Text Button Theme (iOS 26 Tertiary Actions) ─────
     textButtonTheme: TextButtonThemeData(
       style: ButtonStyle(
         minimumSize: WidgetStateProperty.all(
-          const Size(48, AppSpacing.buttonHeightSmall),
+          const Size(AppSpacing.touchTargetMin, AppSpacing.buttonHeightSmall),
         ),
         padding: WidgetStateProperty.all(
           const EdgeInsets.symmetric(
-            horizontal: AppSpacing.md,
-            vertical: AppSpacing.sm,
+            horizontal: AppSpacing.sm,
+            vertical: AppSpacing.xs,
           ),
         ),
         shape: WidgetStateProperty.all(
           RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
+            borderRadius: BorderRadius.circular(AppSpacing.cardRadiusSmall),
           ),
         ),
         foregroundColor: WidgetStateProperty.all(colorScheme.primary),
         textStyle: WidgetStateProperty.all(
           textTheme.labelLarge?.copyWith(
             fontWeight: FontWeight.w600,
-            fontSize: 15,
+            fontSize: 17,
           ),
         ),
       ),
     ),
-    // ───── Polished SegmentedButton Theme ─────
+    // ───── Segmented Button Theme (iOS 26 Sliding Control Style) ─────
     segmentedButtonTheme: SegmentedButtonThemeData(
       style: ButtonStyle(
         // Remove icon from selected state
         iconSize: WidgetStateProperty.all(0),
-        // Compact padding for cleaner look
+        // iOS-aligned padding
         padding: WidgetStateProperty.all(
-          const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        ),
-        // Visible side borders
-        side: WidgetStateProperty.resolveWith((states) {
-          return BorderSide(
-            color: states.contains(WidgetState.selected)
-                ? colorScheme.primary
-                : colorScheme.outline,
-            width: 0,
-          );
-        }),
-        // Rounded corners matching form controls
-        shape: WidgetStateProperty.all(
-          RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
+          const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.xs,
           ),
         ),
-        // Background colors
+        // Subtle glass-edge border
+        side: WidgetStateProperty.all(
+          BorderSide(color: colorScheme.outlineVariant, width: 0.5),
+        ),
+        // iOS rounded corners
+        shape: WidgetStateProperty.all(
+          RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppSpacing.cardRadiusSmall),
+          ),
+        ),
+        // Background colors - glass-inspired
         backgroundColor: WidgetStateProperty.resolveWith((states) {
           if (states.contains(WidgetState.selected)) {
             return colorScheme.primary;
@@ -634,15 +723,153 @@ class MaterialTheme {
           return textTheme.labelMedium?.copyWith(
             fontWeight: states.contains(WidgetState.selected)
                 ? FontWeight.w600
-                : FontWeight.w400,
+                : FontWeight.w500,
+            fontSize: 13,
           );
         }),
-        // Minimum touch target
-        minimumSize: WidgetStateProperty.all(const Size(48, 36)),
-        // No elevation - prevents top border thinning
+        // iOS minimum touch target
+        minimumSize: WidgetStateProperty.all(
+          const Size(AppSpacing.touchTargetMin, 32),
+        ),
+        // No elevation for flat glass look
         elevation: WidgetStateProperty.all(0),
         shadowColor: WidgetStateProperty.all(Colors.transparent),
       ),
+    ),
+    // ───── Card Theme (iOS 26 Glass-Ready) ─────
+    cardTheme: CardTheme(
+      elevation: 0,
+      color: colorScheme.surfaceContainer,
+      surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
+        side: BorderSide(color: colorScheme.outlineVariant, width: 0.5),
+      ),
+      margin: EdgeInsets.zero,
+    ),
+    // ───── AppBar Theme (iOS 26 Style) ─────
+    appBarTheme: AppBarTheme(
+      elevation: 0,
+      scrolledUnderElevation: 0,
+      backgroundColor: colorScheme.surface,
+      surfaceTintColor: Colors.transparent,
+      foregroundColor: colorScheme.onSurface,
+      centerTitle: true,
+      titleTextStyle: textTheme.headlineSmall?.copyWith(
+        color: colorScheme.onSurface,
+        fontWeight: FontWeight.w600,
+        fontSize: 17, // iOS standard
+      ),
+    ),
+    // ───── Bottom Sheet Theme (iOS 26 Modal Style) ─────
+    bottomSheetTheme: BottomSheetThemeData(
+      elevation: 0,
+      backgroundColor: colorScheme.surface,
+      surfaceTintColor: Colors.transparent,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppSpacing.cardRadiusLarge),
+        ),
+      ),
+      showDragHandle: true,
+      dragHandleColor: colorScheme.onSurfaceVariant.withOpacity(0.3),
+      dragHandleSize: const Size(36, 5),
+    ),
+    // ───── Dialog Theme (iOS 26 Alert Style) ─────
+    dialogTheme: DialogTheme(
+      elevation: 0,
+      backgroundColor: colorScheme.surface,
+      surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
+      ),
+      titleTextStyle: textTheme.headlineSmall?.copyWith(
+        color: colorScheme.onSurface,
+        fontWeight: FontWeight.w600,
+        fontSize: 17,
+      ),
+      contentTextStyle: textTheme.bodyMedium?.copyWith(
+        color: colorScheme.onSurfaceVariant,
+        fontSize: 13,
+      ),
+    ),
+    // ───── Switch Theme (iOS Style) ─────
+    switchTheme: SwitchThemeData(
+      thumbColor: WidgetStateProperty.resolveWith((states) {
+        return Colors.white;
+      }),
+      trackColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.selected)) {
+          return colorScheme.primary;
+        }
+        return colorScheme.surfaceContainerHighest;
+      }),
+      trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
+    ),
+    // ───── Slider Theme (iOS Style) ─────
+    sliderTheme: SliderThemeData(
+      activeTrackColor: colorScheme.primary,
+      inactiveTrackColor: colorScheme.surfaceContainerHighest,
+      thumbColor: Colors.white,
+      overlayColor: colorScheme.primary.withOpacity(0.12),
+      trackHeight: 4,
+      thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 14),
+    ),
+    // ───── Divider Theme (iOS Separator) ─────
+    dividerTheme: DividerThemeData(
+      color: colorScheme.outlineVariant,
+      thickness: 0.5,
+      space: 0,
+    ),
+    // ───── List Tile Theme (iOS Settings Style) ─────
+    listTileTheme: ListTileThemeData(
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.pageHorizontalPadding,
+        vertical: AppSpacing.xs,
+      ),
+      minVerticalPadding: AppSpacing.sm,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
+      ),
+      titleTextStyle: textTheme.bodyLarge?.copyWith(
+        color: colorScheme.onSurface,
+        fontSize: 17,
+      ),
+      subtitleTextStyle: textTheme.bodySmall?.copyWith(
+        color: colorScheme.onSurfaceVariant,
+        fontSize: 15,
+      ),
+    ),
+    // ───── Chip Theme (iOS Tag Style) ─────
+    chipTheme: ChipThemeData(
+      elevation: 0,
+      pressElevation: 0,
+      backgroundColor: colorScheme.surfaceContainerLow,
+      selectedColor: colorScheme.primaryContainer,
+      disabledColor: colorScheme.surfaceContainerLow,
+      labelStyle: textTheme.labelMedium?.copyWith(
+        color: colorScheme.onSurface,
+        fontSize: 13,
+      ),
+      side: BorderSide(color: colorScheme.outlineVariant, width: 0.5),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppSpacing.cardRadiusSmall),
+      ),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.xxs,
+      ),
+    ),
+    // ───── Icon Theme ─────
+    iconTheme: IconThemeData(
+      color: colorScheme.onSurface,
+      size: AppSpacing.iconSize,
+    ),
+    // ───── Progress Indicator Theme ─────
+    progressIndicatorTheme: ProgressIndicatorThemeData(
+      color: colorScheme.primary,
+      linearTrackColor: colorScheme.surfaceContainerHighest,
+      circularTrackColor: colorScheme.surfaceContainerHighest,
     ),
   );
 
@@ -685,46 +912,47 @@ class ColorFamily {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// APP SPACING - Material 3 Spacing Scale
+// APP SPACING - iOS HIG Aligned (4pt/8pt Grid)
 // ═══════════════════════════════════════════════════════════════════════════
 
-/// Material 3 compliant spacing based on 4dp grid system
+/// iOS Human Interface Guidelines spacing - 4pt/8pt grid system
 class AppSpacing {
   AppSpacing._();
 
-  // ───── Base Spacing Scale ─────
-  static const double xxs = 4.0;
-  static const double xs = 8.0;
-  static const double sm = 12.0;
-  static const double md = 16.0;
-  static const double lg = 20.0;
-  static const double xl = 24.0;
-  static const double xxl = 32.0;
-  static const double xxxl = 40.0;
+  // ───── Base Spacing Scale (iOS Standard) ─────
+  static const double xxs = 4.0; // Minimum unit
+  static const double xs = 8.0; // Tight spacing
+  static const double sm = 12.0; // Compact spacing
+  static const double md = 16.0; // Standard margin (iOS default)
+  static const double lg = 20.0; // Comfortable spacing
+  static const double xl = 24.0; // Section gaps
+  static const double xxl = 32.0; // Large section breaks
+  static const double xxxl = 40.0; // Major section separators
 
-  // ───── Page Layout ─────
-  static const double pageHorizontalPadding = 24.0;
-  static const double pageVerticalPadding = 24.0;
-  static const double sectionSpacing = 32.0;
+  // ───── Page Layout (iOS Safe Area) ─────
+  static const double pageHorizontalPadding = 20.0; // iOS standard
+  static const double pageVerticalPadding = 20.0;
+  static const double sectionSpacing = 35.0; // iOS grouped list section gap
 
-  // ───── Component Dimensions ─────
-  static const double buttonHeight = 56.0;
-  static const double buttonHeightSmall = 40.0;
-  static const double inputHeight = 56.0;
-  static const double touchTargetMin = 48.0;
+  // ───── Component Dimensions (iOS HIG) ─────
+  static const double buttonHeight = 50.0; // iOS standard
+  static const double buttonHeightSmall = 36.0; // Compact
+  static const double inputHeight = 44.0; // iOS standard row height
+  static const double touchTargetMin = 44.0; // iOS minimum touch target
 
-  // ───── Border Radius ─────
-  static const double cardRadius = 16.0;
-  static const double cardRadiusLarge = 28.0;
-  static const double cardRadiusSmall = 12.0;
-  static const double buttonRadius = 28.0; // Pill-shaped (half of buttonHeight)
-  static const double inputRadius = 12.0;
+  // ───── Border Radius (iOS Rounded Rectangle) ─────
+  static const double cardRadius = 14.0; // iOS card/grouped style
+  static const double cardRadiusLarge = 20.0; // Modal corners
+  static const double cardRadiusSmall = 10.0; // Chips, small cards
+  static const double buttonRadius = 14.0; // iOS button corners
+  static const double buttonRadiusPill = 25.0; // Pill-shaped buttons
+  static const double inputRadius = 10.0; // Text field corners
 
-  // ───── Icon Sizes ─────
-  static const double iconSizeSmall = 20.0;
-  static const double iconSize = 24.0;
-  static const double iconSizeLarge = 32.0;
-  static const double iconSizeHero = 40.0;
+  // ───── Icon Sizes (SF Symbol Scale) ─────
+  static const double iconSizeSmall = 17.0; // SF Symbol small
+  static const double iconSize = 22.0; // SF Symbol default
+  static const double iconSizeLarge = 28.0; // SF Symbol large
+  static const double iconSizeHero = 44.0; // Hero/app icons
 
   // ───── Avatar Sizes ─────
   static const double avatarSize = 48.0;
@@ -897,4 +1125,32 @@ class BrandColors {
   static const Color googleRed = Color(0xFFEA4335);
   static const Color googleYellow = Color(0xFFFBBC05);
   static const Color googleGreen = Color(0xFF34A853);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// LIQUID GLASS - iOS 26 Glass Material Constants
+// ═══════════════════════════════════════════════════════════════════════════
+
+/// Constants for implementing iOS 26 Liquid Glass design language
+class LiquidGlass {
+  LiquidGlass._();
+
+  // ───── Blur Values ─────
+  static const double blurLight = 15.0; // Subtle glass
+  static const double blurMedium = 20.0; // Standard glass
+  static const double blurHeavy = 30.0; // Modal/sheet glass
+
+  // ───── Opacity Values ─────
+  static const double opacityLight = 0.7; // Light mode glass tint
+  static const double opacityDark = 0.3; // Dark mode glass tint
+  static const double opacitySheet = 0.85; // Modal sheet
+
+  // ───── Border Width ─────
+  static const double borderWidth = 0.5; // Glass edge refraction
+  static const double borderWidthThick = 1.0;
+
+  // ───── Shadow ─────
+  static const double shadowBlur = 20.0;
+  static const double shadowOpacity = 0.08;
+  static const Offset shadowOffset = Offset(0, 8);
 }
