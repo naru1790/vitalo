@@ -773,3 +773,71 @@ class FluxColors {
   static const Color lightShine = Color(0xFFFFFFFF); // White shine
   static const Color darkShine = Color(0xFFFDBA74); // Orange 300 shine
 }
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ACTIVITY LEVEL COLORS - Intensity progression
+// ═══════════════════════════════════════════════════════════════════════════
+
+/// Semantic colors for activity level categories
+/// Cool to warm progression representing increasing physical intensity
+class ActivityColors {
+  ActivityColors._();
+
+  /// Desk Bound - Indigo (calm, focused work)
+  static const Color deskBound = Color(0xFF5C6BC0);
+
+  /// Lightly Active - Teal (balanced, moderate)
+  static const Color lightlyActive = Color(0xFF26A69A);
+
+  /// Active Lifestyle - Deep Orange (energetic, busy)
+  static const Color activeLifestyle = Color(0xFFFF8A65);
+
+  /// Very Active - Red (high intensity, power)
+  static const Color veryActive = Color(0xFFEF5350);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// DIETARY IDENTITY COLORS - Food philosophy
+// ═══════════════════════════════════════════════════════════════════════════
+
+/// Semantic colors for dietary identity categories
+class DietColors {
+  DietColors._();
+
+  /// Vegan - Green (plant-based purity)
+  static const Color vegan = Color(0xFF4CAF50);
+
+  /// Vegetarian - Light Green (plant-forward)
+  static const Color vegetarian = Color(0xFF8BC34A);
+
+  /// Eggetarian - Orange (warmth, eggs)
+  static const Color eggetarian = Color(0xFFFF9800);
+
+  /// Omnivore - Pink (flexibility, variety)
+  static const Color omnivore = Color(0xFFE91E63);
+
+  /// Veg days indicator
+  static const Color vegDay = Color(0xFF4CAF50);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// BRAND & INTEGRATION COLORS - Third-party services
+// ═══════════════════════════════════════════════════════════════════════════
+
+/// Brand colors for external service integrations
+class BrandColors {
+  BrandColors._();
+
+  // ───── Health App Icons ─────
+  /// Apple Health pink/red
+  static const Color appleHealth = Color(0xFFFF2D55);
+
+  /// Google Health Connect blue
+  static const Color healthConnect = Color(0xFF4285F4);
+
+  // ───── Google Brand Colors ─────
+  static const Color googleBlue = Color(0xFF4285F4);
+  static const Color googleRed = Color(0xFFEA4335);
+  static const Color googleYellow = Color(0xFFFBBC05);
+  static const Color googleGreen = Color(0xFF34A853);
+}

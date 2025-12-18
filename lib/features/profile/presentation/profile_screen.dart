@@ -7,13 +7,12 @@ import '../../../main.dart';
 import '../../../core/router.dart';
 import '../../../core/services/auth_service.dart';
 import '../../../core/theme.dart';
-import '../../../core/widgets/app_segmented_button.dart';
 import '../../../core/widgets/inline_editable_header.dart';
 import '../../../core/widgets/app_snackbar.dart';
 import '../../../core/widgets/year_picker_sheet.dart';
 import '../../../core/widgets/location_picker_sheet.dart';
-import '../../../core/widgets/dietary_preferences_sheet.dart';
 import '../../../core/widgets/body_health_card.dart';
+import '../../../core/widgets/lifestyle_card.dart';
 import '../../../core/widgets/profile_row.dart';
 import 'widgets/gender_selection.dart';
 
@@ -41,7 +40,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   // Body & Health data
   BodyHealthData _bodyHealthData = const BodyHealthData();
-  DietaryPreferencesResult? _dietaryPref;
+
+  // Lifestyle data (activity, sleep, diet)
+  LifestyleData _lifestyleData = const LifestyleData();
 
   // Health integrations
   bool _healthConnected = false;
@@ -146,23 +147,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         _state = result.stateName;
       });
       talker.info('Location set: ${result.displayWithFlag}');
-    }
-  }
-
-  String _formatDietaryPreference() {
-    if (_dietaryPref == null) return 'Not Set';
-    return _dietaryPref!.displayText;
-  }
-
-  Future<void> _selectDietaryPreference() async {
-    final result = await DietaryPreferencesSheet.show(
-      context: context,
-      initialResult: _dietaryPref,
-    );
-
-    if (result != null && mounted) {
-      setState(() => _dietaryPref = result);
-      talker.info('Dietary preference set: ${result.displayText}');
     }
   }
 
@@ -345,9 +329,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                 const SizedBox(height: AppSpacing.xl),
 
-                _buildSectionTitle('Dietary Preference', colorScheme),
-                const SizedBox(height: AppSpacing.sm),
-                _buildDietaryPreferenceCard(colorScheme),
+                // Lifestyle - activity, sleep, diet
+                LifestyleCard(
+                  data: _lifestyleData,
+                  onDataChanged: (data) {
+                    setState(() => _lifestyleData = data);
+                    talker.info('Lifestyle data updated');
+                  },
+                ),
 
                 const SizedBox(height: AppSpacing.xl),
 
@@ -481,19 +470,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildDietaryPreferenceCard(ColorScheme colorScheme) {
-    final hasValue = _dietaryPref != null;
-    return ProfileCard(
-      child: ProfileTappableRow(
-        icon: Icons.restaurant_menu_rounded,
-        label: 'Dietary Preferences',
-        value: hasValue ? null : 'Set up',
-        subtitle: hasValue ? _formatDietaryPreference() : null,
-        onTap: _selectDietaryPreference,
-      ),
-    );
-  }
-
   Widget _buildPreferencesCard(ColorScheme colorScheme) {
     return ProfileCard(
       child: ProfileSwitchRow(
@@ -513,8 +489,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final healthAppName = isIOS ? 'Apple Health' : 'Health Connect';
     const healthIcon = Icons.favorite_rounded;
     final healthIconColor = isIOS
-        ? const Color(0xFFFF2D55)
-        : const Color(0xFF4285F4);
+        ? BrandColors.appleHealth
+        : BrandColors.healthConnect;
 
     return ProfileCard(
       child: ProfileSwitchRow(

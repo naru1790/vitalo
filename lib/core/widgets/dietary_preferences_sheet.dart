@@ -14,25 +14,25 @@ enum DietIdentity {
     'Vegan',
     'Plant-based diet, no dairy or meat',
     Icons.eco_rounded,
-    Color(0xFF4CAF50),
+    DietColors.vegan,
   ),
   vegetarian(
     'Vegetarian',
     'No meat or fish, dairy is fine',
     Icons.spa_rounded,
-    Color(0xFF8BC34A),
+    DietColors.vegetarian,
   ),
   eggetarian(
     'Eggetarian',
     'Vegetarian diet that includes eggs',
     Icons.egg_rounded,
-    Color(0xFFFF9800),
+    DietColors.eggetarian,
   ),
   omnivore(
     'Omnivore',
     'Flexible diet, eats all food types',
     Icons.restaurant_rounded,
-    Color(0xFFE91E63),
+    DietColors.omnivore,
   );
 
   const DietIdentity(this.label, this.description, this.icon, this.color);
@@ -205,7 +205,7 @@ class _DietaryPreferencesSheetState extends State<DietaryPreferencesSheet> {
 
   // Sunday = 0, Saturday = 6
   static const _weekDays = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
-  static const _vegDayColor = Color(0xFF4CAF50); // Green for veg days
+  static const _vegDayColor = DietColors.vegDay;
 
   @override
   void initState() {

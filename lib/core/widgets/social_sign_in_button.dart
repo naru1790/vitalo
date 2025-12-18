@@ -82,12 +82,6 @@ class GoogleLogo extends StatelessWidget {
 }
 
 class _GoogleLogoPainter extends CustomPainter {
-  // Official Google brand colors
-  static const _blue = Color(0xFF4285F4);
-  static const _red = Color(0xFFEA4335);
-  static const _yellow = Color(0xFFFBBC05);
-  static const _green = Color(0xFF34A853);
-
   @override
   void paint(Canvas canvas, Size size) {
     // Scale factor to fit the 20x20 size (original viewBox is 24x24)
@@ -105,7 +99,7 @@ class _GoogleLogoPainter extends CustomPainter {
       ..lineTo(16.325, 21.09)
       ..lineTo(20.185, 21.09)
       ..cubicTo(22.445, 19, 23.745, 15.92, 23.745, 12.27);
-    canvas.drawPath(bluePath, Paint()..color = _blue);
+    canvas.drawPath(bluePath, Paint()..color = BrandColors.googleBlue);
 
     // Green section (bottom right)
     final greenPath = Path()
@@ -117,7 +111,7 @@ class _GoogleLogoPainter extends CustomPainter {
       ..lineTo(1.545, 14.29)
       ..lineTo(1.545, 17.38)
       ..cubicTo(3.515, 21.3, 7.565, 24, 12.255, 24);
-    canvas.drawPath(greenPath, Paint()..color = _green);
+    canvas.drawPath(greenPath, Paint()..color = BrandColors.googleGreen);
 
     // Yellow section (bottom left)
     final yellowPath = Path()
@@ -129,7 +123,7 @@ class _GoogleLogoPainter extends CustomPainter {
       ..cubicTo(0.725, 8.24, 0.255, 10.06, 0.255, 12)
       ..cubicTo(0.255, 13.94, 0.725, 15.76, 1.545, 17.38)
       ..lineTo(5.525, 14.29);
-    canvas.drawPath(yellowPath, Paint()..color = _yellow);
+    canvas.drawPath(yellowPath, Paint()..color = BrandColors.googleYellow);
 
     // Red section (top)
     final redPath = Path()
@@ -140,7 +134,7 @@ class _GoogleLogoPainter extends CustomPainter {
       ..cubicTo(7.565, 0, 3.515, 2.7, 1.545, 6.62)
       ..lineTo(5.525, 9.71)
       ..cubicTo(6.475, 6.86, 9.125, 4.75, 12.255, 4.75);
-    canvas.drawPath(redPath, Paint()..color = _red);
+    canvas.drawPath(redPath, Paint()..color = BrandColors.googleRed);
   }
 
   @override
