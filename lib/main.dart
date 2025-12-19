@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -7,7 +7,7 @@ import 'package:talker_flutter/talker_flutter.dart';
 import 'core/config.dart';
 import 'core/router.dart';
 import 'core/services/secure_storage_service.dart';
-import 'core/theme.dart';
+import 'design/adaptive/adaptive_shell.dart';
 
 /// Global Talker instance for observability
 final talker = Talker(
@@ -56,63 +56,25 @@ Future<void> main() async {
 
   talker.info('App initialized successfully');
 
-  runApp(const ProviderScope(child: VitaloApp()));
+  runApp(const ProviderScope(child: AppRoot()));
 }
 
-class VitaloApp extends StatelessWidget {
-  const VitaloApp({super.key});
+/// Platform-agnostic root widget.
+///
+/// Uses [WidgetsApp.router] to decouple framework ownership from main.dart.
+/// No theme, no platform branching, no appearance logic.
+/// AdaptiveShell will handle platform and brightness resolution.
+class AppRoot extends StatelessWidget {
+  const AppRoot({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Get system brightness for Cupertino theme
-    final brightness = MediaQuery.platformBrightnessOf(context);
-
-    return CupertinoApp.router(
+    return WidgetsApp.router(
       title: 'Vitalo',
       debugShowCheckedModeBanner: false,
-      // iOS 26 Liquid Glass theme — Pure Cupertino
-      theme: CupertinoThemeData(
-        brightness: brightness,
-        // Brand accent color (vibrant orange)
-        primaryColor: VitaloColors.accent,
-        primaryContrastingColor: CupertinoColors.white,
-        // Background colors from VitaloColors
-        scaffoldBackgroundColor: VitaloColors.background,
-        barBackgroundColor: VitaloColors.background.withAlpha(
-          (LiquidGlass.opacityNavBar * 255).round(),
-        ),
-        // Typography — Apple HIG SF Pro scale
-        textTheme: const CupertinoTextThemeData(
-          primaryColor: VitaloColors.accent,
-          textStyle: TextStyle(
-            fontSize: 17,
-            fontWeight: FontWeight.w400,
-            letterSpacing: -0.41,
-            height: 1.3,
-            color: CupertinoColors.label,
-          ),
-          navTitleTextStyle: TextStyle(
-            fontSize: 17,
-            fontWeight: FontWeight.w600,
-            letterSpacing: -0.41,
-            color: CupertinoColors.label,
-          ),
-          navLargeTitleTextStyle: TextStyle(
-            fontSize: 34,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 0.37,
-            height: 1.2,
-            color: CupertinoColors.label,
-          ),
-          actionTextStyle: TextStyle(
-            fontSize: 17,
-            fontWeight: FontWeight.w400,
-            letterSpacing: -0.41,
-            color: VitaloColors.accent,
-          ),
-        ),
-      ),
+      color: const Color(0xFFFFFFFF),
       routerConfig: router,
+      builder: (context, child) => AdaptiveShell(child: child!),
     );
   }
 }
