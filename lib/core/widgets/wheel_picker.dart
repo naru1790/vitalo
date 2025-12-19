@@ -163,7 +163,7 @@ class SheetHeader extends StatelessWidget {
                     horizontal: AppSpacing.lg,
                     vertical: AppSpacing.sm,
                   ),
-                  minSize: 0,
+                  minimumSize: Size.zero,
                   child: Text(
                     'Done',
                     style: TextStyle(

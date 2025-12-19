@@ -287,7 +287,7 @@ class _WeightPickerSheetState extends State<WeightPickerSheet>
                             horizontal: AppSpacing.lg,
                             vertical: AppSpacing.sm,
                           ),
-                          minSize: 0,
+                          minimumSize: Size.zero,
                           onPressed: _confirmSelection,
                           child: const Text('Done'),
                         ),
