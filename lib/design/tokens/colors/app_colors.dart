@@ -1,0 +1,52 @@
+import 'dart:ui' show Color;
+
+/// Semantic color contract.
+///
+/// This interface defines meaning (roles), not palettes or themes.
+/// Concrete implementations are parallel interpretations (light vs dark)
+/// and platform interpretations (iOS vs Android).
+abstract class AppColors {
+  const AppColors();
+
+  // Brand
+  Color get brandPrimary;
+  Color get brandSecondary;
+  Color get brandAccent;
+  Color get brandSurface;
+
+  // Neutrals
+  Color get neutralBase;
+  Color get neutralSurface;
+  Color get surfaceElevated;
+  Color get neutralDivider;
+
+  // Text
+  Color get textPrimary;
+  Color get textSecondary;
+  Color get textTertiary;
+  Color get textInverse;
+
+  // Feedback
+  Color get feedbackSuccess;
+  Color get feedbackWarning;
+  Color get feedbackError;
+  Color get feedbackInfo;
+
+  // Interactive States
+  Color get stateActive;
+  Color get stateHover;
+  Color get stateDisabled;
+  Color get stateFocus;
+  Color get stateSelected;
+
+  // Overlays
+  Color get overlayDark;
+  Color get overlayLight;
+  Color get scrim;
+  Color get skeleton;
+
+  // Data Visualization
+  Color get chartPrimary;
+  Color get chartSecondary;
+  Color get chartTertiary;
+}
