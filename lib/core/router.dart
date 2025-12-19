@@ -1,8 +1,9 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../main.dart';
+import '../design/adaptive/nav_motion.dart';
 import '../features/auth/presentation/email_signin_screen.dart';
 import '../features/dashboard/presentation/dashboard_screen.dart';
 import '../features/landing/presentation/landing_screen.dart';
@@ -21,42 +22,6 @@ abstract class AppRoutes {
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
-CustomTransitionPage<T> _buildSmoothTransition<T>({
-  required BuildContext context,
-  required GoRouterState state,
-  required Widget child,
-  bool slideFromRight = true,
-}) {
-  return CustomTransitionPage<T>(
-    key: state.pageKey,
-    child: child,
-    transitionDuration: const Duration(milliseconds: 300),
-    reverseTransitionDuration: const Duration(milliseconds: 250),
-    transitionsBuilder: (context, animation, secondaryAnimation, child) {
-      final curvedAnimation = CurvedAnimation(
-        parent: animation,
-        curve: Curves.easeOutCubic,
-        reverseCurve: Curves.easeInCubic,
-      );
-
-      final fadeAnimation = Tween<double>(
-        begin: 0.0,
-        end: 1.0,
-      ).animate(curvedAnimation);
-
-      final slideAnimation = Tween<Offset>(
-        begin: Offset(slideFromRight ? 0.05 : -0.05, 0.0),
-        end: Offset.zero,
-      ).animate(curvedAnimation);
-
-      return FadeTransition(
-        opacity: fadeAnimation,
-        child: SlideTransition(position: slideAnimation, child: child),
-      );
-    },
-  );
-}
-
 final router = GoRouter(
   navigatorKey: _rootNavigatorKey,
   initialLocation: AppRoutes.home,
@@ -65,56 +30,55 @@ final router = GoRouter(
     GoRoute(
       path: AppRoutes.home,
       name: 'home',
-      pageBuilder: (context, state) => _buildSmoothTransition(
-        context: context,
-        state: state,
+      pageBuilder: (context, state) => AdaptivePage<void>(
+        key: state.pageKey,
         child: const LandingScreen(),
-        slideFromRight: false,
+        intent: NavTransition.peer,
       ),
     ),
     GoRoute(
       path: AppRoutes.emailSignin,
       name: 'emailSignin',
-      pageBuilder: (context, state) => _buildSmoothTransition(
-        context: context,
-        state: state,
+      pageBuilder: (context, state) => AdaptivePage<void>(
+        key: state.pageKey,
         child: const EmailSignInScreen(),
+        intent: NavTransition.push,
       ),
     ),
     GoRoute(
       path: AppRoutes.dashboard,
       name: 'dashboard',
-      pageBuilder: (context, state) => _buildSmoothTransition(
-        context: context,
-        state: state,
+      pageBuilder: (context, state) => AdaptivePage<void>(
+        key: state.pageKey,
         child: const DashboardScreen(),
+        intent: NavTransition.peer,
       ),
     ),
     GoRoute(
       path: AppRoutes.profile,
       name: 'profile',
-      pageBuilder: (context, state) => _buildSmoothTransition(
-        context: context,
-        state: state,
+      pageBuilder: (context, state) => AdaptivePage<void>(
+        key: state.pageKey,
         child: const ProfileScreen(),
+        intent: NavTransition.push,
       ),
     ),
     GoRoute(
       path: AppRoutes.privacy,
       name: 'privacy',
-      pageBuilder: (context, state) => _buildSmoothTransition(
-        context: context,
-        state: state,
+      pageBuilder: (context, state) => AdaptivePage<void>(
+        key: state.pageKey,
         child: const PrivacyPolicyScreen(),
+        intent: NavTransition.modal,
       ),
     ),
     GoRoute(
       path: AppRoutes.terms,
       name: 'terms',
-      pageBuilder: (context, state) => _buildSmoothTransition(
-        context: context,
-        state: state,
+      pageBuilder: (context, state) => AdaptivePage<void>(
+        key: state.pageKey,
         child: const TermsOfServiceScreen(),
+        intent: NavTransition.modal,
       ),
     ),
   ],

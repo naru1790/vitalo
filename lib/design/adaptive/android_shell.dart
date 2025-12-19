@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 
 import '../tokens/color.dart';
+import '../tokens/elevation.dart';
+import '../tokens/shape.dart';
 import '../tokens/typography.dart';
+import 'android_nav_motion_delegate.dart';
+import 'nav_motion.dart';
 
 /// Android platform shell.
 ///
@@ -22,6 +26,8 @@ class AndroidShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final typography = AppTextStyles.of;
+    final shape = AppShapeTokens.of;
+    final elevation = AppElevationTokens.of;
 
     final colorScheme = ColorScheme(
       brightness: brightness,
@@ -44,38 +50,42 @@ class AndroidShell extends StatelessWidget {
       bodySmall: typography.caption.copyWith(color: colors.textSecondary),
     );
 
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: colorScheme,
-        brightness: brightness,
-        scaffoldBackgroundColor: colors.neutralBase,
-        textTheme: textTheme,
-        dividerTheme: DividerThemeData(
-          color: colors.neutralDivider,
-          thickness: 1.0,
+    final theme = ThemeData(
+      colorScheme: colorScheme,
+      brightness: brightness,
+      scaffoldBackgroundColor: colors.neutralBase,
+      textTheme: textTheme,
+      dividerTheme: DividerThemeData(
+        color: colors.neutralDivider,
+        thickness: shape.dividerSubtle,
+      ),
+      appBarTheme: AppBarTheme(
+        backgroundColor: colors.neutralSurface,
+        foregroundColor: colors.textPrimary,
+        elevation: elevation.none,
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        border: OutlineInputBorder(
+          borderSide: BorderSide(color: colors.neutralDivider),
         ),
-        appBarTheme: AppBarTheme(
-          backgroundColor: colors.neutralSurface,
-          foregroundColor: colors.textPrimary,
-          elevation: 0,
+        enabledBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: colors.neutralDivider),
         ),
-        inputDecorationTheme: InputDecorationTheme(
-          border: OutlineInputBorder(
-            borderSide: BorderSide(color: colors.neutralDivider),
+        focusedBorder: OutlineInputBorder(
+          borderSide: BorderSide(
+            color: colors.brandPrimary,
+            width: shape.strokeVisible,
           ),
-          enabledBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: colors.neutralDivider),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: colors.brandPrimary, width: 2.0),
-          ),
-          errorBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: colors.feedbackError),
-          ),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: colors.feedbackError),
         ),
       ),
-      home: child,
+    );
+
+    return NavMotionScope(
+      delegate: const AndroidNavMotionDelegate(),
+      child: Theme(data: theme, child: child),
     );
   }
 }

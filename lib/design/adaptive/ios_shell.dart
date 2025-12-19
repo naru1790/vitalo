@@ -1,7 +1,10 @@
 import 'package:flutter/cupertino.dart';
 
 import '../tokens/color.dart';
+import '../tokens/opacity.dart';
 import '../tokens/typography.dart';
+import 'ios_nav_motion_delegate.dart';
+import 'nav_motion.dart';
 
 /// iOS platform shell.
 ///
@@ -22,30 +25,30 @@ class IosShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final typography = AppTextStyles.of;
+    final opacity = AppOpacityTokens.of;
 
-    return CupertinoApp(
-      debugShowCheckedModeBanner: false,
-      theme: CupertinoThemeData(
-        brightness: brightness,
-        primaryColor: colors.brandPrimary,
-        primaryContrastingColor: colors.textInverse,
-        scaffoldBackgroundColor: colors.neutralBase,
-        barBackgroundColor: colors.neutralBase.withOpacity(0.9),
-        textTheme: CupertinoTextThemeData(
-          primaryColor: colors.brandPrimary,
-          textStyle: typography.body.copyWith(color: colors.textPrimary),
-          navTitleTextStyle: typography.title.copyWith(
-            color: colors.textPrimary,
-          ),
-          navLargeTitleTextStyle: typography.display.copyWith(
-            color: colors.textPrimary,
-          ),
-          actionTextStyle: typography.label.copyWith(
-            color: colors.brandPrimary,
-          ),
-        ),
+    final theme = CupertinoThemeData(
+      brightness: brightness,
+      primaryColor: colors.brandPrimary,
+      primaryContrastingColor: colors.textInverse,
+      scaffoldBackgroundColor: colors.neutralBase,
+      barBackgroundColor: colors.neutralBase.withAlpha(
+        (opacity.barBackground * 255).round(),
       ),
-      home: child,
+      textTheme: CupertinoTextThemeData(
+        primaryColor: colors.brandPrimary,
+        textStyle: typography.body.copyWith(color: colors.textPrimary),
+        navTitleTextStyle: typography.title.copyWith(color: colors.textPrimary),
+        navLargeTitleTextStyle: typography.display.copyWith(
+          color: colors.textPrimary,
+        ),
+        actionTextStyle: typography.label.copyWith(color: colors.brandPrimary),
+      ),
+    );
+
+    return NavMotionScope(
+      delegate: const IosNavMotionDelegate(),
+      child: CupertinoTheme(data: theme, child: child),
     );
   }
 }
