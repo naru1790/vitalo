@@ -5,6 +5,7 @@ import '../tokens/opacity.dart';
 import '../tokens/typography.dart';
 import 'ios_nav_motion_delegate.dart';
 import 'nav_motion.dart';
+import 'platform/app_platform_scope.dart';
 
 /// iOS platform shell.
 ///
@@ -48,7 +49,10 @@ class IosShell extends StatelessWidget {
 
     return NavMotionScope(
       delegate: const IosNavMotionDelegate(),
-      child: CupertinoTheme(data: theme, child: child),
+      child: AppPlatformScope(
+        platform: AppPlatform.ios,
+        child: CupertinoTheme(data: theme, child: child),
+      ),
     );
   }
 }

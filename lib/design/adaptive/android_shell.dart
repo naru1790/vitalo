@@ -6,6 +6,7 @@ import '../tokens/shape.dart';
 import '../tokens/typography.dart';
 import 'android_nav_motion_delegate.dart';
 import 'nav_motion.dart';
+import 'platform/app_platform_scope.dart';
 
 /// Android platform shell.
 ///
@@ -85,7 +86,10 @@ class AndroidShell extends StatelessWidget {
 
     return NavMotionScope(
       delegate: const AndroidNavMotionDelegate(),
-      child: Theme(data: theme, child: child),
+      child: AppPlatformScope(
+        platform: AppPlatform.android,
+        child: Theme(data: theme, child: child),
+      ),
     );
   }
 }
