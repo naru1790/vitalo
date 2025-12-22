@@ -13,6 +13,12 @@ import '../../tokens/icons.dart' as icons;
 /// Feature code selects intent; values are resolved internally.
 /// Raw doubles are never exposed.
 enum AppIconSize {
+  /// Inline size for low-priority affordances (12px).
+  ///
+  /// Use for inline links, legal footers, and contexts where
+  /// the icon must be visually secondary to accompanying text.
+  xs,
+
   /// Compact size for dense layouts (16px).
   small,
 
@@ -69,6 +75,7 @@ class AppIcon extends StatelessWidget {
     super.key,
     this.size = AppIconSize.medium,
     this.color = AppIconColor.primary,
+    this.colorOverride,
     this.semanticLabel,
   });
 
@@ -79,7 +86,20 @@ class AppIcon extends StatelessWidget {
   final AppIconSize size;
 
   /// Semantic color role.
+  ///
+  /// Used when [colorOverride] is null.
   final AppIconColor color;
+
+  /// Explicit semantic color override.
+  ///
+  /// When provided, bypasses [color] role resolution.
+  /// Use ONLY with colors from [AppColors] (e.g., `colors.brandPrimary`).
+  /// Raw color values are forbidden.
+  ///
+  /// This exists for contexts where the icon must match a specific
+  /// semantic color that is not part of the standard role set
+  /// (e.g., brandPrimary for legal links).
+  final Color? colorOverride;
 
   /// Accessibility label for screen readers.
   final String? semanticLabel;
@@ -94,8 +114,8 @@ class AppIcon extends StatelessWidget {
     // Resolve size from semantic enum.
     final double iconSize = _resolveSize();
 
-    // Resolve color from shell-injected platform theme.
-    final Color iconColor = _resolveColor(context, platform);
+    // Resolve color: override takes precedence, otherwise use role.
+    final Color iconColor = colorOverride ?? _resolveColor(context, platform);
 
     return Icon(
       iconData,
@@ -110,6 +130,7 @@ class AppIcon extends StatelessWidget {
   /// These values are frozen. Feature code cannot override.
   double _resolveSize() {
     return switch (size) {
+      AppIconSize.xs => 12.0,
       AppIconSize.small => 16.0,
       AppIconSize.medium => 24.0,
       AppIconSize.large => 32.0,

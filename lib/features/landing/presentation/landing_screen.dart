@@ -45,7 +45,7 @@ class _BrandHookSection extends StatelessWidget {
         physics: const NeverScrollableScrollPhysics(),
         child: Padding(
           padding: EdgeInsets.symmetric(
-            horizontal: spacing.xl,
+            horizontal: spacing.lg,
             vertical: spacing.lg,
           ),
           child: Column(
@@ -64,6 +64,7 @@ class _BrandHookSection extends StatelessWidget {
               const AppText(
                 'Awaken Your Intelligent Wellness',
                 variant: AppTextVariant.title,
+                maxLines: 2,
                 align: TextAlign.center,
               ),
               SizedBox(height: spacing.sm),
@@ -162,7 +163,7 @@ class _ActionsSectionState extends State<_ActionsSection> {
 
     return Padding(
       padding: EdgeInsets.symmetric(
-        horizontal: spacing.xl,
+        horizontal: spacing.lg,
         vertical: spacing.lg,
       ),
       child: Column(
