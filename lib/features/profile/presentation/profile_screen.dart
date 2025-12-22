@@ -9,7 +9,7 @@ import '../../../core/router.dart';
 import '../../../core/services/auth_service.dart';
 import '../../../core/theme.dart';
 import '../../../core/widgets/inline_editable_header.dart';
-import '../../../core/widgets/app_snackbar.dart';
+import '../../../design/adaptive/error_feedback.dart';
 import '../../../core/widgets/year_picker_sheet.dart';
 import '../../../core/widgets/location_picker_sheet.dart';
 import '../../../core/widgets/body_health_card.dart';
@@ -184,7 +184,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       final error = await _authService.signOut();
       if (error != null && mounted) {
         talker.warning('Sign out failed: $error');
-        AppSnackBar.showError(context, error);
+        AppErrorFeedback.show(context, error);
       } else if (mounted) {
         talker.info('Sign out successful');
         context.go(AppRoutes.home);
@@ -239,7 +239,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     if (confirmed == true && mounted) {
       talker.info('Account deletion confirmed');
-      AppSnackBar.showWarning(context, 'Account deletion coming soon.');
+      // Informational/warning global feedback is forbidden by contract.
     }
   }
 

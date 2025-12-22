@@ -5,6 +5,7 @@ import '../platform/app_platform_scope.dart';
 import '../../tokens/elevation.dart';
 import '../../tokens/icons.dart';
 import '../../tokens/motion.dart';
+import '../error_feedback.dart';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // PUBLIC API — ACTIVE FREEZE ZONE
@@ -320,11 +321,17 @@ final class _MaterialPageStructure extends StatelessWidget {
       resizeToAvoidBottomInset: resizeToAvoidBottomInset,
     );
 
-    return Scaffold(
-      backgroundColor: backgroundColor,
-      resizeToAvoidBottomInset: resizeToAvoidBottomInset,
-      appBar: appBar,
-      body: composedBody,
+    // Provide a page-scoped ScaffoldMessenger + error feedback host.
+    // This ensures transient errors do not survive navigation.
+    return ScaffoldMessenger(
+      child: ErrorFeedbackHost(
+        child: Scaffold(
+          backgroundColor: backgroundColor,
+          resizeToAvoidBottomInset: resizeToAvoidBottomInset,
+          appBar: appBar,
+          body: composedBody,
+        ),
+      ),
     );
   }
 
@@ -478,7 +485,7 @@ final class _CupertinoPageStructure extends StatelessWidget {
       backgroundColor: backgroundColor,
       resizeToAvoidBottomInset: resizeToAvoidBottomInset,
       navigationBar: navigationBar,
-      child: composedBody,
+      child: ErrorFeedbackHost(child: composedBody),
     );
   }
 

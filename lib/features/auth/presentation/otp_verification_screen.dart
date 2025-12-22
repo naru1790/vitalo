@@ -9,7 +9,7 @@ import '../../../core/services/auth_service.dart';
 import '../../../core/theme.dart';
 import '../../../core/widgets/loading_button.dart';
 import '../../../core/widgets/otp_input.dart';
-import '../../../core/widgets/app_snackbar.dart';
+import '../../../design/adaptive/error_feedback.dart';
 
 class OtpVerificationScreen extends StatefulWidget {
   const OtpVerificationScreen({super.key, required this.email, this.onSuccess});
@@ -165,10 +165,10 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     switch (result) {
       case AuthFailure(:final message):
         talker.warning('Resend OTP failed: $message');
-        AppSnackBar.showError(context, message);
+        AppErrorFeedback.show(context, message);
       case AuthSuccess():
         talker.info('OTP resent successfully');
-        AppSnackBar.showSuccess(context, 'Verification code sent!');
+        // Success is silent by contract.
         _startCountdown();
     }
   }

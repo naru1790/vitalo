@@ -8,7 +8,7 @@ import '../../../design/adaptive/widgets/app_text.dart';
 import '../../../design/adaptive/widgets/auth_action_stack.dart';
 import '../../../design/adaptive/widgets/auth_footer_links.dart';
 import '../../../design/tokens/spacing.dart';
-import '../../../core/widgets/app_snackbar.dart';
+import '../../../design/adaptive/error_feedback.dart';
 import '../../../core/widgets/flux_mascot.dart';
 import '../../../main.dart';
 
@@ -122,7 +122,7 @@ class _ActionsSectionState extends State<_ActionsSection> {
 
     if (error != null) {
       talker.warning('$provider OAuth failed: $error');
-      AppSnackBar.showError(context, error);
+      AppErrorFeedback.show(context, error);
     } else {
       talker.info('$provider OAuth successful, navigating to dashboard');
       context.go(AppRoutes.dashboard);

@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/router.dart';
 import '../../../core/services/auth_service.dart';
 import '../../../core/theme.dart';
-import '../../../core/widgets/app_snackbar.dart';
+import '../../../design/adaptive/error_feedback.dart';
 import '../../../core/widgets/loading_button.dart';
 import '../../../core/widgets/otp_input.dart';
 import '../../../main.dart';
@@ -106,7 +106,7 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
     switch (result) {
       case AuthFailure(:final message):
         talker.warning('OTP send failed: $message');
-        AppSnackBar.showError(context, message);
+        AppErrorFeedback.show(context, message);
       case AuthSuccess():
         talker.info('OTP sent successfully, moving to verification step');
         setState(() => _isStep2 = true);
@@ -141,11 +141,11 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
     switch (result) {
       case AuthFailure(:final message):
         talker.warning('OTP resend failed: $message');
-        AppSnackBar.showError(context, message);
+        AppErrorFeedback.show(context, message);
       case AuthSuccess():
         talker.info('OTP resent successfully');
         _startResendCountdown();
-        AppSnackBar.showSuccess(context, 'Code sent!');
+      // Success is silent by contract.
     }
   }
 
@@ -156,7 +156,7 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
       talker.debug(
         'OTP verification blocked: incomplete code (${_otpController.text.length}/6)',
       );
-      AppSnackBar.showError(context, 'Please enter the complete code');
+      AppErrorFeedback.show(context, 'Please enter the complete code');
       return;
     }
 
@@ -178,7 +178,7 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
         case AuthFailure(:final message):
           talker.warning('OTP verification failed: $message');
           setState(() => _isLoading = false);
-          AppSnackBar.showError(context, message);
+          AppErrorFeedback.show(context, message);
           _otpController.clear();
         case AuthSuccess(:final data):
           if (data != null && mounted) {
@@ -187,7 +187,7 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
           } else {
             talker.error('OTP verification returned null user data');
             setState(() => _isLoading = false);
-            AppSnackBar.showError(
+            AppErrorFeedback.show(
               context,
               'Verification failed. Please try again.',
             );
@@ -198,7 +198,7 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
       talker.error('OTP verification exception', e, stack);
       if (mounted) {
         setState(() => _isLoading = false);
-        AppSnackBar.showError(context, 'An error occurred. Please try again.');
+        AppErrorFeedback.show(context, 'An error occurred. Please try again.');
         _otpController.clear();
       }
     }
