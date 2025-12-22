@@ -3,12 +3,26 @@ import 'package:flutter/material.dart';
 
 import '../platform/app_platform_scope.dart';
 import '../../tokens/icons.dart' as icons;
-import '../../tokens/motion.dart';
-import '../../tokens/shape.dart';
 import '../../tokens/spacing.dart';
+import 'app_icon.dart';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // PUBLIC API — ACTIVE FREEZE ZONE
+// ═══════════════════════════════════════════════════════════════════════════
+//
+// Design decision:
+// AuthSignInButton prioritizes native platform look & feel.
+// Semantics are universal; rendering uses native platform buttons.
+// Visual parity across platforms is intentionally NOT enforced.
+//
+// Emphasis mapping:
+// ┌───────────┬─────────────────────────┬──────────────────────────┐
+// │ Emphasis  │ iOS                     │ Android                  │
+// ├───────────┼─────────────────────────┼──────────────────────────┤
+// │ primary   │ CupertinoButton.filled  │ FilledButton             │
+// │ secondary │ CupertinoButton         │ FilledButton.tonal       │
+// │ tertiary  │ CupertinoButton (text)  │ TextButton               │
+// └───────────┴─────────────────────────┴──────────────────────────┘
 // ═══════════════════════════════════════════════════════════════════════════
 
 /// Authentication provider identity.
@@ -30,14 +44,18 @@ enum AuthProvider {
 /// Semantic emphasis for auth buttons.
 ///
 /// Controls visual weight without exposing color or style.
+/// Platform rendering determines actual appearance.
 enum AuthButtonEmphasis {
   /// High prominence — primary CTA.
+  /// iOS: CupertinoButton.filled | Android: FilledButton
   primary,
 
   /// Medium prominence — secondary option.
+  /// iOS: CupertinoButton | Android: FilledButton.tonal
   secondary,
 
   /// Low prominence — tertiary/ghost action.
+  /// iOS: CupertinoButton (text) | Android: TextButton
   tertiary,
 }
 
@@ -157,6 +175,15 @@ class AuthSignInButton extends StatelessWidget {
 // PRIVATE IMPLEMENTATIONS
 // ═══════════════════════════════════════════════════════════════════════════
 
+/// Minimum button height for accessibility (WCAG/Apple/Material ≥ 44dp).
+const double _kMinButtonHeight = 48.0;
+
+/// iOS implementation using native Cupertino buttons.
+///
+/// Uses CupertinoButton variants to ensure native iOS feel:
+/// - Press feedback is opacity-based (built into CupertinoButton)
+/// - No custom animations or color transitions
+/// - Text styling delegated to Cupertino conventions
 class _CupertinoAuthButton extends StatelessWidget {
   const _CupertinoAuthButton({
     required this.label,
@@ -174,87 +201,104 @@ class _CupertinoAuthButton extends StatelessWidget {
   final bool enabled;
   final bool loading;
 
+  bool get _isInteractive => enabled && !loading;
+
   @override
   Widget build(BuildContext context) {
     final theme = CupertinoTheme.of(context);
     final spacing = Spacing.of;
-    final shape = AppShapeTokens.of;
-    final motion = AppMotionTokens.of;
 
-    final isInteractive = enabled && !loading;
+    // Build content row (icon + label or loader).
+    final content = _buildContent(context, theme, spacing);
 
-    // Resolve colors based on emphasis
-    final Color backgroundColor;
-    final Color foregroundColor;
+    // Dispatch to appropriate native button based on emphasis.
+    return switch (emphasis) {
+      AuthButtonEmphasis.primary => _buildFilledButton(context, content),
+      AuthButtonEmphasis.secondary => _buildTonalButton(context, content),
+      AuthButtonEmphasis.tertiary => _buildTextButton(context, content),
+    };
+  }
 
-    switch (emphasis) {
-      case AuthButtonEmphasis.primary:
-        backgroundColor = theme.primaryColor;
-        foregroundColor = CupertinoColors.white;
-      case AuthButtonEmphasis.secondary:
-        backgroundColor = CupertinoColors.systemGrey5.resolveFrom(context);
-        foregroundColor =
-            theme.textTheme.textStyle.color ?? CupertinoColors.label;
-      case AuthButtonEmphasis.tertiary:
-        backgroundColor = CupertinoColors.transparent;
-        foregroundColor = theme.primaryColor;
+  /// Primary: CupertinoButton.filled — prominent filled style.
+  Widget _buildFilledButton(BuildContext context, Widget content) {
+    return SizedBox(
+      width: double.infinity,
+      child: CupertinoButton.filled(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        onPressed: _isInteractive ? onPressed : null,
+        child: content,
+      ),
+    );
+  }
+
+  /// Secondary: CupertinoButton with gray background — less prominent.
+  Widget _buildTonalButton(BuildContext context, Widget content) {
+    return SizedBox(
+      width: double.infinity,
+      child: CupertinoButton(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        color: CupertinoColors.systemGrey5.resolveFrom(context),
+        onPressed: _isInteractive ? onPressed : null,
+        child: content,
+      ),
+    );
+  }
+
+  /// Tertiary: CupertinoButton borderless — minimal emphasis.
+  Widget _buildTextButton(BuildContext context, Widget content) {
+    return SizedBox(
+      width: double.infinity,
+      child: CupertinoButton(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        onPressed: _isInteractive ? onPressed : null,
+        child: content,
+      ),
+    );
+  }
+
+  Widget _buildContent(
+    BuildContext context,
+    CupertinoThemeData theme,
+    AppSpacing spacing,
+  ) {
+    if (loading) {
+      // Loader replaces content; CupertinoButton provides size stability.
+      // No color override — CupertinoActivityIndicator uses system default.
+      return const CupertinoActivityIndicator();
     }
 
-    return Semantics(
-      button: true,
-      enabled: isInteractive,
-      label: label,
-      child: CupertinoButton(
-        padding: EdgeInsets.zero,
-        onPressed: isInteractive ? onPressed : null,
-        child: AnimatedContainer(
-          duration: motion.fast,
-          curve: Curves.easeInOut,
-          constraints: const BoxConstraints(minHeight: 50),
-          decoration: BoxDecoration(
-            color: isInteractive
-                ? backgroundColor
-                : backgroundColor.withValues(alpha: 0.5),
-            borderRadius: BorderRadius.circular(shape.full),
-          ),
-          padding: EdgeInsets.symmetric(
-            horizontal: spacing.lg,
-            vertical: spacing.md,
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.max,
-            children: [
-              if (loading)
-                CupertinoActivityIndicator(color: foregroundColor)
-              else ...[
-                Icon(
-                  icons.AppIcons.resolve(icon),
-                  size: 20,
-                  color: isInteractive
-                      ? foregroundColor
-                      : foregroundColor.withValues(alpha: 0.5),
-                ),
-                SizedBox(width: spacing.sm),
-                Text(
-                  label,
-                  style: theme.textTheme.textStyle.copyWith(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w600,
-                    color: isInteractive
-                        ? foregroundColor
-                        : foregroundColor.withValues(alpha: 0.5),
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ),
-      ),
+    // CupertinoButton applies DefaultTextStyle with correct foreground.
+    // Read that color for the icon to match the text.
+    return Builder(
+      builder: (context) {
+        final inheritedColor = DefaultTextStyle.of(context).style.color;
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // AppIcon is the only legal icon renderer.
+            // Color inherited from CupertinoButton's DefaultTextStyle.
+            AppIcon(
+              icon,
+              size: AppIconSize.small,
+              colorOverride: inheritedColor,
+            ),
+            SizedBox(width: spacing.sm),
+            // No styling — CupertinoButton provides text style.
+            Text(label),
+          ],
+        );
+      },
     );
   }
 }
 
+/// Android implementation using native Material buttons.
+///
+/// Uses Material button variants to ensure native Android feel:
+/// - Ripple and elevation handled by Material
+/// - No custom InkWell or animation wrappers
+/// - State transitions delegated to Material conventions
 class _MaterialAuthButton extends StatelessWidget {
   const _MaterialAuthButton({
     required this.label,
@@ -272,92 +316,123 @@ class _MaterialAuthButton extends StatelessWidget {
   final bool enabled;
   final bool loading;
 
+  bool get _isInteractive => enabled && !loading;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final spacing = Spacing.of;
-    final shape = AppShapeTokens.of;
-    final motion = AppMotionTokens.of;
 
-    final isInteractive = enabled && !loading;
+    // Build content row (icon + label or loader).
+    final content = _buildContent(context, theme, colorScheme, spacing);
 
-    // Resolve colors based on emphasis
-    final Color backgroundColor;
-    final Color foregroundColor;
+    // Dispatch to appropriate native button based on emphasis.
+    return switch (emphasis) {
+      AuthButtonEmphasis.primary => _buildFilledButton(
+        context,
+        colorScheme,
+        content,
+      ),
+      AuthButtonEmphasis.secondary => _buildTonalButton(
+        context,
+        colorScheme,
+        content,
+      ),
+      AuthButtonEmphasis.tertiary => _buildTextButton(
+        context,
+        colorScheme,
+        content,
+      ),
+    };
+  }
 
-    switch (emphasis) {
-      case AuthButtonEmphasis.primary:
-        backgroundColor = colorScheme.primary;
-        foregroundColor = colorScheme.onPrimary;
-      case AuthButtonEmphasis.secondary:
-        backgroundColor = colorScheme.surfaceContainerHighest;
-        foregroundColor = colorScheme.onSurface;
-      case AuthButtonEmphasis.tertiary:
-        backgroundColor = Colors.transparent;
-        foregroundColor = colorScheme.primary;
+  /// Primary: FilledButton — prominent filled style.
+  Widget _buildFilledButton(
+    BuildContext context,
+    ColorScheme colorScheme,
+    Widget content,
+  ) {
+    return SizedBox(
+      width: double.infinity,
+      height: _kMinButtonHeight,
+      child: FilledButton(
+        onPressed: _isInteractive ? onPressed : null,
+        child: content,
+      ),
+    );
+  }
+
+  /// Secondary: FilledButton.tonal — less prominent, tonal surface.
+  Widget _buildTonalButton(
+    BuildContext context,
+    ColorScheme colorScheme,
+    Widget content,
+  ) {
+    return SizedBox(
+      width: double.infinity,
+      height: _kMinButtonHeight,
+      child: FilledButton.tonal(
+        onPressed: _isInteractive ? onPressed : null,
+        child: content,
+      ),
+    );
+  }
+
+  /// Tertiary: TextButton — minimal emphasis, no background.
+  Widget _buildTextButton(
+    BuildContext context,
+    ColorScheme colorScheme,
+    Widget content,
+  ) {
+    return SizedBox(
+      width: double.infinity,
+      height: _kMinButtonHeight,
+      child: TextButton(
+        onPressed: _isInteractive ? onPressed : null,
+        child: content,
+      ),
+    );
+  }
+
+  Widget _buildContent(
+    BuildContext context,
+    ThemeData theme,
+    ColorScheme colorScheme,
+    AppSpacing spacing,
+  ) {
+    if (loading) {
+      // Loader replaces content; SizedBox wrapper provides size stability.
+      // No color override — Material button provides foreground via IconTheme.
+      return const SizedBox(
+        width: 20,
+        height: 20,
+        child: CircularProgressIndicator(strokeWidth: 2),
+      );
     }
 
-    return Semantics(
-      button: true,
-      enabled: isInteractive,
-      label: label,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: isInteractive ? onPressed : null,
-          borderRadius: BorderRadius.circular(shape.full),
-          child: AnimatedContainer(
-            duration: motion.fast,
-            curve: Curves.easeInOut,
-            constraints: const BoxConstraints(minHeight: 50),
-            decoration: BoxDecoration(
-              color: isInteractive
-                  ? backgroundColor
-                  : backgroundColor.withValues(alpha: 0.5),
-              borderRadius: BorderRadius.circular(shape.full),
+    // Material buttons set IconTheme for their children.
+    // Read that color for AppIcon to match button foreground.
+    return Builder(
+      builder: (context) {
+        final inheritedColor = IconTheme.of(context).color;
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // AppIcon is the only legal icon renderer.
+            // Color inherited from Material button's IconTheme.
+            AppIcon(
+              icon,
+              size: AppIconSize.small,
+              colorOverride: inheritedColor,
             ),
-            padding: EdgeInsets.symmetric(
-              horizontal: spacing.lg,
-              vertical: spacing.md,
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.max,
-              children: [
-                if (loading)
-                  SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: foregroundColor,
-                    ),
-                  )
-                else ...[
-                  Icon(
-                    icons.AppIcons.resolve(icon),
-                    size: 20,
-                    color: isInteractive
-                        ? foregroundColor
-                        : foregroundColor.withValues(alpha: 0.5),
-                  ),
-                  SizedBox(width: spacing.sm),
-                  Text(
-                    label,
-                    style: theme.textTheme.labelLarge?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: isInteractive
-                          ? foregroundColor
-                          : foregroundColor.withValues(alpha: 0.5),
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
-        ),
-      ),
+            SizedBox(width: spacing.sm),
+            // No styling — Material button provides text style.
+            Text(label),
+          ],
+        );
+      },
     );
   }
 }
