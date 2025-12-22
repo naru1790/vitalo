@@ -164,9 +164,11 @@ class _FooterLink extends StatelessWidget {
       decorationColor: linkColor,
     );
 
+    // Intentionally NO motion / press animation here.
+    // This is legal acknowledgement (informational, lowest priority), not an action.
     return GestureDetector(
-      onTap: onTap,
       behavior: HitTestBehavior.opaque,
+      onTap: onTap,
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [

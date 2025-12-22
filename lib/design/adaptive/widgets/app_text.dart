@@ -143,7 +143,8 @@ class AppText extends StatelessWidget {
       AppTextColor.primary =>
         textTheme.bodyLarge?.color ?? colorScheme.onSurface,
       AppTextColor.secondary =>
-        textTheme.bodyMedium?.color ?? colorScheme.onSurface.withOpacity(0.7),
+        textTheme.bodyMedium?.color ??
+            colorScheme.onSurface.withValues(alpha: 0.7),
       AppTextColor.disabled => theme.disabledColor,
       AppTextColor.inverse => colorScheme.onPrimary,
     };

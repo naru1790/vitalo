@@ -18,15 +18,15 @@ class LandingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppScaffold(
+    return const AppScaffold(
       safeArea: AppSafeArea.all,
       body: Column(
         children: [
           // Top Section: Brand Hook (flexible, scroll-safe)
-          const Flexible(child: _BrandHookSection()),
+          Flexible(child: _BrandHookSection()),
 
           // Bottom Section: Actions (bottom-anchored)
-          const _ActionsSection(),
+          _ActionsSection(),
         ],
       ),
     );

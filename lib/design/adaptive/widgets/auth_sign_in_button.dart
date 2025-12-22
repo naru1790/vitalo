@@ -214,7 +214,7 @@ class _CupertinoAuthButton extends StatelessWidget {
           decoration: BoxDecoration(
             color: isInteractive
                 ? backgroundColor
-                : backgroundColor.withOpacity(0.5),
+                : backgroundColor.withValues(alpha: 0.5),
             borderRadius: BorderRadius.circular(shape.full),
           ),
           padding: EdgeInsets.symmetric(
@@ -233,7 +233,7 @@ class _CupertinoAuthButton extends StatelessWidget {
                   size: 20,
                   color: isInteractive
                       ? foregroundColor
-                      : foregroundColor.withOpacity(0.5),
+                      : foregroundColor.withValues(alpha: 0.5),
                 ),
                 SizedBox(width: spacing.sm),
                 Text(
@@ -243,7 +243,7 @@ class _CupertinoAuthButton extends StatelessWidget {
                     fontWeight: FontWeight.w600,
                     color: isInteractive
                         ? foregroundColor
-                        : foregroundColor.withOpacity(0.5),
+                        : foregroundColor.withValues(alpha: 0.5),
                   ),
                 ),
               ],
@@ -314,7 +314,7 @@ class _MaterialAuthButton extends StatelessWidget {
             decoration: BoxDecoration(
               color: isInteractive
                   ? backgroundColor
-                  : backgroundColor.withOpacity(0.5),
+                  : backgroundColor.withValues(alpha: 0.5),
               borderRadius: BorderRadius.circular(shape.full),
             ),
             padding: EdgeInsets.symmetric(
@@ -340,7 +340,7 @@ class _MaterialAuthButton extends StatelessWidget {
                     size: 20,
                     color: isInteractive
                         ? foregroundColor
-                        : foregroundColor.withOpacity(0.5),
+                        : foregroundColor.withValues(alpha: 0.5),
                   ),
                   SizedBox(width: spacing.sm),
                   Text(
@@ -349,7 +349,7 @@ class _MaterialAuthButton extends StatelessWidget {
                       fontWeight: FontWeight.w600,
                       color: isInteractive
                           ? foregroundColor
-                          : foregroundColor.withOpacity(0.5),
+                          : foregroundColor.withValues(alpha: 0.5),
                     ),
                   ),
                 ],

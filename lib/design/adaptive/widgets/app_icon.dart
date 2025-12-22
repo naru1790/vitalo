@@ -151,7 +151,7 @@ class AppIcon extends StatelessWidget {
 
     return switch (color) {
       AppIconColor.primary => colorScheme.onSurface,
-      AppIconColor.secondary => colorScheme.onSurface.withOpacity(0.7),
+      AppIconColor.secondary => colorScheme.onSurface.withValues(alpha: 0.7),
       AppIconColor.disabled => theme.disabledColor,
       AppIconColor.inverse => colorScheme.onPrimary,
     };
