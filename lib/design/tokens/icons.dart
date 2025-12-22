@@ -25,6 +25,8 @@ import 'dart:io' show Platform;
 // ════════════════════════════════════════════════════════════════════════════
 import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:flutter/material.dart' show Icons, IconData;
+import 'package:font_awesome_flutter/font_awesome_flutter.dart'
+    show FontAwesomeIcons;
 
 /// Semantic icon identifiers.
 ///
@@ -114,6 +116,16 @@ enum AppIcon {
   systemSecurity,
   systemLanguage,
   systemAccessibility,
+
+  // ──────────────────────────────────────────────────────────
+  // Auth Identity
+  // ──────────────────────────────────────────────────────────
+  // These icons represent authentication provider identity.
+  // They are NOT actions — they identify the sign-in method.
+  // Usage is restricted to AuthSignInButton; do not reuse elsewhere.
+  authGoogle,
+  authApple,
+  authEmail,
 }
 
 /// Icon resolver.
@@ -279,6 +291,15 @@ abstract final class AppIcons {
         return CupertinoIcons.globe;
       case AppIcon.systemAccessibility:
         return CupertinoIcons.person_crop_circle;
+
+      // Auth Identity
+      case AppIcon.authGoogle:
+        // Google brand icon from Font Awesome.
+        return FontAwesomeIcons.google;
+      case AppIcon.authApple:
+        return FontAwesomeIcons.apple;
+      case AppIcon.authEmail:
+        return CupertinoIcons.envelope;
     }
   }
 
@@ -415,6 +436,15 @@ abstract final class AppIcons {
         return Icons.language;
       case AppIcon.systemAccessibility:
         return Icons.accessibility;
+
+      // Auth Identity
+      case AppIcon.authGoogle:
+        // Google brand icon from Font Awesome.
+        return FontAwesomeIcons.google;
+      case AppIcon.authApple:
+        return FontAwesomeIcons.apple;
+      case AppIcon.authEmail:
+        return Icons.email;
     }
   }
 }

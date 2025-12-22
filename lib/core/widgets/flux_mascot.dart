@@ -1,6 +1,15 @@
+// @frozen
+// Adaptive illustrative widget — changes require design + platform review.
+//
+// This widget uses dedicated illustration tokens (FluxMascotPalettes) instead of
+// AppColors or theme color schemes. Illustrative widgets are exempt from semantic
+// color contracts but must remain token-driven.
 import 'package:flutter/widgets.dart';
 
-import '../theme.dart';
+import '../../design/tokens/illustration/flux_mascot_palette.dart';
+import '../../design/tokens/motion.dart';
+import '../../design/tokens/opacity.dart';
+import '../../design/tokens/shape.dart';
 
 /// FluxMascot - 3-layer animated vitality indicator
 /// Represents Physical (outer), Nutritional (middle), Mental (core) health dimensions
@@ -18,26 +27,33 @@ class _FluxMascotState extends State<FluxMascot> with TickerProviderStateMixin {
   late AnimationController _floatController1;
   late AnimationController _floatController2;
 
+  static const int _kRotationCycles = 30;
+  static const int _kFloatPrimaryCycles = 24;
+  static const int _kFloatSecondaryCycles = 32;
+
   @override
   void initState() {
     super.initState();
+    final motion = AppMotionTokens.of;
 
-    // Slow rotation for outer aura
+    // Motion durations remain token-driven; multipliers preserve legacy timing
+    // while honoring platform motion scales.
+    // Rotation for outer aura (token-driven)
     _rotationController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 15),
+      duration: motion.slow * _kRotationCycles,
     )..repeat();
 
-    // Medium float for middle layer
+    // Float for middle layer
     _floatController1 = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 6),
+      duration: motion.normal * _kFloatPrimaryCycles,
     )..repeat(reverse: true);
 
-    // Slow float for core
+    // Float for core
     _floatController2 = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 8),
+      duration: motion.normal * _kFloatSecondaryCycles,
     )..repeat(reverse: true);
   }
 
@@ -51,91 +67,98 @@ class _FluxMascotState extends State<FluxMascot> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    final isLight =
-        MediaQuery.platformBrightnessOf(context) == Brightness.light;
+    // Palette is brightness-based only; no platform or theme color leakage.
+    final palette = MediaQuery.platformBrightnessOf(context) == Brightness.light
+        ? FluxMascotPalettes.light
+        : FluxMascotPalettes.dark;
+    final opacity = AppOpacityTokens.of;
+    final shape = AppShapeTokens.of;
+    final floatOffset = widget.size * 0.05;
+    final blurRadius = widget.size * 0.125;
+    final spreadRadius = widget.size * 0.025;
+    final decorativeOpacity = opacity.scrimLight;
 
-    final back = isLight ? FluxColors.lightBack : FluxColors.darkBack;
-    final mid = isLight ? FluxColors.lightMid : FluxColors.darkMid;
-    final front = isLight ? FluxColors.lightFront : FluxColors.darkFront;
-    final shine = isLight ? FluxColors.lightShine : FluxColors.darkShine;
-
-    return SizedBox(
-      width: widget.size,
-      height: widget.size,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          // Layer 1: Aura (Back) - Rotating
-          RotationTransition(
-            turns: _rotationController,
-            child: Opacity(
-              opacity: 0.4,
-              child: CustomPaint(
-                size: Size(widget.size * 0.85, widget.size * 0.85),
-                painter: _BlobPainter(color: back, scale: 0.9),
+    return ExcludeSemantics(
+      child: SizedBox(
+        width: widget.size,
+        height: widget.size,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            // Layer 1: Aura (Back) - Rotating
+            RotationTransition(
+              turns: _rotationController,
+              child: Opacity(
+                opacity: decorativeOpacity,
+                child: CustomPaint(
+                  size: Size(widget.size * 0.85, widget.size * 0.85),
+                  painter: _BlobPainter(color: palette.aura, scale: 0.9),
+                ),
               ),
             ),
-          ),
 
-          // Layer 2: Flow (Middle) - Floating
-          AnimatedBuilder(
-            animation: _floatController1,
-            builder: (context, child) {
-              return Transform.translate(
-                offset: Offset(0, -10 * _floatController1.value),
-                child: Opacity(
-                  opacity: 0.8,
-                  child: CustomPaint(
-                    size: Size(widget.size * 0.7, widget.size * 0.7),
-                    painter: _BlobPainter(color: mid),
+            // Layer 2: Flow (Middle) - Floating
+            AnimatedBuilder(
+              animation: _floatController1,
+              builder: (context, child) {
+                return Transform.translate(
+                  offset: Offset(0, -floatOffset * _floatController1.value),
+                  child: Opacity(
+                    opacity: opacity.barBackground,
+                    child: CustomPaint(
+                      size: Size(widget.size * 0.7, widget.size * 0.7),
+                      painter: _BlobPainter(color: palette.mid),
+                    ),
                   ),
-                ),
-              );
-            },
-          ),
+                );
+              },
+            ),
 
-          // Layer 3: Core (Front) - Pulsing float
-          AnimatedBuilder(
-            animation: _floatController2,
-            builder: (context, child) {
-              return Transform.translate(
-                offset: Offset(0, -10 * _floatController2.value),
-                child: Container(
-                  width: widget.size * 0.42,
-                  height: widget.size * 0.42,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: front,
-                    boxShadow: [
-                      BoxShadow(
-                        color: front.withValues(alpha: 0.4),
-                        blurRadius: 25,
-                        spreadRadius: 5,
-                      ),
-                    ],
-                  ),
-                  child: Stack(
-                    children: [
-                      // Shine effect
-                      Positioned(
-                        top: widget.size * 0.08,
-                        left: widget.size * 0.08,
-                        child: Container(
-                          width: widget.size * 0.12,
-                          height: widget.size * 0.06,
-                          decoration: BoxDecoration(
-                            color: shine.withValues(alpha: 0.3),
-                            borderRadius: BorderRadius.circular(100),
+            // Layer 3: Core (Front) - Pulsing float
+            AnimatedBuilder(
+              animation: _floatController2,
+              builder: (context, child) {
+                return Transform.translate(
+                  offset: Offset(0, -floatOffset * _floatController2.value),
+                  child: Container(
+                    width: widget.size * 0.42,
+                    height: widget.size * 0.42,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: palette.core,
+                      boxShadow: [
+                        BoxShadow(
+                          color: palette.core.withOpacity(decorativeOpacity),
+                          blurRadius: blurRadius,
+                          spreadRadius: spreadRadius,
+                        ),
+                      ],
+                    ),
+                    child: Stack(
+                      children: [
+                        // Shine effect
+                        Positioned(
+                          top: widget.size * 0.08,
+                          left: widget.size * 0.08,
+                          child: Container(
+                            width: widget.size * 0.12,
+                            height: widget.size * 0.06,
+                            decoration: BoxDecoration(
+                              color: palette.shine.withOpacity(
+                                opacity.scrimLight,
+                              ),
+                              borderRadius: BorderRadius.circular(shape.full),
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              );
-            },
-          ),
-        ],
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }

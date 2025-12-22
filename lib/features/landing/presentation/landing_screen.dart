@@ -1,72 +1,82 @@
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart' show Icons;
+import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/router.dart';
 import '../../../core/services/auth_service.dart';
-import '../../../core/theme.dart';
+import '../../../design/adaptive/widgets/app_scaffold.dart';
+import '../../../design/adaptive/widgets/app_text.dart';
+import '../../../design/adaptive/widgets/auth_action_stack.dart';
+import '../../../design/adaptive/widgets/auth_footer_links.dart';
+import '../../../design/tokens/spacing.dart';
 import '../../../core/widgets/app_snackbar.dart';
 import '../../../core/widgets/flux_mascot.dart';
-import '../../../core/widgets/social_sign_in_button.dart';
 import '../../../main.dart';
 
+// @frozen
 class LandingScreen extends StatelessWidget {
   const LandingScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const CupertinoPageScaffold(
-      child: SafeArea(
-        child: Column(
-          children: [
-            // Top Section: Brand Hook (~60% of screen)
-            Expanded(flex: 6, child: BrandHookSection()),
+    return AppScaffold(
+      safeArea: AppSafeArea.all,
+      body: Column(
+        children: [
+          // Top Section: Brand Hook (flexible, scroll-safe)
+          const Flexible(child: _BrandHookSection()),
 
-            // Bottom Section: Actions (~40% of screen)
-            Expanded(flex: 4, child: _ActionsSection()),
-          ],
-        ),
+          // Bottom Section: Actions (bottom-anchored)
+          const _ActionsSection(),
+        ],
       ),
     );
   }
 }
 
-class BrandHookSection extends StatelessWidget {
-  const BrandHookSection({super.key});
+class _BrandHookSection extends StatelessWidget {
+  const _BrandHookSection();
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = CupertinoTheme.of(context).primaryColor;
+    final spacing = Spacing.of;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.pageHorizontalPadding,
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const FluxMascot(size: 200),
-          const SizedBox(height: AppSpacing.xl),
-          Text(
-            'Vitalo',
-            style: AppleTextStyles.largeTitle(
-              context,
-            ).copyWith(color: primaryColor),
-            textAlign: TextAlign.center,
+    return Center(
+      child: SingleChildScrollView(
+        physics: const NeverScrollableScrollPhysics(),
+        child: Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: spacing.xl,
+            vertical: spacing.lg,
           ),
-          const SizedBox(height: AppSpacing.md),
-          Text(
-            'Awaken Your Intelligent Wellness',
-            style: AppleTextStyles.title3(context),
-            textAlign: TextAlign.center,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const FluxMascot(size: 200),
+              SizedBox(height: spacing.xl),
+              // App name uses display variant for hero moment.
+              const AppText(
+                'Vitalo',
+                variant: AppTextVariant.display,
+                align: TextAlign.center,
+              ),
+              SizedBox(height: spacing.md),
+              // Tagline uses title variant for section heading.
+              const AppText(
+                'Awaken Your Intelligent Wellness',
+                variant: AppTextVariant.title,
+                align: TextAlign.center,
+              ),
+              SizedBox(height: spacing.sm),
+              // Description uses body variant for primary reading text.
+              const AppText(
+                'Vitalo learns and grows with you — mind, body, and beyond.',
+                variant: AppTextVariant.body,
+                color: AppTextColor.secondary,
+                align: TextAlign.center,
+              ),
+            ],
           ),
-          const SizedBox(height: AppSpacing.sm),
-          Text(
-            'Vitalo learns and grows with you — mind, body, and beyond.',
-            style: AppleTextStyles.bodySecondary(context),
-            textAlign: TextAlign.center,
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -79,12 +89,10 @@ class _ActionsSection extends StatefulWidget {
   State<_ActionsSection> createState() => _ActionsSectionState();
 }
 
-enum _LoadingState { none, apple, google }
-
 class _ActionsSectionState extends State<_ActionsSection> {
   final _authService = AuthService();
-  _LoadingState _loadingState = _LoadingState.none;
-  bool get _isLoading => _loadingState != _LoadingState.none;
+  AuthLoadingState _loadingState = AuthLoadingState.none;
+  bool get _isLoading => _loadingState != AuthLoadingState.none;
 
   @override
   void initState() {
@@ -99,7 +107,7 @@ class _ActionsSectionState extends State<_ActionsSection> {
   }
 
   Future<void> _handleOAuth(
-    _LoadingState loadingState,
+    AuthLoadingState loadingState,
     Future<String?> Function() authMethod,
     String provider,
   ) async {
@@ -109,7 +117,7 @@ class _ActionsSectionState extends State<_ActionsSection> {
     final error = await authMethod();
 
     if (!mounted) return;
-    setState(() => _loadingState = _LoadingState.none);
+    setState(() => _loadingState = AuthLoadingState.none);
 
     if (error != null) {
       talker.warning('$provider OAuth failed: $error');
@@ -120,11 +128,14 @@ class _ActionsSectionState extends State<_ActionsSection> {
     }
   }
 
-  Future<void> _handleAppleSignIn() =>
-      _handleOAuth(_LoadingState.apple, _authService.signInWithApple, 'Apple');
+  Future<void> _handleAppleSignIn() => _handleOAuth(
+    AuthLoadingState.apple,
+    _authService.signInWithApple,
+    'Apple',
+  );
 
   Future<void> _handleGoogleSignIn() => _handleOAuth(
-    _LoadingState.google,
+    AuthLoadingState.google,
     _authService.signInWithGoogle,
     'Google',
   );
@@ -135,147 +146,42 @@ class _ActionsSectionState extends State<_ActionsSection> {
     context.push(AppRoutes.emailSignin);
   }
 
+  void _handleTermsTap() {
+    talker.info('Terms of Service link tapped');
+    context.push(AppRoutes.terms);
+  }
+
+  void _handlePrivacyTap() {
+    talker.info('Privacy Policy link tapped');
+    context.push(AppRoutes.privacy);
+  }
+
   @override
   Widget build(BuildContext context) {
-    final primaryColor = CupertinoTheme.of(context).primaryColor;
-    final isDark = CupertinoTheme.of(context).brightness == Brightness.dark;
-    final outlineColor = CupertinoColors.separator.resolveFrom(context);
+    final spacing = Spacing.of;
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.pageHorizontalPadding,
-        vertical: AppSpacing.lg,
+    return Padding(
+      padding: EdgeInsets.symmetric(
+        horizontal: spacing.xl,
+        vertical: spacing.lg,
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.end,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Smart Auth: Show Apple button only on iOS (temporarily shown on all platforms for testing)
-          // TODO: Restore `if (isIOS)` check before production
-          SignInButton(
-            onPressed: _isLoading ? null : _handleAppleSignIn,
-            label: 'Continue with Apple',
-            icon: const Icon(
-              Icons.apple,
-              color: CupertinoColors.white,
-              size: AppSpacing.iconSize,
-            ),
-            backgroundColor: CupertinoColors.black,
-            foregroundColor: CupertinoColors.white,
-            borderColor: CupertinoColors.black,
-            isLoading: _loadingState == _LoadingState.apple,
-          ),
-          const SizedBox(height: AppSpacing.sm),
-
-          // Google Sign-In button
-          SignInButton(
-            onPressed: _isLoading ? null : _handleGoogleSignIn,
-            label: 'Continue with Google',
-            icon: const SizedBox(
-              width: AppSpacing.iconSizeSmall,
-              height: AppSpacing.iconSizeSmall,
-              child: GoogleLogo(),
-            ),
-            backgroundColor: isDark
-                ? const Color(0xFF131314)
-                : CupertinoColors.white,
-            foregroundColor: isDark
-                ? CupertinoColors.white
-                : const Color(0xFF1F1F1F),
-            borderColor: isDark ? const Color(0xFF8E918F) : outlineColor,
-            isLoading: _loadingState == _LoadingState.google,
+          AuthActionStack(
+            onApple: _handleAppleSignIn,
+            onGoogle: _handleGoogleSignIn,
+            onEmail: _handleEmailFlow,
+            loadingState: _loadingState,
           ),
 
-          const SizedBox(height: AppSpacing.sm),
+          SizedBox(height: spacing.xl),
 
-          // Email sign-in option
-          SignInButton(
-            onPressed: _isLoading ? null : _handleEmailFlow,
-            label: 'Continue with Email',
-            icon: Icon(
-              CupertinoIcons.mail,
-              size: AppSpacing.iconSizeSmall,
-              color: primaryColor,
-            ),
+          AuthFooterLinks(
+            onTerms: _handleTermsTap,
+            onPrivacy: _handlePrivacyTap,
           ),
-
-          const Spacer(),
-
-          const SizedBox(height: AppSpacing.md),
-
-          // Footer with links
-          Center(
-            child: Text.rich(
-              TextSpan(
-                text: 'By continuing, you agree to our ',
-                style: AppleTextStyles.captionSecondary(context),
-                children: [
-                  WidgetSpan(
-                    child: GestureDetector(
-                      onTap: () {
-                        talker.info('Terms of Service link tapped');
-                        context.push(AppRoutes.terms);
-                      },
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            'Terms',
-                            style: AppleTextStyles.caption1(context).copyWith(
-                              color: primaryColor,
-                              decoration: TextDecoration.underline,
-                              decorationColor: primaryColor,
-                            ),
-                          ),
-                          const SizedBox(width: AppSpacing.xxs),
-                          Icon(
-                            CupertinoIcons.arrow_up_right_square,
-                            size: AppSpacing.sm,
-                            color: primaryColor,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  TextSpan(
-                    text: ' & ',
-                    style: AppleTextStyles.captionSecondary(context),
-                  ),
-                  WidgetSpan(
-                    child: GestureDetector(
-                      onTap: () {
-                        talker.info('Privacy Policy link tapped');
-                        context.push(AppRoutes.privacy);
-                      },
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            'Privacy Policy',
-                            style: AppleTextStyles.caption1(context).copyWith(
-                              color: primaryColor,
-                              decoration: TextDecoration.underline,
-                              decorationColor: primaryColor,
-                            ),
-                          ),
-                          const SizedBox(width: AppSpacing.xxs),
-                          Icon(
-                            CupertinoIcons.arrow_up_right_square,
-                            size: AppSpacing.sm,
-                            color: primaryColor,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ),
-
-          const SizedBox(height: AppSpacing.sm),
         ],
       ),
     );
