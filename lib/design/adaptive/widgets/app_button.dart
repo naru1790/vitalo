@@ -2,9 +2,13 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../platform/app_platform_scope.dart';
+import '../../tokens/colors/app_colors.dart';
+import '../../tokens/colors/colors_resolver.dart';
+import '../../tokens/icons.dart' as icons;
 import '../../tokens/motion.dart';
 import '../../tokens/shape.dart';
 import '../../tokens/spacing.dart';
+import 'app_icon.dart';
 import 'app_text.dart';
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -31,7 +35,7 @@ enum AppButtonVariant {
 
 /// Tier-0/1 adaptive button primitive.
 ///
-/// The only legal way to render text-based actions in feature code.
+/// The only legal way to render action buttons in feature code.
 /// Enforces semantic variants, platform-correct feedback, and accessibility.
 ///
 /// Feature code MUST use this instead of:
@@ -45,14 +49,15 @@ enum AppButtonVariant {
 ///
 /// This widget handles:
 /// - Text-based action interaction
+/// - Optional leading icon (rendered via AppIcon)
 /// - Platform-appropriate feedback (ripple on Android, opacity on iOS)
 /// - Disabled and loading state management
 /// - Minimum touch target sizing
 ///
 /// This widget does **NOT** handle:
-/// - Icons (use [AppIconButton] for icon-only actions)
 /// - Custom sizes or padding
 /// - Hover or focus states
+/// - Icon-only buttons (use [AppIconButton])
 ///
 /// For icon-only actions, use [AppIconButton].
 class AppButton extends StatelessWidget {
@@ -63,6 +68,7 @@ class AppButton extends StatelessWidget {
     this.variant = AppButtonVariant.primary,
     this.enabled = true,
     this.loading = false,
+    this.leadingIcon,
     this.semanticLabel,
   });
 
@@ -85,6 +91,13 @@ class AppButton extends StatelessWidget {
   /// When true, interaction is disabled and label is replaced with loader.
   final bool loading;
 
+  /// Optional leading semantic icon.
+  ///
+  /// When provided, renders before the label with standard spacing.
+  /// AppButton owns icon size, spacing, and color — feature code only
+  /// provides the semantic icon identifier.
+  final icons.AppIcon? leadingIcon;
+
   /// Accessibility label for screen readers.
   /// Overrides visible label when provided.
   final String? semanticLabel;
@@ -100,6 +113,7 @@ class AppButton extends StatelessWidget {
         variant: variant,
         enabled: enabled,
         loading: loading,
+        leadingIcon: leadingIcon,
         semanticLabel: semanticLabel,
       );
     }
@@ -110,6 +124,7 @@ class AppButton extends StatelessWidget {
       variant: variant,
       enabled: enabled,
       loading: loading,
+      leadingIcon: leadingIcon,
       semanticLabel: semanticLabel,
     );
   }
@@ -128,6 +143,36 @@ class AppButton extends StatelessWidget {
 /// all variants and contexts.
 const double _kMinButtonHeight = 48.0;
 
+/// Single semantic color resolver for all button variants.
+///
+/// This is the ONLY place where variant → color mapping is defined.
+/// Both platform implementations consume these resolved colors.
+/// Platform widgets are dumb renderers — they do NOT define meaning.
+_ButtonColors _resolveButtonColors(AppButtonVariant variant, AppColors colors) {
+  return switch (variant) {
+    AppButtonVariant.primary => _ButtonColors(
+      background: colors.brandPrimary,
+      foreground: colors.textInverse,
+      textColor: AppTextColor.inverse,
+    ),
+    AppButtonVariant.secondary => _ButtonColors(
+      background: colors.neutralSurface,
+      foreground: colors.textPrimary,
+      textColor: AppTextColor.primary,
+    ),
+    AppButtonVariant.destructive => _ButtonColors(
+      background: colors.feedbackError,
+      foreground: colors.textInverse,
+      textColor: AppTextColor.inverse,
+    ),
+    AppButtonVariant.ghost => _ButtonColors(
+      background: Colors.transparent,
+      foreground: colors.brandPrimary,
+      textColor: AppTextColor.primary,
+    ),
+  };
+}
+
 /// Material implementation with ink ripple feedback.
 class _MaterialButton extends StatelessWidget {
   const _MaterialButton({
@@ -136,6 +181,7 @@ class _MaterialButton extends StatelessWidget {
     required this.variant,
     required this.enabled,
     required this.loading,
+    required this.leadingIcon,
     required this.semanticLabel,
   });
 
@@ -144,6 +190,7 @@ class _MaterialButton extends StatelessWidget {
   final AppButtonVariant variant;
   final bool enabled;
   final bool loading;
+  final icons.AppIcon? leadingIcon;
   final String? semanticLabel;
 
   /// Contract: interaction enabled only if enabled == true && loading == false.
@@ -154,11 +201,11 @@ class _MaterialButton extends StatelessWidget {
     final motion = AppMotionTokens.of;
     final shape = AppShapeTokens.of;
     final spacing = Spacing.of;
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final brightness = Theme.of(context).brightness;
 
-    // Resolve colors from shell-injected theme based on variant.
-    final colors = _resolveMaterialColors(colorScheme);
+    // Resolve semantic colors ONCE via unified resolver.
+    final appColors = AppColorsResolver.resolve(brightness: brightness);
+    final colors = _resolveButtonColors(variant, appColors);
 
     return Semantics(
       button: true,
@@ -189,7 +236,7 @@ class _MaterialButton extends StatelessWidget {
                 vertical: spacing.sm,
               ),
               alignment: Alignment.center,
-              child: _buildContent(colors.foreground, motion),
+              child: _buildContent(colors, motion, spacing),
             ),
           ),
         ),
@@ -197,7 +244,11 @@ class _MaterialButton extends StatelessWidget {
     );
   }
 
-  Widget _buildContent(Color foreground, AppMotion motion) {
+  Widget _buildContent(
+    _ButtonColors colors,
+    AppMotion motion,
+    AppSpacing spacing,
+  ) {
     // Loading state contract:
     // - Loader REPLACES label (not overlay)
     // - Loader color follows button foreground
@@ -214,51 +265,30 @@ class _MaterialButton extends StatelessWidget {
               height: 20,
               child: CircularProgressIndicator(
                 strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation(foreground),
+                valueColor: AlwaysStoppedAnimation(colors.foreground),
               ),
             )
-          : AppText(
-              label,
-              key: const ValueKey('label'),
-              variant: AppTextVariant.label,
-              color: _textColorFromForeground,
+          : Row(
+              key: const ValueKey('content'),
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (leadingIcon != null) ...[
+                  AppIcon(
+                    leadingIcon!,
+                    size: AppIconSize.small,
+                    colorOverride: colors.foreground,
+                  ),
+                  SizedBox(width: spacing.sm),
+                ],
+                AppText(
+                  label,
+                  variant: AppTextVariant.label,
+                  color: colors.textColor,
+                ),
+              ],
             ),
     );
-  }
-
-  /// Maps variant foreground to AppTextColor.
-  /// Primary/destructive use inverse (on colored background).
-  /// Secondary/ghost use primary (on neutral background).
-  AppTextColor get _textColorFromForeground {
-    return switch (variant) {
-      AppButtonVariant.primary => AppTextColor.inverse,
-      AppButtonVariant.secondary => AppTextColor.primary,
-      AppButtonVariant.destructive => AppTextColor.inverse,
-      AppButtonVariant.ghost => AppTextColor.primary,
-    };
-  }
-
-  _ButtonColors _resolveMaterialColors(ColorScheme colorScheme) {
-    // Colors derived from shell-injected theme.
-    // This widget reads; it does not resolve tokens.
-    return switch (variant) {
-      AppButtonVariant.primary => _ButtonColors(
-        background: colorScheme.primary,
-        foreground: colorScheme.onPrimary,
-      ),
-      AppButtonVariant.secondary => _ButtonColors(
-        background: colorScheme.surface,
-        foreground: colorScheme.onSurface,
-      ),
-      AppButtonVariant.destructive => _ButtonColors(
-        background: colorScheme.error,
-        foreground: colorScheme.onError,
-      ),
-      AppButtonVariant.ghost => _ButtonColors(
-        background: Colors.transparent,
-        foreground: colorScheme.primary,
-      ),
-    };
   }
 }
 
@@ -270,6 +300,7 @@ class _CupertinoButton extends StatelessWidget {
     required this.variant,
     required this.enabled,
     required this.loading,
+    required this.leadingIcon,
     required this.semanticLabel,
   });
 
@@ -278,6 +309,7 @@ class _CupertinoButton extends StatelessWidget {
   final AppButtonVariant variant;
   final bool enabled;
   final bool loading;
+  final icons.AppIcon? leadingIcon;
   final String? semanticLabel;
 
   /// Contract: interaction enabled only if enabled == true && loading == false.
@@ -288,20 +320,20 @@ class _CupertinoButton extends StatelessWidget {
     final motion = AppMotionTokens.of;
     final shape = AppShapeTokens.of;
     final spacing = Spacing.of;
-    final theme = CupertinoTheme.of(context);
+    final brightness = CupertinoTheme.brightnessOf(context);
 
-    // Resolve colors from shell-injected theme based on variant.
-    final colors = _resolveCupertinoColors(context, theme);
+    // Resolve semantic colors ONCE via unified resolver.
+    final appColors = AppColorsResolver.resolve(brightness: brightness);
+    final colors = _resolveButtonColors(variant, appColors);
 
     return Semantics(
       button: true,
       enabled: _isInteractive,
       label: semanticLabel ?? label,
-      child: AnimatedOpacity(
+      child: Opacity(
         // Contract: disabled visual treatment is opacity ONLY.
+        // Static opacity — CupertinoButton handles press feedback natively.
         opacity: _isInteractive ? 1.0 : 0.38,
-        duration: motion.fast,
-        curve: motion.easeOut,
         child: CupertinoButton(
           padding: EdgeInsets.zero,
           minimumSize: const Size.fromHeight(_kMinButtonHeight),
@@ -316,14 +348,18 @@ class _CupertinoButton extends StatelessWidget {
               vertical: spacing.sm,
             ),
             alignment: Alignment.center,
-            child: _buildContent(colors.foreground, motion),
+            child: _buildContent(colors, motion, spacing),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildContent(Color foreground, AppMotion motion) {
+  Widget _buildContent(
+    _ButtonColors colors,
+    AppMotion motion,
+    AppSpacing spacing,
+  ) {
     // Loading state contract:
     // - Loader REPLACES label (not overlay)
     // - Loader color follows button foreground
@@ -338,60 +374,41 @@ class _CupertinoButton extends StatelessWidget {
               key: const ValueKey('loader'),
               width: 20,
               height: 20,
-              child: CupertinoActivityIndicator(color: foreground),
+              child: CupertinoActivityIndicator(color: colors.foreground),
             )
-          : AppText(
-              label,
-              key: const ValueKey('label'),
-              variant: AppTextVariant.label,
-              color: _textColorFromForeground,
+          : Row(
+              key: const ValueKey('content'),
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (leadingIcon != null) ...[
+                  AppIcon(
+                    leadingIcon!,
+                    size: AppIconSize.small,
+                    colorOverride: colors.foreground,
+                  ),
+                  SizedBox(width: spacing.sm),
+                ],
+                AppText(
+                  label,
+                  variant: AppTextVariant.label,
+                  color: colors.textColor,
+                ),
+              ],
             ),
     );
   }
-
-  /// Maps variant foreground to AppTextColor.
-  AppTextColor get _textColorFromForeground {
-    return switch (variant) {
-      AppButtonVariant.primary => AppTextColor.inverse,
-      AppButtonVariant.secondary => AppTextColor.primary,
-      AppButtonVariant.destructive => AppTextColor.inverse,
-      AppButtonVariant.ghost => AppTextColor.primary,
-    };
-  }
-
-  _ButtonColors _resolveCupertinoColors(
-    BuildContext context,
-    CupertinoThemeData theme,
-  ) {
-    // Colors derived from shell-injected theme.
-    // For Cupertino, we use the primaryColor and system colors.
-    final primaryColor = theme.primaryColor;
-
-    return switch (variant) {
-      AppButtonVariant.primary => _ButtonColors(
-        background: primaryColor,
-        foreground: theme.primaryContrastingColor,
-      ),
-      AppButtonVariant.secondary => _ButtonColors(
-        background: CupertinoColors.systemGrey5.resolveFrom(context),
-        foreground: CupertinoColors.label.resolveFrom(context),
-      ),
-      AppButtonVariant.destructive => _ButtonColors(
-        background: CupertinoColors.systemRed.resolveFrom(context),
-        foreground: CupertinoColors.white,
-      ),
-      AppButtonVariant.ghost => _ButtonColors(
-        background: CupertinoColors.transparent,
-        foreground: primaryColor,
-      ),
-    };
-  }
 }
 
-/// Internal color pair for button rendering.
+/// Internal color tuple for button rendering.
 class _ButtonColors {
-  const _ButtonColors({required this.background, required this.foreground});
+  const _ButtonColors({
+    required this.background,
+    required this.foreground,
+    required this.textColor,
+  });
 
   final Color background;
   final Color foreground;
+  final AppTextColor textColor;
 }
