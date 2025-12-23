@@ -8,10 +8,28 @@ import 'android_nav_motion_delegate.dart';
 import 'nav_motion.dart';
 import 'platform/app_platform_scope.dart';
 
+// @frozen
+// TIER-0 INFRASTRUCTURE — ACTIVE FREEZE ZONE
+//
+// Platform shell. Consumes brightness for theme configuration.
+// Never exposes brightness to descendants.
+//
+// What this shell DOES:
+// - Receives brightness + colors from AdaptiveShell
+// - Configures ThemeData with brightness
+// - Injects AppPlatformScope (android)
+// - Injects NavMotionScope (AndroidNavMotionDelegate)
+//
+// What this shell does NOT do:
+// - Expose brightness via any scope
+// - Allow children to read raw brightness
+// - Make policy decisions that should be in tokens
+
 /// Android platform shell.
 ///
 /// Owns all Material visual styling using semantic design tokens.
 /// Receives resolved brightness and colors from AdaptiveShell.
+/// Brightness terminates here — only scopes flow to children.
 class AndroidShell extends StatelessWidget {
   const AndroidShell({
     super.key,

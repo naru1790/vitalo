@@ -1,6 +1,15 @@
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
+// @frozen
+// ARCHITECTURAL CONTRACT — DO NOT MODIFY WITHOUT REVIEW
+//
+// Tier-0 adaptive primitive. Feature code depends on stable semantics.
+//
+// Primitives must not branch on brightness or platform appearance.
+// All visual decisions must be expressed via semantic colors.
+// If a role is missing, add it to AppColors — do not read raw signals.
 
+import 'package:flutter/widgets.dart';
+
+import '../platform/app_environment_scope.dart';
 import '../platform/app_platform_scope.dart';
 import '../../tokens/shape.dart';
 import '../../tokens/spacing.dart';
@@ -115,15 +124,13 @@ class _MaterialDivider extends StatelessWidget {
   Widget build(BuildContext context) {
     final shape = AppShapeTokens.of;
     final spacing = Spacing.of;
-    final theme = Theme.of(context);
+    final colors = AppColorScope.of(context).colors;
 
     // Thickness from shape tokens based on variant.
     final double thickness = _resolveThickness(shape);
 
-    // Color from shell-injected theme.
-    // DividerTheme is preferred; fallback chain ensures contrast on all themes.
-    final Color color =
-        theme.dividerTheme.color ?? theme.colorScheme.outlineVariant;
+    // Color from environment scope.
+    final Color color = colors.neutralDivider;
 
     // Inset from spacing tokens.
     final EdgeInsetsGeometry padding = _resolveInset(spacing);
@@ -169,15 +176,13 @@ class _CupertinoDivider extends StatelessWidget {
   Widget build(BuildContext context) {
     final shape = AppShapeTokens.of;
     final spacing = Spacing.of;
+    final colors = AppColorScope.of(context).colors;
 
     // Thickness from shape tokens based on variant.
     final double thickness = _resolveThickness(shape);
 
-    // iOS uses CupertinoColors.separator which resolves correctly
-    // against the current CupertinoTheme brightness.
-    // Exception: CupertinoColors.* used directly here because
-    // CupertinoThemeData does not expose a semantic divider color role.
-    final Color color = CupertinoColors.separator.resolveFrom(context);
+    // Color from environment scope.
+    final Color color = colors.neutralDivider;
 
     // Inset from spacing tokens.
     final EdgeInsetsGeometry padding = _resolveInset(spacing);

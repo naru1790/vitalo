@@ -1,6 +1,10 @@
 // @frozen
 // ARCHITECTURAL CONTRACT — DO NOT MODIFY WITHOUT REVIEW
 //
+// Tokens are resolved once per app run.
+// TokenEnvironment must be initialized before access.
+// Environment changes require app restart by design.
+//
 // This file defines system-level policy.
 // Changes here are considered BREAKING CHANGES.
 //
@@ -13,8 +17,11 @@
 // - Changing default values
 // - Adding platform conditionals
 // - Feature-driven modifications
+// - Adding BuildContext or MediaQuery dependencies
+// - Lazy or deferred token resolution
+// - Silent fallbacks or defaults
 
-import 'dart:io' show Platform;
+import 'token_environment.dart';
 
 /// Semantic opacity tokens.
 ///
@@ -121,8 +128,8 @@ class _DefaultOpacity extends AppOpacity {
 
 /// Static opacity resolver.
 ///
-/// Platform detection occurs once when this class is first loaded.
-/// The resolved scale is cached for the lifetime of the application.
+/// Resolution occurs at class load after TokenEnvironment initialization.
+/// The resolved scale is immutable for the lifetime of the application.
 abstract final class AppOpacityTokens {
   AppOpacityTokens._();
 
@@ -132,12 +139,11 @@ abstract final class AppOpacityTokens {
   static final AppOpacity _resolved = _resolve();
 
   static AppOpacity _resolve() {
-    try {
-      if (Platform.isIOS) return const _IosOpacity();
-      if (Platform.isAndroid) return const _AndroidOpacity();
-    } catch (_) {
-      // Platform unavailable (e.g., web)
-    }
-    return const _DefaultOpacity();
+    final platform = TokenEnvironment.current.platform;
+    return switch (platform) {
+      TokenPlatform.ios => const _IosOpacity(),
+      TokenPlatform.android => const _AndroidOpacity(),
+      TokenPlatform.other => const _DefaultOpacity(),
+    };
   }
 }

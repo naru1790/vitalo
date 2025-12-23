@@ -6,7 +6,8 @@
 // =============================================================================
 
 import 'package:flutter/cupertino.dart';
-import 'package:vitalo/core/theme.dart';
+
+import '../theme.dart';
 
 /// Standard tappable row with icon, label, optional value/subtitle, and chevron.
 ///

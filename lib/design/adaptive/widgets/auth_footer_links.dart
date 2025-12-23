@@ -1,5 +1,15 @@
+// @frozen
+// ARCHITECTURAL CONTRACT — DO NOT MODIFY WITHOUT REVIEW
+//
+// Tier-1 compound primitive. Legal footer links for auth screens.
+//
+// Primitives must not branch on brightness or platform appearance.
+// All visual decisions must be expressed via semantic colors.
+// If a role is missing, add it to AppColors — do not read raw signals.
+
 import 'package:flutter/widgets.dart';
 
+import '../platform/app_environment_scope.dart';
 import '../../tokens/color.dart';
 import '../../tokens/icons.dart' as icons;
 import '../../tokens/spacing.dart';
@@ -30,7 +40,6 @@ import 'app_icon.dart';
 ///
 /// Copy is intentionally hard-coded. Feature code cannot override
 /// text or styling. Legal language consistency is mandatory.
-// @frozen
 class AuthFooterLinks extends StatelessWidget {
   const AuthFooterLinks({
     super.key,
@@ -50,8 +59,7 @@ class AuthFooterLinks extends StatelessWidget {
     final typography = AppTextStyles.of;
 
     // Resolve colors via semantic tokens — no platform widget dependencies.
-    final brightness = MediaQuery.platformBrightnessOf(context);
-    final colors = AppColorsTokens.resolve(brightness: brightness);
+    final colors = AppColorScope.of(context).colors;
 
     // Secondary text for disclaimer line.
     final TextStyle disclaimerStyle = typography.caption.copyWith(

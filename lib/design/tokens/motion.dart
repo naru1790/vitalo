@@ -1,6 +1,10 @@
 // @frozen
 // ARCHITECTURAL CONTRACT — DO NOT MODIFY WITHOUT REVIEW
 //
+// Tokens are resolved once per app run.
+// TokenEnvironment must be initialized before access.
+// Environment changes require app restart by design.
+//
 // This file defines system-level policy.
 // Changes here are considered BREAKING CHANGES.
 //
@@ -13,9 +17,13 @@
 // - Changing default values
 // - Adding platform conditionals
 // - Feature-driven modifications
+// - Adding BuildContext or MediaQuery dependencies
+// - Lazy or deferred token resolution
+// - Silent fallbacks or defaults
 
-import 'dart:io' show Platform;
 import 'package:flutter/animation.dart';
+
+import 'token_environment.dart';
 
 /// Semantic motion tokens.
 ///
@@ -182,8 +190,8 @@ class _DefaultMotion extends AppMotion {
 
 /// Static motion resolver.
 ///
-/// Platform detection occurs once when this class is first loaded.
-/// The resolved scale is cached for the lifetime of the application.
+/// Resolution occurs at class load after TokenEnvironment initialization.
+/// The resolved scale is immutable for the lifetime of the application.
 /// This guarantees deterministic motion and avoids runtime branching.
 abstract final class AppMotionTokens {
   AppMotionTokens._();
@@ -194,12 +202,11 @@ abstract final class AppMotionTokens {
   static final AppMotion _resolved = _resolve();
 
   static AppMotion _resolve() {
-    try {
-      if (Platform.isIOS) return const _IosMotion();
-      if (Platform.isAndroid) return const _AndroidMotion();
-    } catch (_) {
-      // Platform unavailable (e.g., web)
-    }
-    return const _DefaultMotion();
+    final platform = TokenEnvironment.current.platform;
+    return switch (platform) {
+      TokenPlatform.ios => const _IosMotion(),
+      TokenPlatform.android => const _AndroidMotion(),
+      TokenPlatform.other => const _DefaultMotion(),
+    };
   }
 }

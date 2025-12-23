@@ -7,10 +7,28 @@ import 'ios_nav_motion_delegate.dart';
 import 'nav_motion.dart';
 import 'platform/app_platform_scope.dart';
 
+// @frozen
+// TIER-0 INFRASTRUCTURE — ACTIVE FREEZE ZONE
+//
+// Platform shell. Consumes brightness for theme configuration.
+// Never exposes brightness to descendants.
+//
+// What this shell DOES:
+// - Receives brightness + colors from AdaptiveShell
+// - Configures CupertinoThemeData with brightness
+// - Injects AppPlatformScope (ios)
+// - Injects NavMotionScope (IosNavMotionDelegate)
+//
+// What this shell does NOT do:
+// - Expose brightness via any scope
+// - Allow children to read raw brightness
+// - Make policy decisions that should be in tokens
+
 /// iOS platform shell.
 ///
 /// Owns all Cupertino visual styling using semantic design tokens.
 /// Receives resolved brightness and colors from AdaptiveShell.
+/// Brightness terminates here — only scopes flow to children.
 class IosShell extends StatelessWidget {
   const IosShell({
     super.key,
@@ -33,8 +51,8 @@ class IosShell extends StatelessWidget {
       primaryColor: colors.brandPrimary,
       primaryContrastingColor: colors.textInverse,
       scaffoldBackgroundColor: colors.neutralBase,
-      barBackgroundColor: colors.neutralBase.withAlpha(
-        (opacity.barBackground * 255).round(),
+      barBackgroundColor: colors.neutralBase.withValues(
+        alpha: opacity.barBackground,
       ),
       textTheme: CupertinoTextThemeData(
         primaryColor: colors.brandPrimary,

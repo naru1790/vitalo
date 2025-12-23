@@ -2,12 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '../tokens/color.dart';
 import '../tokens/icons.dart' as icons;
 import '../tokens/motion.dart';
 import '../tokens/shape.dart';
 import '../tokens/spacing.dart';
 import '../tokens/typography.dart';
+import 'platform/app_environment_scope.dart';
 import 'platform/app_platform_scope.dart';
 import 'widgets/app_icon.dart';
 
@@ -124,8 +124,7 @@ class AndroidErrorFeedbackDelegate extends ErrorFeedbackDelegate {
 
   @override
   void show(BuildContext context, String message) {
-    final brightness = MediaQuery.platformBrightnessOf(context);
-    final colors = AppColorsTokens.resolve(brightness: brightness);
+    final colors = AppColorScope.of(context).colors;
     final typography = AppTextStyles.of;
     final spacing = Spacing.of;
 
@@ -196,8 +195,7 @@ class _IosErrorFeedbackHostState extends State<_IosErrorFeedbackHost>
 
   @override
   Widget build(BuildContext context) {
-    final brightness = MediaQuery.platformBrightnessOf(context);
-    final colors = AppColorsTokens.resolve(brightness: brightness);
+    final colors = AppColorScope.of(context).colors;
     final typography = AppTextStyles.of;
     final spacing = Spacing.of;
     final shape = AppShapeTokens.of;

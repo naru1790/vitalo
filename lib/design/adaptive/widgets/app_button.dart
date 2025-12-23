@@ -1,9 +1,18 @@
+// @frozen
+// ARCHITECTURAL CONTRACT — DO NOT MODIFY WITHOUT REVIEW
+//
+// Tier-0 adaptive primitive. Feature code depends on stable semantics.
+//
+// Primitives must not branch on brightness or platform appearance.
+// All visual decisions must be expressed via semantic colors.
+// If a role is missing, add it to AppColors — do not read raw signals.
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../platform/app_environment_scope.dart';
 import '../platform/app_platform_scope.dart';
-import '../../tokens/colors/app_colors.dart';
-import '../../tokens/colors/colors_resolver.dart';
+import '../../tokens/color.dart';
 import '../../tokens/icons.dart' as icons;
 import '../../tokens/motion.dart';
 import '../../tokens/shape.dart';
@@ -201,10 +210,8 @@ class _MaterialButton extends StatelessWidget {
     final motion = AppMotionTokens.of;
     final shape = AppShapeTokens.of;
     final spacing = Spacing.of;
-    final brightness = Theme.of(context).brightness;
 
-    // Resolve semantic colors ONCE via unified resolver.
-    final appColors = AppColorsResolver.resolve(brightness: brightness);
+    final appColors = AppColorScope.of(context).colors;
     final colors = _resolveButtonColors(variant, appColors);
 
     return Semantics(
@@ -320,10 +327,8 @@ class _CupertinoButton extends StatelessWidget {
     final motion = AppMotionTokens.of;
     final shape = AppShapeTokens.of;
     final spacing = Spacing.of;
-    final brightness = CupertinoTheme.brightnessOf(context);
 
-    // Resolve semantic colors ONCE via unified resolver.
-    final appColors = AppColorsResolver.resolve(brightness: brightness);
+    final appColors = AppColorScope.of(context).colors;
     final colors = _resolveButtonColors(variant, appColors);
 
     return Semantics(

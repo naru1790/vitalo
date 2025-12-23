@@ -3,6 +3,8 @@
 // Must not be used by interactive UI components.
 import 'dart:ui' show Color;
 
+import '../color.dart';
+
 /// Flux mascot brand palette (vibrant orange gradient).
 ///
 /// Defines the exact colors for the FluxMascot illustrative widget.
@@ -31,10 +33,20 @@ class FluxMascotPalette {
 
 /// Static light/dark palettes for FluxMascot.
 ///
-/// Selection is brightness-based only; no platform branching.
+/// Selection is inferred from semantic colors, not raw brightness.
 // @frozen
 abstract final class FluxMascotPalettes {
   FluxMascotPalettes._();
+
+  /// Resolve palette from semantic colors.
+  ///
+  /// Infers dark mode from the neutralBase luminance.
+  /// This avoids exposing brightness across scope boundaries.
+  static FluxMascotPalette resolve(AppColors colors) {
+    // Dark mode has low luminance neutralBase
+    final isDark = colors.neutralBase.computeLuminance() < 0.5;
+    return isDark ? dark : light;
+  }
 
   /// Light theme palette (vibrant warm oranges).
   static const light = FluxMascotPalette(

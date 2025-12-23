@@ -1,15 +1,33 @@
+// @frozen
+// AUTH FLOW — OTP VERIFICATION
+// DO NOT ADD EMAIL OR RESEND LOGIC OUTSIDE THIS SCREEN
+
 import 'dart:async';
-import 'package:flutter/cupertino.dart';
+
+import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../main.dart';
 import '../../../core/router.dart';
 import '../../../core/services/auth_service.dart';
-import '../../../core/theme.dart';
-import '../../../core/widgets/loading_button.dart';
-import '../../../core/widgets/otp_input.dart';
 import '../../../design/adaptive/error_feedback.dart';
+import '../../../design/adaptive/widgets/app_button.dart';
+import '../../../design/adaptive/widgets/app_icon.dart';
+import '../../../design/adaptive/widgets/app_scaffold.dart';
+import '../../../design/adaptive/widgets/app_otp_input.dart';
+import '../../../design/adaptive/widgets/app_otp_resend_action.dart';
+import '../../../design/adaptive/widgets/keyboard_dismiss_surface.dart';
+import '../../../design/adaptive/widgets/app_text.dart';
+import '../../../design/adaptive/widgets/inline_feedback_message.dart';
+import '../../../design/tokens/icons.dart' as tokens;
+import '../../../design/tokens/spacing.dart';
+
+/// Hero icon container size.
+///
+/// Uses minimum touch target (44pt) for prominent hero icon presentation.
+/// This is a frozen layout constant, not a spacing token.
+const double _kHeroIconSize = 44.0;
 
 class OtpVerificationScreen extends StatefulWidget {
   const OtpVerificationScreen({super.key, required this.email, this.onSuccess});
@@ -24,12 +42,11 @@ class OtpVerificationScreen extends StatefulWidget {
 class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
   final _authService = AuthService();
   final _otpController = TextEditingController();
-  final _focusNode = FocusNode();
 
   Timer? _countdownTimer;
   bool _isLoading = false;
   String? _errorMessage;
-  int _resendCountdown = 60;
+  int _resendCountdown = 30;
 
   bool get _canResend => _resendCountdown <= 0;
   bool get _isOtpComplete => _otpController.text.length == 6;
@@ -39,9 +56,6 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     super.initState();
     talker.info('OTP verification screen opened for email: ${widget.email}');
     _startCountdown();
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) => _focusNode.requestFocus(),
-    );
   }
 
   @override
@@ -49,12 +63,11 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
     talker.debug('OTP verification screen disposed');
     _countdownTimer?.cancel();
     _otpController.dispose();
-    _focusNode.dispose();
     super.dispose();
   }
 
   void _startCountdown() {
-    setState(() => _resendCountdown = 60);
+    setState(() => _resendCountdown = 30);
     _countdownTimer?.cancel();
     _countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (_resendCountdown > 0) {
@@ -96,7 +109,6 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
             _errorMessage = message;
           });
           _otpController.clear();
-          _focusNode.requestFocus();
         case AuthSuccess(:final data):
           if (data != null) {
             talker.info(
@@ -175,98 +187,77 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = CupertinoTheme.of(context).primaryColor;
-    final secondaryLabel = CupertinoColors.secondaryLabel.resolveFrom(context);
-    final surfaceColor = CupertinoColors.systemBackground.resolveFrom(context);
-    final errorColor = CupertinoColors.systemRed.resolveFrom(context);
+    final spacing = Spacing.of;
 
-    return CupertinoPageScaffold(
-      navigationBar: CupertinoNavigationBar(
-        backgroundColor: surfaceColor,
-        border: null,
-        leading: CupertinoButton(
-          padding: EdgeInsets.zero,
-          onPressed: () {
-            talker.debug('User navigated back from OTP verification screen');
-            context.pop();
-          },
-          child: Icon(CupertinoIcons.back, color: primaryColor),
-        ),
+    return AppScaffold(
+      leadingAction: AppBarBackAction(
+        onPressed: () {
+          talker.debug('User navigated back from OTP verification screen');
+          context.pop();
+        },
       ),
-      child: SafeArea(
+      safeArea: AppSafeArea.all,
+      backgroundSurface: AppBackgroundSurface.base,
+      body: KeyboardDismissSurface(
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(AppSpacing.pageHorizontalPadding),
+            padding: EdgeInsets.all(spacing.lg),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 400),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    CupertinoIcons.mail,
-                    size: AppSpacing.iconSizeHero,
-                    color: primaryColor,
-                  ),
-                  const SizedBox(height: AppSpacing.xl),
-                  Text(
-                    'Verify it\'s you',
-                    style: AppleTextStyles.title2(context),
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  RichText(
-                    textAlign: TextAlign.center,
-                    text: TextSpan(
-                      text: 'Enter the code sent to ',
-                      style: AppleTextStyles.bodySecondary(context),
-                      children: [
-                        TextSpan(
-                          text: widget.email,
-                          style: AppleTextStyles.headline(
-                            context,
-                          ).copyWith(color: primaryColor),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.xxl),
-                  OtpInput(
-                    controller: _otpController,
-                    focusNode: _focusNode,
-                    enabled: !_isLoading,
-                    hasError: _errorMessage != null,
-                    onCompleted: (_) => _verifyOtp(),
-                  ),
-                  if (_errorMessage != null) ...[
-                    const SizedBox(height: AppSpacing.sm),
-                    Text(
-                      _errorMessage!,
-                      style: AppleTextStyles.footnote(
-                        context,
-                      ).copyWith(color: errorColor),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                  const SizedBox(height: AppSpacing.xl),
-                  LoadingButton(
-                    onPressed: _verifyOtp,
-                    label: 'Verify & Continue',
-                    isLoading: _isLoading,
-                    enabled: _isOtpComplete,
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                  CupertinoButton(
-                    padding: EdgeInsets.zero,
-                    onPressed: _canResend && !_isLoading ? _resendOtp : null,
-                    child: Text(
-                      _canResend
-                          ? 'Resend code'
-                          : 'Resend code in ${_resendCountdown}s',
-                      style: AppleTextStyles.callout(context).copyWith(
-                        color: _canResend && !_isLoading
-                            ? primaryColor
-                            : secondaryLabel,
+                  const SizedBox(
+                    width: _kHeroIconSize,
+                    height: _kHeroIconSize,
+                    child: FittedBox(
+                      fit: BoxFit.contain,
+                      child: AppIcon(
+                        tokens.AppIcon.authEmail,
+                        size: AppIconSize.large,
                       ),
                     ),
+                  ),
+                  SizedBox(height: spacing.xl),
+                  const AppText(
+                    'Verify it\'s you',
+                    variant: AppTextVariant.display,
+                    align: TextAlign.center,
+                  ),
+                  SizedBox(height: spacing.sm),
+                  AppText(
+                    'Enter the code sent to ${widget.email}',
+                    variant: AppTextVariant.body,
+                    color: AppTextColor.secondary,
+                    align: TextAlign.center,
+                  ),
+                  SizedBox(height: spacing.xl),
+                  AppOtpInput(
+                    controller: _otpController,
+                    enabled: !_isLoading,
+                    hasError: _errorMessage != null,
+                    onCompleted: _verifyOtp,
+                  ),
+                  if (_errorMessage != null) ...[
+                    SizedBox(height: spacing.sm),
+                    InlineFeedbackMessage(
+                      message: _errorMessage!,
+                      severity: InlineFeedbackSeverity.error,
+                    ),
+                  ],
+                  SizedBox(height: spacing.xl),
+                  AppButton(
+                    label: 'Verify & Continue',
+                    onPressed: _verifyOtp,
+                    loading: _isLoading,
+                    enabled: _isOtpComplete,
+                    variant: AppButtonVariant.primary,
+                  ),
+                  SizedBox(height: spacing.md),
+                  AppOtpResendAction(
+                    secondsRemaining: _resendCountdown,
+                    enabled: !_isLoading,
+                    onResend: _resendOtp,
                   ),
                 ],
               ),

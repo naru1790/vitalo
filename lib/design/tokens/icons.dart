@@ -1,6 +1,10 @@
 // @frozen
 // ARCHITECTURAL CONTRACT — DO NOT MODIFY WITHOUT REVIEW
 //
+// Tokens are resolved once per app run.
+// TokenEnvironment must be initialized before access.
+// Environment changes require app restart by design.
+//
 // This file defines system-level policy.
 // Changes here are considered BREAKING CHANGES.
 //
@@ -13,8 +17,9 @@
 // - Changing default values
 // - Adding platform conditionals
 // - Feature-driven modifications
-
-import 'dart:io' show Platform;
+// - Adding BuildContext or MediaQuery dependencies
+// - Lazy or deferred token resolution
+// - Silent fallbacks or defaults
 
 // ════════════════════════════════════════════════════════════════════════════
 // INTERNAL IMPORTS — DO NOT USE ELSEWHERE
@@ -27,6 +32,8 @@ import 'package:flutter/cupertino.dart' show CupertinoIcons;
 import 'package:flutter/material.dart' show Icons, IconData;
 import 'package:font_awesome_flutter/font_awesome_flutter.dart'
     show FontAwesomeIcons;
+
+import 'token_environment.dart';
 
 /// Semantic icon identifiers.
 ///
@@ -137,17 +144,12 @@ abstract final class AppIcons {
 
   /// Resolve a semantic icon to a platform-specific [IconData].
   static IconData resolve(AppIcon icon) {
-    try {
-      if (Platform.isIOS) {
-        return _ios(icon);
-      }
-      if (Platform.isAndroid) {
-        return _android(icon);
-      }
-    } catch (_) {
-      // Platform unavailable (e.g., web)
-    }
-    return _android(icon);
+    final platform = TokenEnvironment.current.platform;
+    return switch (platform) {
+      TokenPlatform.ios => _ios(icon),
+      TokenPlatform.android => _android(icon),
+      TokenPlatform.other => _android(icon),
+    };
   }
 
   // ──────────────────────────────────────────────────────────

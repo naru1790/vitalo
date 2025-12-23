@@ -1,6 +1,10 @@
 // @frozen
 // ARCHITECTURAL CONTRACT — DO NOT MODIFY WITHOUT REVIEW
 //
+// Tokens are resolved once per app run.
+// TokenEnvironment must be initialized before access.
+// Environment changes require app restart by design.
+//
 // This file defines system-level policy.
 // Changes here are considered BREAKING CHANGES.
 //
@@ -13,8 +17,11 @@
 // - Changing default values
 // - Adding platform conditionals
 // - Feature-driven modifications
+// - Adding BuildContext or MediaQuery dependencies
+// - Lazy or deferred token resolution
+// - Silent fallbacks or defaults
 
-import 'dart:io' show Platform;
+import 'token_environment.dart';
 
 /// Semantic shape tokens.
 ///
@@ -222,8 +229,8 @@ class _DefaultShape extends AppShape {
 
 /// Static shape resolver.
 ///
-/// Platform detection occurs once when this class is first loaded.
-/// The resolved scale is cached for the lifetime of the application.
+/// Resolution occurs at class load after TokenEnvironment initialization.
+/// The resolved scale is immutable for the lifetime of the application.
 /// This guarantees deterministic shape and avoids runtime branching.
 abstract final class AppShapeTokens {
   AppShapeTokens._();
@@ -234,12 +241,11 @@ abstract final class AppShapeTokens {
   static final AppShape _resolved = _resolve();
 
   static AppShape _resolve() {
-    try {
-      if (Platform.isIOS) return const _IosShape();
-      if (Platform.isAndroid) return const _AndroidShape();
-    } catch (_) {
-      // Platform unavailable (e.g., web)
-    }
-    return const _DefaultShape();
+    final platform = TokenEnvironment.current.platform;
+    return switch (platform) {
+      TokenPlatform.ios => const _IosShape(),
+      TokenPlatform.android => const _AndroidShape(),
+      TokenPlatform.other => const _DefaultShape(),
+    };
   }
 }

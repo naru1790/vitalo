@@ -1,7 +1,16 @@
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
+// @frozen
+// ARCHITECTURAL CONTRACT — DO NOT MODIFY WITHOUT REVIEW
+//
+// Tier-0 adaptive primitive. Feature code depends on stable semantics.
+//
+// Primitives must not branch on brightness or platform appearance.
+// All visual decisions must be expressed via semantic colors.
+// If a role is missing, add it to AppColors — do not read raw signals.
 
-import '../platform/app_platform_scope.dart';
+import 'package:flutter/widgets.dart';
+
+import '../platform/app_environment_scope.dart';
+import '../../tokens/color.dart';
 import '../../tokens/typography.dart';
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -32,7 +41,7 @@ enum AppTextVariant {
 /// Semantic text color roles.
 ///
 /// Each role maps to a semantic color in [AppColors].
-/// Shells inject colors into platform themes; AppText reads them.
+/// AppText reads colors directly from [AppColorScope].
 enum AppTextColor {
   /// Primary text for maximum contrast and readability.
   primary,
@@ -53,8 +62,8 @@ enum AppTextColor {
 /// Enforces semantic typography, semantic color roles, and predictable overflow.
 ///
 /// Feature code MUST use this instead of [Text], [TextStyle], or theme text.
-/// Typography comes from [AppTextStyles.of]; colors come from shell-injected
-/// theme values.
+/// Typography comes from [AppTextStyles.of]; colors come from
+/// [AppColorScope.colors].
 ///
 /// Overflow behavior is frozen per variant and cannot be overridden.
 class AppText extends StatelessWidget {
@@ -84,14 +93,14 @@ class AppText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final platform = AppPlatformScope.of(context);
     final typography = AppTextStyles.of;
+    final colors = AppColorScope.of(context).colors;
 
     // Select base style from static typography tokens.
     final TextStyle baseStyle = _resolveBaseStyle(typography);
 
-    // Resolve color from shell-injected platform theme.
-    final Color textColor = _resolveColor(context, platform);
+    // Resolve color from environment scope.
+    final Color textColor = _resolveColor(colors);
 
     // Apply color to base style.
     final TextStyle style = baseStyle.copyWith(color: textColor);
@@ -120,53 +129,16 @@ class AppText extends StatelessWidget {
     };
   }
 
-  /// Resolves color from shell-injected platform theme.
+  /// Resolves color from environment scope.
   ///
-  /// Shells inject semantic colors into platform themes:
-  /// - AndroidShell → ColorScheme + TextTheme
-  /// - IosShell → CupertinoThemeData
-  ///
-  /// This reads the result; it does not resolve tokens.
-  Color _resolveColor(BuildContext context, AppPlatform platform) {
-    if (platform == AppPlatform.ios) {
-      return _resolveCupertinoColor(context);
-    }
-    return _resolveMaterialColor(context);
-  }
-
-  Color _resolveMaterialColor(BuildContext context) {
-    final theme = Theme.of(context);
-    final textTheme = theme.textTheme;
-    final colorScheme = theme.colorScheme;
-
+  /// Colors are resolved once by AdaptiveShell and carried via
+  /// AppColorScope. This reads directly from that scope.
+  Color _resolveColor(AppColors colors) {
     return switch (color) {
-      AppTextColor.primary =>
-        textTheme.bodyLarge?.color ?? colorScheme.onSurface,
-      AppTextColor.secondary =>
-        textTheme.bodyMedium?.color ??
-            colorScheme.onSurface.withValues(alpha: 0.7),
-      AppTextColor.disabled => theme.disabledColor,
-      AppTextColor.inverse => colorScheme.onPrimary,
-    };
-  }
-
-  Color _resolveCupertinoColor(BuildContext context) {
-    final theme = CupertinoTheme.of(context);
-
-    // Shells inject semantic colors into CupertinoThemeData.
-    // For colors not explicitly injected, use iOS semantic dynamic colors
-    // which resolve against the current CupertinoTheme brightness.
-    return switch (color) {
-      AppTextColor.primary =>
-        theme.textTheme.textStyle.color ??
-            CupertinoColors.label.resolveFrom(context),
-      AppTextColor.secondary => CupertinoColors.secondaryLabel.resolveFrom(
-        context,
-      ),
-      AppTextColor.disabled => CupertinoColors.inactiveGray.resolveFrom(
-        context,
-      ),
-      AppTextColor.inverse => theme.primaryContrastingColor,
+      AppTextColor.primary => colors.textPrimary,
+      AppTextColor.secondary => colors.textSecondary,
+      AppTextColor.disabled => colors.textTertiary,
+      AppTextColor.inverse => colors.textInverse,
     };
   }
 

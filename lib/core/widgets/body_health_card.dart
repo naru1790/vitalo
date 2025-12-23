@@ -9,12 +9,13 @@
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
-import 'package:vitalo/core/theme.dart';
-import 'package:vitalo/core/widgets/app_segmented_button.dart';
-import 'package:vitalo/core/widgets/height_picker_sheet.dart';
-import 'package:vitalo/core/widgets/profile_row.dart';
-import 'package:vitalo/core/widgets/weight_picker_sheet.dart';
-import 'package:vitalo/core/widgets/wheel_picker.dart';
+
+import '../theme.dart';
+import 'app_segmented_button.dart';
+import 'height_picker_sheet.dart';
+import 'profile_row.dart';
+import 'weight_picker_sheet.dart';
+import 'wheel_picker.dart';
 
 /// Predefined health conditions with simple, user-friendly labels
 /// Focus on conditions that significantly impact diet/nutrition recommendations

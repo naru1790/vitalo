@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../main.dart';
 import '../design/adaptive/nav_motion.dart';
 import '../features/auth/presentation/email_signin_screen.dart';
+import '../features/auth/presentation/otp_verification_screen.dart';
 import '../features/dashboard/presentation/dashboard_screen.dart';
 import '../features/landing/presentation/landing_screen.dart';
 import '../features/legal/presentation/privacy_policy_screen.dart';
@@ -14,6 +15,7 @@ import '../features/profile/presentation/profile_screen.dart';
 abstract class AppRoutes {
   static const home = '/';
   static const emailSignin = '/email-signin';
+  static const otpVerification = '/otp-verification';
   static const dashboard = '/dashboard';
   static const profile = '/profile';
   static const privacy = '/privacy';
@@ -42,6 +44,25 @@ final router = GoRouter(
       pageBuilder: (context, state) => AdaptivePage<void>(
         key: state.pageKey,
         child: const EmailSignInScreen(),
+        intent: NavTransition.push,
+      ),
+    ),
+    GoRoute(
+      path: AppRoutes.otpVerification,
+      name: 'otpVerification',
+      redirect: (context, state) {
+        final email = state.extra;
+        if (email is! String || email.trim().isEmpty) {
+          talker.warning(
+            'OTP verification route opened without email. Redirecting to email sign-in.',
+          );
+          return AppRoutes.emailSignin;
+        }
+        return null;
+      },
+      pageBuilder: (context, state) => AdaptivePage<void>(
+        key: state.pageKey,
+        child: OtpVerificationScreen(email: state.extra! as String),
         intent: NavTransition.push,
       ),
     ),
@@ -94,7 +115,8 @@ final router = GoRouter(
 
     final isOnLandingOrAuth =
         state.matchedLocation == AppRoutes.home ||
-        state.matchedLocation == AppRoutes.emailSignin;
+        state.matchedLocation == AppRoutes.emailSignin ||
+        state.matchedLocation == AppRoutes.otpVerification;
     final isProtectedRoute =
         state.matchedLocation == AppRoutes.dashboard ||
         state.matchedLocation == AppRoutes.profile;

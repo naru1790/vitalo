@@ -1,6 +1,10 @@
 // @frozen
 // ARCHITECTURAL CONTRACT — DO NOT MODIFY WITHOUT REVIEW
 //
+// Tokens are resolved once per app run.
+// TokenEnvironment must be initialized before access.
+// Environment changes require app restart by design.
+//
 // This file defines system-level policy.
 // Changes here are considered BREAKING CHANGES.
 //
@@ -13,8 +17,11 @@
 // - Changing default values
 // - Adding platform conditionals
 // - Feature-driven modifications
+// - Adding BuildContext or MediaQuery dependencies
+// - Lazy or deferred token resolution
+// - Silent fallbacks or defaults
 
-import 'dart:io' show Platform;
+import 'token_environment.dart';
 
 /// Semantic spacing scale.
 ///
@@ -45,6 +52,12 @@ abstract class AppSpacing {
   /// Section boundary.
   /// Major content transitions and structural breaks.
   double get xl;
+
+  /// Standard input field height.
+  ///
+  /// Semantic touch target sizing for text inputs.
+  /// Consumers must use this instead of hardcoded heights.
+  double get inputHeight;
 }
 
 /// iOS interpretation.
@@ -69,6 +82,9 @@ class _IosSpacing extends AppSpacing {
 
   @override
   double get xl => 32.0;
+
+  @override
+  double get inputHeight => 48.0;
 }
 
 /// Android interpretation.
@@ -93,6 +109,9 @@ class _AndroidSpacing extends AppSpacing {
 
   @override
   double get xl => 48.0;
+
+  @override
+  double get inputHeight => 48.0;
 }
 
 /// Neutral fallback.
@@ -117,12 +136,15 @@ class _DefaultSpacing extends AppSpacing {
 
   @override
   double get xl => 40.0;
+
+  @override
+  double get inputHeight => 48.0;
 }
 
 /// Static spacing resolver.
 ///
-/// Platform detection occurs once when this class is first loaded.
-/// The resolved scale is cached for the lifetime of the application.
+/// Resolution occurs at class load after TokenEnvironment initialization.
+/// The resolved scale is immutable for the lifetime of the application.
 /// This guarantees deterministic spacing and avoids runtime branching.
 abstract final class Spacing {
   Spacing._();
@@ -133,12 +155,11 @@ abstract final class Spacing {
   static final AppSpacing _resolved = _resolve();
 
   static AppSpacing _resolve() {
-    try {
-      if (Platform.isIOS) return const _IosSpacing();
-      if (Platform.isAndroid) return const _AndroidSpacing();
-    } catch (_) {
-      // Platform unavailable (e.g., web)
-    }
-    return const _DefaultSpacing();
+    final platform = TokenEnvironment.current.platform;
+    return switch (platform) {
+      TokenPlatform.ios => const _IosSpacing(),
+      TokenPlatform.android => const _AndroidSpacing(),
+      TokenPlatform.other => const _DefaultSpacing(),
+    };
   }
 }

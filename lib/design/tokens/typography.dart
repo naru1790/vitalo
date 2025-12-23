@@ -1,6 +1,10 @@
 // @frozen
 // ARCHITECTURAL CONTRACT — DO NOT MODIFY WITHOUT REVIEW
 //
+// Tokens are resolved once per app run.
+// TokenEnvironment must be initialized before access.
+// Environment changes require app restart by design.
+//
 // This file defines system-level policy.
 // Changes here are considered BREAKING CHANGES.
 //
@@ -13,9 +17,13 @@
 // - Changing default values
 // - Adding platform conditionals
 // - Feature-driven modifications
+// - Adding BuildContext or MediaQuery dependencies
+// - Lazy or deferred token resolution
+// - Silent fallbacks or defaults
 
-import 'dart:io' show Platform;
 import 'package:flutter/widgets.dart';
+
+import 'token_environment.dart';
 
 /// Semantic typography scale.
 ///
@@ -185,8 +193,8 @@ class _DefaultTypography extends AppTypography {
 
 /// Static typography resolver.
 ///
-/// Platform detection occurs once when this class is first loaded.
-/// The resolved scale is cached for the lifetime of the application.
+/// Resolution occurs at class load after TokenEnvironment initialization.
+/// The resolved scale is immutable for the lifetime of the application.
 /// This guarantees deterministic typography and avoids runtime branching.
 abstract final class AppTextStyles {
   AppTextStyles._();
@@ -197,12 +205,11 @@ abstract final class AppTextStyles {
   static final AppTypography _resolved = _resolve();
 
   static AppTypography _resolve() {
-    try {
-      if (Platform.isIOS) return const _IosTypography();
-      if (Platform.isAndroid) return const _AndroidTypography();
-    } catch (_) {
-      // Platform unavailable (e.g., web)
-    }
-    return const _DefaultTypography();
+    final platform = TokenEnvironment.current.platform;
+    return switch (platform) {
+      TokenPlatform.ios => const _IosTypography(),
+      TokenPlatform.android => const _AndroidTypography(),
+      TokenPlatform.other => const _DefaultTypography(),
+    };
   }
 }

@@ -1,28 +1,67 @@
-# This file configures the analyzer, which statically analyzes Dart code to
-# check for errors, warnings, and lints.
+# ═══════════════════════════════════════════════════════════════════════════════
+# VITALO ANALYSIS OPTIONS
+# ═══════════════════════════════════════════════════════════════════════════════
 #
-# The issues identified by the analyzer are surfaced in the UI of Dart-enabled
-# IDEs (https://dart.dev/tools#ides-and-editors). The analyzer can also be
-# invoked from the command line by running `flutter analyze`.
+# This file configures the analyzer for static analysis of Dart code.
+# Run: flutter analyze
+#
+# ┌───────────────────────────────────────────────────────────────────────────┐
+# │                    ARCHITECTURAL IMPORT RULES                              │
+# ├───────────────────────────────────────────────────────────────────────────┤
+# │  Feature code (lib/features/**) MUST:                                     │
+# │  • Import 'package:vitalo/design/design.dart' for all design primitives   │
+# │  • NOT import flutter/material.dart or flutter/cupertino.dart directly    │
+# │  • NOT import internal design files (tokens/, adaptive/ internals)        │
+# │                                                                           │
+# │  Run: dart run tool/check_imports.dart                                    │
+# │  This script enforces the import architecture at CI/pre-commit time.      │
+# └───────────────────────────────────────────────────────────────────────────┘
+#
+# ═══════════════════════════════════════════════════════════════════════════════
 
-# The following line activates a set of recommended lints for Flutter apps,
-# packages, and plugins designed to encourage good coding practices.
 include: package:flutter_lints/flutter.yaml
 
-linter:
-  # The lint rules applied to this project can be customized in the
-  # section below to disable rules from the `package:flutter_lints/flutter.yaml`
-  # included above or to enable additional rules. A list of all available lints
-  # and their documentation is published at https://dart.dev/lints.
-  #
-  # Instead of disabling a lint rule for the entire project in the
-  # section below, it can also be suppressed for a single line of code
-  # or a specific dart file by using the `// ignore: name_of_lint` and
-  # `// ignore_for_file: name_of_lint` syntax on the line or in the file
-  # producing the lint.
-  rules:
-    # avoid_print: false  # Uncomment to disable the `avoid_print` rule
-    # prefer_single_quotes: true  # Uncomment to enable the `prefer_single_quotes` rule
+analyzer:
+  # Treat specific issues as errors to enforce code quality
+  errors:
+    # Treat unused imports as warnings (default is info)
+    unused_import: warning
+    # Treat missing return as error
+    missing_return: error
+    # Dead code should be cleaned up
+    dead_code: warning
 
+linter:
+  rules:
+    # ═══════════════════════════════════════════════════════════════════════
+    # IMPORT DISCIPLINE
+    # ═══════════════════════════════════════════════════════════════════════
+
+    # Prefer relative imports within lib/ for internal consistency
+    prefer_relative_imports: true
+
+    # Avoid importing implementation details
+    implementation_imports: true
+
+    # ═══════════════════════════════════════════════════════════════════════
+    # CODE QUALITY
+    # ═══════════════════════════════════════════════════════════════════════
+
+    # Enforce const where possible (performance + immutability)
+    prefer_const_constructors: true
+    prefer_const_declarations: true
+    prefer_const_literals_to_create_immutables: true
+
+    # Clean code practices
+    avoid_print: true
+    avoid_empty_else: true
+    avoid_unnecessary_containers: true
+    prefer_final_fields: true
+    prefer_final_locals: true
+    sort_child_properties_last: true
+    use_key_in_widget_constructors: true
+
+    # Type safety
+    avoid_dynamic_calls: true
 # Additional information about this file can be found at
 # https://dart.dev/guides/language/analysis-options

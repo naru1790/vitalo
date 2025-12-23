@@ -1,7 +1,16 @@
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
+// @frozen
+// ARCHITECTURAL CONTRACT — DO NOT MODIFY WITHOUT REVIEW
+//
+// Tier-0 adaptive primitive. Feature code depends on stable semantics.
+//
+// Primitives must not branch on brightness or platform appearance.
+// All visual decisions must be expressed via semantic colors.
+// If a role is missing, add it to AppColors — do not read raw signals.
 
-import '../platform/app_platform_scope.dart';
+import 'package:flutter/widgets.dart';
+
+import '../platform/app_environment_scope.dart';
+import '../../tokens/color.dart';
 import '../../tokens/icons.dart' as icons;
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -31,8 +40,8 @@ enum AppIconSize {
 
 /// Semantic icon color roles.
 ///
-/// Each role maps to shell-injected theme colors.
-/// AppIcon reads these; it does not resolve tokens.
+/// Each role maps to semantic colors in [AppColors].
+/// AppIcon reads colors directly from [AppColorScope].
 enum AppIconColor {
   /// Primary icon color for maximum contrast.
   primary,
@@ -53,8 +62,8 @@ enum AppIconColor {
 /// Enforces semantic icon identity, semantic sizing, and semantic color roles.
 ///
 /// Feature code MUST use this instead of [Icon], [Icons], or [CupertinoIcons].
-/// Icon glyphs come from [icons.AppIcons.resolve]; colors come from shell-injected
-/// theme values.
+/// Icon glyphs come from [icons.AppIcons.resolve]; colors come from
+/// [AppColorScope.colors].
 ///
 /// ## Responsibility Boundaries
 ///
@@ -106,7 +115,7 @@ class AppIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final platform = AppPlatformScope.of(context);
+    final colors = AppColorScope.of(context).colors;
 
     // Resolve glyph from semantic icon via static resolver.
     final IconData iconData = icons.AppIcons.resolve(icon);
@@ -115,7 +124,7 @@ class AppIcon extends StatelessWidget {
     final double iconSize = _resolveSize();
 
     // Resolve color: override takes precedence, otherwise use role.
-    final Color iconColor = colorOverride ?? _resolveColor(context, platform);
+    final Color iconColor = colorOverride ?? _resolveColor(colors);
 
     return Icon(
       iconData,
@@ -137,45 +146,16 @@ class AppIcon extends StatelessWidget {
     };
   }
 
-  /// Resolves color from shell-injected platform theme.
-  Color _resolveColor(BuildContext context, AppPlatform platform) {
-    if (platform == AppPlatform.ios) {
-      return _resolveCupertinoColor(context);
-    }
-    return _resolveMaterialColor(context);
-  }
-
-  Color _resolveMaterialColor(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
+  /// Resolves color from environment scope.
+  ///
+  /// Colors are resolved once by AdaptiveShell and carried via
+  /// AppColorScope. This reads directly from that scope.
+  Color _resolveColor(AppColors colors) {
     return switch (color) {
-      AppIconColor.primary => colorScheme.onSurface,
-      AppIconColor.secondary => colorScheme.onSurface.withValues(alpha: 0.7),
-      AppIconColor.disabled => theme.disabledColor,
-      AppIconColor.inverse => colorScheme.onPrimary,
-    };
-  }
-
-  Color _resolveCupertinoColor(BuildContext context) {
-    final theme = CupertinoTheme.of(context);
-
-    // Exception: CupertinoColors.* used directly here.
-    //
-    // Unlike Material's ColorScheme, CupertinoThemeData does not expose
-    // semantic text/icon color roles (secondary, disabled, etc.).
-    // CupertinoColors.label/secondaryLabel/inactiveGray are iOS system
-    // dynamic colors that resolve correctly against the current brightness.
-    // This is the idiomatic iOS approach and is acceptable here.
-    return switch (color) {
-      AppIconColor.primary => CupertinoColors.label.resolveFrom(context),
-      AppIconColor.secondary => CupertinoColors.secondaryLabel.resolveFrom(
-        context,
-      ),
-      AppIconColor.disabled => CupertinoColors.inactiveGray.resolveFrom(
-        context,
-      ),
-      AppIconColor.inverse => theme.primaryContrastingColor,
+      AppIconColor.primary => colors.textPrimary,
+      AppIconColor.secondary => colors.textSecondary,
+      AppIconColor.disabled => colors.textTertiary,
+      AppIconColor.inverse => colors.textInverse,
     };
   }
 }

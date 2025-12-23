@@ -1,6 +1,10 @@
 // @frozen
 // ARCHITECTURAL CONTRACT — DO NOT MODIFY WITHOUT REVIEW
 //
+// Tokens are resolved once per app run.
+// TokenEnvironment must be initialized before access.
+// Environment changes require app restart by design.
+//
 // This file defines system-level policy.
 // Changes here are considered BREAKING CHANGES.
 //
@@ -13,8 +17,11 @@
 // - Changing default values
 // - Adding platform conditionals
 // - Feature-driven modifications
+// - Adding BuildContext or MediaQuery dependencies
+// - Lazy or deferred token resolution
+// - Silent fallbacks or defaults
 
-import 'dart:io' show Platform;
+import 'token_environment.dart';
 
 /// Semantic elevation tokens.
 ///
@@ -110,8 +117,8 @@ class _DefaultElevation extends AppElevation {
 
 /// Static elevation resolver.
 ///
-/// Platform detection occurs once when this class is first loaded.
-/// The resolved scale is cached for the lifetime of the application.
+/// Resolution occurs at class load after TokenEnvironment initialization.
+/// The resolved scale is immutable for the lifetime of the application.
 abstract final class AppElevationTokens {
   AppElevationTokens._();
 
@@ -121,12 +128,11 @@ abstract final class AppElevationTokens {
   static final AppElevation _resolved = _resolve();
 
   static AppElevation _resolve() {
-    try {
-      if (Platform.isIOS) return const _IosElevation();
-      if (Platform.isAndroid) return const _AndroidElevation();
-    } catch (_) {
-      // Platform unavailable (e.g., web)
-    }
-    return const _DefaultElevation();
+    final platform = TokenEnvironment.current.platform;
+    return switch (platform) {
+      TokenPlatform.ios => const _IosElevation(),
+      TokenPlatform.android => const _AndroidElevation(),
+      TokenPlatform.other => const _DefaultElevation(),
+    };
   }
 }

@@ -4,8 +4,11 @@
 // This widget uses dedicated illustration tokens (FluxMascotPalettes) instead of
 // AppColors or theme color schemes. Illustrative widgets are exempt from semantic
 // color contracts but must remain token-driven.
+//
+// Palette selection is inferred from semantic colors (not raw brightness).
 import 'package:flutter/widgets.dart';
 
+import '../../design/adaptive/platform/app_environment_scope.dart';
 import '../../design/tokens/illustration/flux_mascot_palette.dart';
 import '../../design/tokens/motion.dart';
 import '../../design/tokens/opacity.dart';
@@ -67,10 +70,9 @@ class _FluxMascotState extends State<FluxMascot> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    // Palette is brightness-based only; no platform or theme color leakage.
-    final palette = MediaQuery.platformBrightnessOf(context) == Brightness.light
-        ? FluxMascotPalettes.light
-        : FluxMascotPalettes.dark;
+    // Palette inferred from semantic colors, not raw brightness.
+    final colors = AppColorScope.of(context).colors;
+    final palette = FluxMascotPalettes.resolve(colors);
     final opacity = AppOpacityTokens.of;
     final shape = AppShapeTokens.of;
     final floatOffset = widget.size * 0.05;

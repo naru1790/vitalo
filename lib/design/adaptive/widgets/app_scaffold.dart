@@ -1,10 +1,46 @@
+// @frozen
+// ARCHITECTURAL CONTRACT — DO NOT MODIFY WITHOUT REVIEW
+//
+// Tier-0 adaptive scaffold. Feature code depends on stable semantics.
+//
+// Primitives must not branch on brightness or platform appearance.
+// All visual decisions must be expressed via semantic colors.
+// If a role is missing, add it to AppColors — do not read raw signals.
+//
+// ═══════════════════════════════════════════════════════════════════════════
+// GOD-WIDGET PREVENTION CLAUSE
+// ═══════════════════════════════════════════════════════════════════════════
+//
+// AppScaffold is a STRUCTURAL LAYOUT PRIMITIVE only.
+//
+// It MUST NOT:
+// - Branch on feature intent (auth, onboarding, profile, etc.)
+// - Contain business logic or state management
+// - Change behavior based on screen purpose or route
+// - Contain auth-specific, flow-specific, or feature-driven logic
+// - Inspect route intent, feature flags, or user state
+// - Accept escape parameters for "special cases"
+//
+// It MAY ONLY:
+// - Orchestrate primitives (body, chrome, safe area, scroll)
+// - Read AppPlatformScope (for platform branching)
+// - Read AppColorScope (for semantic colors)
+// - Compose structural layout concerns
+//
+// If behavior must vary by use case:
+// - Extract that behavior into a higher-level screen wrapper
+// - Keep AppScaffold ignorant of the context
+//
+// Violations require architectural review.
+// ═══════════════════════════════════════════════════════════════════════════
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../platform/app_environment_scope.dart';
 import '../platform/app_platform_scope.dart';
-import '../../tokens/elevation.dart';
+import '../../tokens/color.dart';
 import '../../tokens/icons.dart';
-import '../../tokens/motion.dart';
 import '../error_feedback.dart';
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -16,13 +52,9 @@ import '../error_feedback.dart';
 /// Abstracts platform scaffolds and navigation bars behind semantic intent.
 /// Feature code uses this instead of [Scaffold] or [CupertinoPageScaffold].
 ///
-/// Platform rendering is determined by [AppPlatformScope], which is
-/// injected by the active shell:
-/// - [IosShell] injects [AppPlatform.ios] → Cupertino widgets
-/// - [AndroidShell] injects [AppPlatform.android] → Material widgets
-///
-/// This widget does not detect platform, resolve tokens, or inject scopes.
-/// It reads the shell's declared platform and renders appropriately.
+/// Platform rendering is determined by [AppPlatformScope]:
+/// - iOS → Cupertino widgets
+/// - Android → Material widgets
 class AppScaffold extends StatelessWidget {
   const AppScaffold({
     super.key,
@@ -70,8 +102,22 @@ class AppScaffold extends StatelessWidget {
     // This is explicit injection, not detection.
     final platform = AppPlatformScope.of(context);
 
+    final Widget structure;
+
     if (platform == AppPlatform.ios) {
-      return _CupertinoPageStructure(
+      structure = _CupertinoPageStructure(
+        body: body,
+        title: title,
+        leadingAction: leadingAction,
+        trailingActions: trailingActions,
+        scrollBehavior: scrollBehavior,
+        safeArea: safeArea,
+        backgroundSurface: backgroundSurface,
+        chromeStyle: chromeStyle,
+        resizeToAvoidBottomInset: resizeToAvoidBottomInset,
+      );
+    } else {
+      structure = _MaterialPageStructure(
         body: body,
         title: title,
         leadingAction: leadingAction,
@@ -84,17 +130,7 @@ class AppScaffold extends StatelessWidget {
       );
     }
 
-    return _MaterialPageStructure(
-      body: body,
-      title: title,
-      leadingAction: leadingAction,
-      trailingActions: trailingActions,
-      scrollBehavior: scrollBehavior,
-      safeArea: safeArea,
-      backgroundSurface: backgroundSurface,
-      chromeStyle: chromeStyle,
-      resizeToAvoidBottomInset: resizeToAvoidBottomInset,
-    );
+    return structure;
   }
 }
 
@@ -258,10 +294,9 @@ Widget _composeBody({
   // Both platforms need this when resizeToAvoidBottomInset is false.
   if (!resizeToAvoidBottomInset) {
     final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
-    final motion = AppMotionTokens.of;
     current = AnimatedPadding(
-      duration: motion.normal,
-      curve: motion.easeOut,
+      duration: kThemeAnimationDuration,
+      curve: Curves.easeOut,
       padding: EdgeInsets.only(bottom: bottomInset),
       child: current,
     );
@@ -302,13 +337,11 @@ final class _MaterialPageStructure extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final colors = AppColorScope.of(context).colors;
 
-    // Background from theme — AndroidShell has already mapped
-    // semantic tokens (neutralBase, neutralSurface, surfaceElevated)
-    // into ThemeData.scaffoldBackgroundColor and ColorScheme.surface.
-    // We use the semantic mapping consistently.
-    final backgroundColor = _resolveBackgroundColor(theme);
+    // Background from semantic color tokens.
+    // AppColorScope provides colors resolved by AdaptiveShell.
+    final backgroundColor = _resolveBackgroundColor(colors);
     final appBar = _hasTopBar ? _buildAppBar(context) : null;
 
     final composedBody = _composeBody(
@@ -335,46 +368,33 @@ final class _MaterialPageStructure extends StatelessWidget {
     );
   }
 
-  /// Resolve background using shell-provided theme values.
+  /// Resolve background using semantic color tokens.
   ///
-  /// AndroidShell sets:
-  /// - scaffoldBackgroundColor → colors.neutralBase
-  /// - colorScheme.surface → colors.neutralSurface
-  ///
-  /// For surfaceElevated, we apply elevation tint to surface.
-  Color _resolveBackgroundColor(ThemeData theme) {
+  /// Maps background surface intent to semantic colors:
+  /// - [base]: neutralBase (page background)
+  /// - [surface]: neutralSurface (content surface)
+  /// - [elevated]: surfaceElevated (higher elevation surface)
+  Color _resolveBackgroundColor(AppColors colors) {
     return switch (backgroundSurface) {
-      AppBackgroundSurface.base => theme.scaffoldBackgroundColor,
-      AppBackgroundSurface.surface => theme.colorScheme.surface,
-      AppBackgroundSurface.elevated => ElevationOverlay.applySurfaceTint(
-        theme.colorScheme.surface,
-        theme.colorScheme.surfaceTint,
-        AppElevationTokens.of.low,
-      ),
+      AppBackgroundSurface.base => colors.neutralBase,
+      AppBackgroundSurface.surface => colors.neutralSurface,
+      AppBackgroundSurface.elevated => colors.surfaceElevated,
     };
   }
 
   AppBar _buildAppBar(BuildContext context) {
-    final elevation = AppElevationTokens.of;
+    final theme = Theme.of(context);
 
-    final double barElevation = switch (chromeStyle) {
-      AppChromeStyle.standard => elevation.none,
-      AppChromeStyle.elevated => elevation.medium,
-      AppChromeStyle.transparent => elevation.none,
-    };
-
-    final Color? backgroundColor = switch (chromeStyle) {
-      AppChromeStyle.standard => null,
-      AppChromeStyle.elevated => null,
-      AppChromeStyle.transparent => Colors.transparent,
-    };
+    final bool isTransparent = chromeStyle == AppChromeStyle.transparent;
 
     return AppBar(
-      backgroundColor: backgroundColor,
-      elevation: barElevation,
-      scrolledUnderElevation: barElevation,
-      surfaceTintColor: chromeStyle == AppChromeStyle.transparent
-          ? Colors.transparent
+      forceMaterialTransparency: isTransparent,
+      backgroundColor: isTransparent ? Colors.transparent : null,
+      elevation: chromeStyle == AppChromeStyle.elevated
+          ? theme.appBarTheme.elevation
+          : null,
+      scrolledUnderElevation: chromeStyle == AppChromeStyle.elevated
+          ? theme.appBarTheme.scrolledUnderElevation
           : null,
       // Intentional: Raw Text() used until AppText is introduced.
       // Platform themes already provide correct text styling.
@@ -462,13 +482,13 @@ final class _CupertinoPageStructure extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cupertinoTheme = CupertinoTheme.of(context);
+    final colors = AppColorScope.of(context).colors;
 
-    // Background from shell-provided theme.
-    // IosShell has already mapped semantic tokens into CupertinoThemeData.
-    final backgroundColor = _resolveBackgroundColor(cupertinoTheme);
+    // Background from semantic color tokens.
+    // AppColorScope provides colors resolved by AdaptiveShell.
+    final backgroundColor = _resolveBackgroundColor(colors);
     final navigationBar = _hasTopBar
-        ? _buildNavigationBar(context, cupertinoTheme)
+        ? _buildNavigationBar(context, colors)
         : null;
 
     final composedBody = _composeBody(
@@ -489,50 +509,42 @@ final class _CupertinoPageStructure extends StatelessWidget {
     );
   }
 
-  /// Resolve background using shell-provided theme values.
-  ///
-  /// IosShell sets:
-  /// - scaffoldBackgroundColor → colors.neutralBase
-  /// - barBackgroundColor → colors.neutralBase with opacity
+  /// Resolve background using semantic color tokens.
   ///
   /// Semantic mapping (iOS design language):
   /// - [base]: Solid page background (neutralBase)
   /// - [surface]: Solid content surface (neutralBase on iOS — see note)
-  /// - [elevated]: Translucent elevated layer (barBackgroundColor)
+  /// - [elevated]: Elevated surface (surfaceElevated)
   ///
   /// Note: iOS uses layered translucency (sheets, modals, blur) rather than
   /// tinted surfaces to indicate visual hierarchy. The [base] and [surface]
   /// semantics are preserved in code for API consistency, but render
   /// identically on iOS. This is intentional platform idiom, not a collapse.
-  Color _resolveBackgroundColor(CupertinoThemeData theme) {
+  Color _resolveBackgroundColor(AppColors colors) {
     // Semantic distinction preserved. On iOS, base and surface share the
     // same solid color because iOS expresses surface hierarchy through
     // translucency and blur, not surface tinting.
     return switch (backgroundSurface) {
-      AppBackgroundSurface.base => theme.scaffoldBackgroundColor,
-      AppBackgroundSurface.surface => theme.scaffoldBackgroundColor,
-      AppBackgroundSurface.elevated => theme.barBackgroundColor,
+      AppBackgroundSurface.base => colors.neutralBase,
+      AppBackgroundSurface.surface => colors.neutralBase,
+      AppBackgroundSurface.elevated => colors.surfaceElevated,
     };
   }
 
   CupertinoNavigationBar _buildNavigationBar(
     BuildContext context,
-    CupertinoThemeData theme,
+    AppColors colors,
   ) {
     final Color barBackground = switch (chromeStyle) {
-      AppChromeStyle.standard => theme.barBackgroundColor,
-      AppChromeStyle.elevated => theme.barBackgroundColor,
-      AppChromeStyle.transparent => theme.scaffoldBackgroundColor.withAlpha(0),
+      AppChromeStyle.standard => colors.neutralBase,
+      AppChromeStyle.elevated => colors.surfaceElevated,
+      AppChromeStyle.transparent => Colors.transparent,
     };
 
     final Border? border = switch (chromeStyle) {
       AppChromeStyle.transparent => null,
-      AppChromeStyle.standard => const Border(
-        bottom: BorderSide(color: CupertinoColors.separator, width: 0.0),
-      ),
-      AppChromeStyle.elevated => const Border(
-        bottom: BorderSide(color: CupertinoColors.separator, width: 0.0),
-      ),
+      AppChromeStyle.standard => const Border(bottom: BorderSide.none),
+      AppChromeStyle.elevated => const Border(bottom: BorderSide.none),
     };
 
     return CupertinoNavigationBar(
@@ -612,13 +624,12 @@ final class _CupertinoBarButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = CupertinoTheme.of(context);
+    final colors = AppColorScope.of(context).colors;
 
     return CupertinoButton(
       padding: EdgeInsets.zero,
-      minimumSize: const Size(44.0, 44.0),
       onPressed: onPressed,
-      child: Icon(AppIcons.resolve(icon), color: theme.primaryColor),
+      child: Icon(AppIcons.resolve(icon), color: colors.brandPrimary),
     );
   }
 }
