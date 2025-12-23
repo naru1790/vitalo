@@ -112,8 +112,8 @@ class _ActionsSectionState extends State<_ActionsSection> {
       talker.warning('$provider OAuth failed: $error');
       AppErrorFeedback.show(context, error);
     } else {
-      talker.info('$provider OAuth successful, navigating to dashboard');
-      context.go(AppRoutes.dashboard);
+      talker.info('$provider OAuth successful, navigating to home');
+      context.go(AppRoutes.home);
     }
   }
 

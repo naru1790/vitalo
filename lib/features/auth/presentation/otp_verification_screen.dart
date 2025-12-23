@@ -110,8 +110,8 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                 talker.debug('Calling onSuccess callback');
                 widget.onSuccess!();
               } else {
-                talker.info('Navigating to dashboard');
-                context.go(AppRoutes.dashboard);
+                talker.info('Navigating to home');
+                context.go(AppRoutes.home);
               }
             }
           } else {

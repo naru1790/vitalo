@@ -6,17 +6,17 @@ import '../main.dart';
 import '../design/adaptive/nav_motion.dart';
 import '../features/auth/presentation/email_signin_screen.dart';
 import '../features/auth/presentation/otp_verification_screen.dart';
-import '../features/dashboard/presentation/dashboard_screen.dart';
+import '../features/home/presentation/home_screen.dart';
 import '../features/landing/presentation/landing_screen.dart';
 import '../features/legal/presentation/privacy_policy_screen.dart';
 import '../features/legal/presentation/terms_of_service_screen.dart';
 import '../features/profile/presentation/profile_screen.dart';
 
 abstract class AppRoutes {
-  static const home = '/';
+  static const landing = '/';
   static const emailSignin = '/email-signin';
   static const otpVerification = '/otp-verification';
-  static const dashboard = '/dashboard';
+  static const home = '/home';
   static const profile = '/profile';
   static const privacy = '/privacy';
   static const terms = '/terms';
@@ -26,12 +26,12 @@ final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
 final router = GoRouter(
   navigatorKey: _rootNavigatorKey,
-  initialLocation: AppRoutes.home,
+  initialLocation: AppRoutes.landing,
   observers: [_NavigationObserver()],
   routes: [
     GoRoute(
-      path: AppRoutes.home,
-      name: 'home',
+      path: AppRoutes.landing,
+      name: 'landing',
       pageBuilder: (context, state) => AdaptivePage<void>(
         key: state.pageKey,
         child: const LandingScreen(),
@@ -67,11 +67,11 @@ final router = GoRouter(
       ),
     ),
     GoRoute(
-      path: AppRoutes.dashboard,
-      name: 'dashboard',
+      path: AppRoutes.home,
+      name: 'home',
       pageBuilder: (context, state) => AdaptivePage<void>(
         key: state.pageKey,
-        child: const DashboardScreen(),
+        child: const HomeScreen(),
         intent: NavTransition.peer,
       ),
     ),
@@ -114,25 +114,23 @@ final router = GoRouter(
     );
 
     final isOnLandingOrAuth =
-        state.matchedLocation == AppRoutes.home ||
+        state.matchedLocation == AppRoutes.landing ||
         state.matchedLocation == AppRoutes.emailSignin ||
         state.matchedLocation == AppRoutes.otpVerification;
     final isProtectedRoute =
-        state.matchedLocation == AppRoutes.dashboard ||
+        state.matchedLocation == AppRoutes.home ||
         state.matchedLocation == AppRoutes.profile;
 
     if (isAuthenticated && isOnLandingOrAuth) {
-      talker.info(
-        'Navigation redirect: Authenticated user redirected to dashboard',
-      );
-      return AppRoutes.dashboard;
+      talker.info('Navigation redirect: Authenticated user redirected to home');
+      return AppRoutes.home;
     }
 
     if (!isAuthenticated && isProtectedRoute) {
       talker.info(
         'Navigation redirect: Unauthenticated user blocked from ${state.matchedLocation}',
       );
-      return AppRoutes.home;
+      return AppRoutes.landing;
     }
 
     return null;

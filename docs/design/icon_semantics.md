@@ -123,7 +123,7 @@ Navigation icons guide users through the app's structure.
 **NOT for:**
 
 - General "start over" (context-dependent)
-- Dashboard if dashboard is not home
+- Any non-home overview screen (if it's not the home screen)
 
 ---
 

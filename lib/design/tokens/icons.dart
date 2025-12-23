@@ -169,7 +169,7 @@ abstract final class AppIcons {
       case AppIcon.navSettings:
         return CupertinoIcons.settings;
       case AppIcon.navProfile:
-        return CupertinoIcons.person;
+        return CupertinoIcons.person_crop_circle_fill;
       case AppIcon.navSearch:
         return CupertinoIcons.search;
       case AppIcon.navExternal:
@@ -321,7 +321,7 @@ abstract final class AppIcons {
       case AppIcon.navSettings:
         return Icons.settings;
       case AppIcon.navProfile:
-        return Icons.person;
+        return Icons.account_circle;
       case AppIcon.navSearch:
         return Icons.search;
       case AppIcon.navExternal:
