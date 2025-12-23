@@ -304,11 +304,7 @@ class _AppOtpInputState extends State<AppOtpInput> {
 
         return Padding(
           padding: EdgeInsets.only(left: index == 0 ? 0 : spacing.xs),
-          child: SizedBox(
-            width: cellSize,
-            height: cellSize,
-            child: Center(child: decorated),
-          ),
+          child: SizedBox(width: cellSize, height: cellSize, child: decorated),
         );
       }),
     );

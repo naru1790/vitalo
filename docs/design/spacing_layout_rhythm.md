@@ -30,6 +30,12 @@ Spacing is not decoration. Spacing communicates relationship, hierarchy, and cog
 
 This document defines the grammar of space. Implementation tokens must enforce these relationships consistently.
 
+### Feature Layout Ownership (Tier-1)
+
+- Feature screens MUST NOT use `Padding`, `EdgeInsets`, or `SingleChildScrollView` directly.
+- Feature screens MUST use `AppPageBody` to select semantic padding and scrolling behavior.
+- Design-system primitives own the mechanics; feature code owns content and intent.
+
 ---
 
 ## 2. Spacing Philosophy

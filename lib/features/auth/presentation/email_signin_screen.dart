@@ -1,18 +1,10 @@
 import 'package:flutter/services.dart' show TextInputAction, TextInputType;
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
+import '../../../design/design.dart';
 
 import '../../../core/router.dart';
 import '../../../core/services/auth_service.dart';
-import '../../../design/adaptive/error_feedback.dart';
-import '../../../design/tokens/spacing.dart';
-import '../../../design/adaptive/widgets/app_button.dart';
-import '../../../design/adaptive/widgets/app_scaffold.dart';
-import '../../../design/adaptive/widgets/app_text.dart';
-import '../../../design/adaptive/widgets/app_text_field.dart';
-import '../../../design/adaptive/widgets/keyboard_dismiss_surface.dart';
-import '../../../design/adaptive/widgets/inline_feedback_message.dart';
-import '../../../design/tokens/icons.dart' as tokens;
 import '../../../main.dart';
 
 class EmailSignInScreen extends StatefulWidget {
@@ -118,8 +110,7 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
   Widget _buildEmailStep() {
     final spacing = Spacing.of;
 
-    return SingleChildScrollView(
-      padding: EdgeInsets.all(spacing.lg),
+    return AppPageBody(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -135,7 +126,7 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
           AppTextField(
             controller: _emailController,
             placeholder: 'you@example.com',
-            leadingIcon: tokens.AppIcon.authEmail,
+            leadingIcon: AppIconId.authEmail,
             keyboardType: TextInputType.emailAddress,
             textInputAction: TextInputAction.done,
             enabled: !_isLoading,

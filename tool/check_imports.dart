@@ -17,6 +17,7 @@
 /// Usage:
 ///   dart run tool/check_imports.dart
 ///   dart run tool/check_imports.dart --fix  (shows what to change)
+///   dart run tool/check_imports.dart --tier1-layout  (only landing/email/otp)
 ///
 /// Exit codes:
 ///   0 = All imports are valid
@@ -125,6 +126,23 @@ const forbiddenPatterns = [
     'Raw ListTile() detected. Use AppListTile() from design.dart',
     isWidgetPattern: true,
   ),
+
+  // Tier-1 feature layout lockdown (only enforced with --strict)
+  ImportRule(
+    r'\bPadding\s*\(',
+    'Raw Padding() detected. Use AppPageBody() for padding in feature code.',
+    isWidgetPattern: true,
+  ),
+  ImportRule(
+    r'\bEdgeInsets\b',
+    'Raw EdgeInsets detected. Use AppPageBody() padding options in feature code.',
+    isWidgetPattern: true,
+  ),
+  ImportRule(
+    r'\bSingleChildScrollView\s*\(',
+    'Raw SingleChildScrollView() detected. Use AppPageBody() scroll options in feature code.',
+    isWidgetPattern: true,
+  ),
 ];
 
 class Violation {
@@ -143,7 +161,8 @@ class Violation {
 
 void main(List<String> args) {
   final showFix = args.contains('--fix');
-  final checkWidgets = args.contains('--strict');
+  final tier1Layout = args.contains('--tier1-layout');
+  final checkWidgets = args.contains('--strict') || tier1Layout;
 
   print('');
   print(
@@ -162,10 +181,26 @@ void main(List<String> args) {
   }
 
   final violations = <Violation>[];
-  final dartFiles = featuresDir
+  final allDartFiles = featuresDir
       .listSync(recursive: true)
       .whereType<File>()
       .where((f) => f.path.endsWith('.dart'));
+
+  final Iterable<File> dartFiles;
+  if (tier1Layout) {
+    const tier1Targets = <String>{
+      'lib/features/landing/presentation/landing_screen.dart',
+      'lib/features/auth/presentation/email_signin_screen.dart',
+      'lib/features/auth/presentation/otp_verification_screen.dart',
+    };
+
+    dartFiles = allDartFiles.where((file) {
+      final relativePath = file.path.replaceAll(r'\\', '/');
+      return tier1Targets.contains(relativePath);
+    });
+  } else {
+    dartFiles = allDartFiles;
+  }
 
   for (final file in dartFiles) {
     final relativePath = file.path.replaceAll(r'\', '/');
@@ -245,6 +280,9 @@ void main(List<String> args) {
     print('     Divider()    → AppDivider()');
     print('     ListTile()   → AppListTile()');
     print('     *Button()    → AppButton()');
+    print('     Padding()    → AppPageBody()');
+    print('     EdgeInsets   → AppPageBody() padding');
+    print('     SingleChildScrollView() → AppPageBody()');
     print('');
   }
 

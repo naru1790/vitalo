@@ -7,21 +7,11 @@ import 'dart:async';
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../../design/design.dart';
 
 import '../../../main.dart';
 import '../../../core/router.dart';
 import '../../../core/services/auth_service.dart';
-import '../../../design/adaptive/error_feedback.dart';
-import '../../../design/adaptive/widgets/app_button.dart';
-import '../../../design/adaptive/widgets/app_icon.dart';
-import '../../../design/adaptive/widgets/app_scaffold.dart';
-import '../../../design/adaptive/widgets/app_otp_input.dart';
-import '../../../design/adaptive/widgets/app_otp_resend_action.dart';
-import '../../../design/adaptive/widgets/keyboard_dismiss_surface.dart';
-import '../../../design/adaptive/widgets/app_text.dart';
-import '../../../design/adaptive/widgets/inline_feedback_message.dart';
-import '../../../design/tokens/icons.dart' as tokens;
-import '../../../design/tokens/spacing.dart';
 
 /// Hero icon container size.
 ///
@@ -200,8 +190,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
       backgroundSurface: AppBackgroundSurface.base,
       body: KeyboardDismissSurface(
         child: Center(
-          child: SingleChildScrollView(
-            padding: EdgeInsets.all(spacing.lg),
+          child: AppPageBody(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 400),
               child: Column(
@@ -213,7 +202,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                     child: FittedBox(
                       fit: BoxFit.contain,
                       child: AppIcon(
-                        tokens.AppIcon.authEmail,
+                        AppIconId.authEmail,
                         size: AppIconSize.large,
                       ),
                     ),

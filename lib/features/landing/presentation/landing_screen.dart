@@ -1,14 +1,9 @@
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
+import '../../../design/design.dart';
 
 import '../../../core/router.dart';
 import '../../../core/services/auth_service.dart';
-import '../../../design/adaptive/widgets/app_scaffold.dart';
-import '../../../design/adaptive/widgets/app_text.dart';
-import '../../../design/adaptive/widgets/auth_action_stack.dart';
-import '../../../design/adaptive/widgets/auth_footer_links.dart';
-import '../../../design/tokens/spacing.dart';
-import '../../../design/adaptive/error_feedback.dart';
 import '../../../core/widgets/flux_mascot.dart';
 import '../../../main.dart';
 
@@ -41,42 +36,35 @@ class _BrandHookSection extends StatelessWidget {
     final spacing = Spacing.of;
 
     return Center(
-      child: SingleChildScrollView(
-        physics: const NeverScrollableScrollPhysics(),
-        child: Padding(
-          padding: EdgeInsets.symmetric(
-            horizontal: spacing.lg,
-            vertical: spacing.lg,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const FluxMascot(size: 200),
-              SizedBox(height: spacing.xl),
-              // App name uses display variant for hero moment.
-              const AppText(
-                'Vitalo',
-                variant: AppTextVariant.display,
-                align: TextAlign.center,
-              ),
-              SizedBox(height: spacing.md),
-              // Tagline uses title variant for section heading.
-              const AppText(
-                'Awaken Your Intelligent Wellness',
-                variant: AppTextVariant.title,
-                maxLines: 2,
-                align: TextAlign.center,
-              ),
-              SizedBox(height: spacing.sm),
-              // Description uses body variant for primary reading text.
-              const AppText(
-                'Vitalo learns and grows with you — mind, body, and beyond.',
-                variant: AppTextVariant.body,
-                color: AppTextColor.secondary,
-                align: TextAlign.center,
-              ),
-            ],
-          ),
+      child: AppPageBody(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const FluxMascot(size: 200),
+            SizedBox(height: spacing.xl),
+            // App name uses display variant for hero moment.
+            const AppText(
+              'Vitalo',
+              variant: AppTextVariant.display,
+              align: TextAlign.center,
+            ),
+            SizedBox(height: spacing.md),
+            // Tagline uses title variant for section heading.
+            const AppText(
+              'Awaken Your Intelligent Wellness',
+              variant: AppTextVariant.title,
+              maxLines: 2,
+              align: TextAlign.center,
+            ),
+            SizedBox(height: spacing.sm),
+            // Description uses body variant for primary reading text.
+            const AppText(
+              'Vitalo learns and grows with you — mind, body, and beyond.',
+              variant: AppTextVariant.body,
+              color: AppTextColor.secondary,
+              align: TextAlign.center,
+            ),
+          ],
         ),
       ),
     );
@@ -161,11 +149,8 @@ class _ActionsSectionState extends State<_ActionsSection> {
   Widget build(BuildContext context) {
     final spacing = Spacing.of;
 
-    return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: spacing.lg,
-        vertical: spacing.lg,
-      ),
+    return AppPageBody(
+      scroll: AppPageScroll.never,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.end,
         crossAxisAlignment: CrossAxisAlignment.stretch,
