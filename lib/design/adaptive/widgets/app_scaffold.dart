@@ -42,6 +42,7 @@ import '../platform/app_platform_scope.dart';
 import '../../tokens/color.dart';
 import '../../tokens/icons.dart';
 import '../error_feedback.dart';
+import 'app_icon.dart' as primitives;
 
 // ═══════════════════════════════════════════════════════════════════════════
 // PUBLIC API — ACTIVE FREEZE ZONE
@@ -562,17 +563,27 @@ final class _CupertinoPageStructure extends StatelessWidget {
     final action = leadingAction;
     if (action == null) return null;
 
+    final colors = AppColorScope.of(context).colors;
+
+    // Back action uses system-provided sizing (CupertinoNavigationBarBackButton).
+    // All other actions use _CupertinoBarActionWrapper for consistent 44×44 tap target.
     return switch (action) {
       AppBarBackAction() => CupertinoNavigationBarBackButton(
         onPressed: action.onPressed ?? _defaultDismiss(context),
       ),
-      AppBarCloseAction() => _CupertinoBarButton(
-        icon: AppIcon.actionClose,
+      AppBarCloseAction() => _CupertinoBarActionWrapper(
         onPressed: action.onPressed ?? _defaultDismiss(context),
+        icon: primitives.AppIcon(
+          AppIcon.actionClose,
+          colorOverride: colors.brandPrimary,
+        ),
       ),
-      AppBarIconAction() => _CupertinoBarButton(
-        icon: action.icon,
+      AppBarIconAction() => _CupertinoBarActionWrapper(
         onPressed: action.onPressed,
+        icon: primitives.AppIcon(
+          action.icon,
+          colorOverride: colors.brandPrimary,
+        ),
       ),
     };
   }
@@ -598,38 +609,71 @@ final class _CupertinoPageStructure extends StatelessWidget {
   }
 
   Widget _buildSingleTrailingAction(BuildContext context, AppBarAction action) {
+    // Root cause (authoritative): CupertinoNavigationBar.trailing is rendered
+    // "as-is" (not auto-inflated). Trailing actions must therefore enforce
+    // the Apple HIG minimum 44×44 tap target explicitly.
+    assert(
+      action is! AppBarBackAction,
+      'AppBarBackAction must be used as leading only.',
+    );
+
+    final colors = AppColorScope.of(context).colors;
+
     return switch (action) {
-      AppBarBackAction() => _CupertinoBarButton(
-        icon: AppIcon.navBack,
-        onPressed: action.onPressed ?? _defaultDismiss(context),
+      // Back actions are forbidden in trailing (caught by assert above).
+      AppBarBackAction() => throw StateError(
+        'AppBarBackAction cannot be used as a trailing action.',
       ),
-      AppBarCloseAction() => _CupertinoBarButton(
-        icon: AppIcon.actionClose,
+      AppBarCloseAction() => _CupertinoBarActionWrapper(
         onPressed: action.onPressed ?? _defaultDismiss(context),
+        icon: primitives.AppIcon(
+          AppIcon.actionClose,
+          colorOverride: colors.brandPrimary,
+        ),
       ),
-      AppBarIconAction() => _CupertinoBarButton(
-        icon: action.icon,
+      AppBarIconAction() => _CupertinoBarActionWrapper(
         onPressed: action.onPressed,
+        icon: primitives.AppIcon(
+          action.icon,
+          colorOverride: colors.brandPrimary,
+        ),
       ),
     };
   }
 }
 
-/// Cupertino navigation bar button.
-final class _CupertinoBarButton extends StatelessWidget {
-  const _CupertinoBarButton({required this.icon, required this.onPressed});
+/// Cupertino-only trailing action wrapper.
+///
+/// Root cause: CupertinoNavigationBar.leading is auto-inflated by the system,
+/// but trailing is rendered as-is. Trailing actions must manually enforce the
+/// Apple HIG minimum 44×44 tap target.
+///
+/// Constraints:
+/// - Private
+/// - Cupertino-only (no platform checks)
+/// - Used ONLY for trailing actions
+/// - Does not alter icon glyph sizing
+final class _CupertinoBarActionWrapper extends StatelessWidget {
+  const _CupertinoBarActionWrapper({
+    required this.icon,
+    required this.onPressed,
+  });
 
-  final AppIcon icon;
+  final primitives.AppIcon icon;
   final VoidCallback onPressed;
+
+  static const double _tapTarget = 44.0;
 
   @override
   Widget build(BuildContext context) {
-    final colors = AppColorScope.of(context).colors;
-
-    return CupertinoButton(
-      padding: EdgeInsets.zero,
-      onPressed: onPressed,
-      child: Icon(AppIcons.resolve(icon), color: colors.brandPrimary),
+    return SizedBox(
+      width: _tapTarget,
+      height: _tapTarget,
+      child: CupertinoButton(
+        padding: EdgeInsets.zero,
+        onPressed: onPressed,
+        child: Center(child: icon),
+      ),
     );
   }
 }
