@@ -2,6 +2,11 @@
 // AUTH FLOW — OTP VERIFICATION
 // DO NOT ADD EMAIL OR RESEND LOGIC OUTSIDE THIS SCREEN
 
+/// PAGE ARCHETYPE: CENTERED FOCUS
+/// This screen must remain single-task, vertically centered,
+/// and free of navigation, lists, or secondary actions.
+library;
+
 import 'dart:async';
 
 import 'package:flutter/widgets.dart';
@@ -12,12 +17,6 @@ import '../../../design/design.dart';
 import '../../../main.dart';
 import '../../../core/router.dart';
 import '../../../core/services/auth_service.dart';
-
-/// Hero icon container size.
-///
-/// Uses minimum touch target (44pt) for prominent hero icon presentation.
-/// This is a frozen layout constant, not a spacing token.
-const double _kHeroIconSize = 44.0;
 
 class OtpVerificationScreen extends StatefulWidget {
   const OtpVerificationScreen({super.key, required this.email, this.onSuccess});
@@ -179,80 +178,62 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
   Widget build(BuildContext context) {
     final spacing = Spacing.of;
 
-    return AppScaffold(
+    return CenteredFocusPage(
       leadingAction: AppBarBackAction(
         onPressed: () {
           talker.debug('User navigated back from OTP verification screen');
           context.pop();
         },
       ),
-      safeArea: AppSafeArea.all,
-      backgroundSurface: AppBackgroundSurface.base,
-      body: KeyboardDismissSurface(
-        child: Center(
-          child: AppPageBody(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 400),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const SizedBox(
-                    width: _kHeroIconSize,
-                    height: _kHeroIconSize,
-                    child: FittedBox(
-                      fit: BoxFit.contain,
-                      child: AppIcon(
-                        AppIconId.authEmail,
-                        size: AppIconSize.large,
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: spacing.xl),
-                  const AppText(
-                    'Verify it\'s you',
-                    variant: AppTextVariant.display,
-                    align: TextAlign.center,
-                  ),
-                  SizedBox(height: spacing.sm),
-                  AppText(
-                    'Enter the code sent to ${widget.email}',
-                    variant: AppTextVariant.body,
-                    color: AppTextColor.secondary,
-                    align: TextAlign.center,
-                  ),
-                  SizedBox(height: spacing.xl),
-                  AppOtpInput(
-                    controller: _otpController,
-                    enabled: !_isLoading,
-                    hasError: _errorMessage != null,
-                    onCompleted: _verifyOtp,
-                  ),
-                  if (_errorMessage != null) ...[
-                    SizedBox(height: spacing.sm),
-                    InlineFeedbackMessage(
-                      message: _errorMessage!,
-                      severity: InlineFeedbackSeverity.error,
-                    ),
-                  ],
-                  SizedBox(height: spacing.xl),
-                  AppButton(
-                    label: 'Verify & Continue',
-                    onPressed: _verifyOtp,
-                    loading: _isLoading,
-                    enabled: _isOtpComplete,
-                    variant: AppButtonVariant.primary,
-                  ),
-                  SizedBox(height: spacing.md),
-                  AppOtpResendAction(
-                    secondsRemaining: _resendCountdown,
-                    enabled: !_isLoading,
-                    onResend: _resendOtp,
-                  ),
-                ],
-              ),
-            ),
+
+      /// Centered Focus canonical content order — do not reorder.
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // 1. Hero icon
+          const AppFocusHeroIcon(icon: AppIconId.authEmail),
+          SizedBox(height: spacing.xl),
+          const AppText(
+            'Verify it\'s you',
+            variant: AppTextVariant.display,
+            align: TextAlign.center,
           ),
-        ),
+          SizedBox(height: spacing.sm),
+          AppText(
+            'Enter the code sent to ${widget.email}',
+            variant: AppTextVariant.body,
+            color: AppTextColor.secondary,
+            align: TextAlign.center,
+          ),
+          SizedBox(height: spacing.xl),
+          AppOtpInput(
+            controller: _otpController,
+            enabled: !_isLoading,
+            hasError: _errorMessage != null,
+            onCompleted: _verifyOtp,
+          ),
+          if (_errorMessage != null) ...[
+            SizedBox(height: spacing.sm),
+            InlineFeedbackMessage(
+              message: _errorMessage!,
+              severity: InlineFeedbackSeverity.error,
+            ),
+          ],
+          SizedBox(height: spacing.xl),
+          AppButton(
+            label: 'Verify & Continue',
+            onPressed: _verifyOtp,
+            loading: _isLoading,
+            enabled: _isOtpComplete,
+            variant: AppButtonVariant.primary,
+          ),
+          SizedBox(height: spacing.md),
+          AppOtpResendAction(
+            secondsRemaining: _resendCountdown,
+            enabled: !_isLoading,
+            onResend: _resendOtp,
+          ),
+        ],
       ),
     );
   }

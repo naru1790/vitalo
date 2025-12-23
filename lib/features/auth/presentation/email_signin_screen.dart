@@ -1,3 +1,8 @@
+/// PAGE ARCHETYPE: CENTERED FOCUS
+/// This screen must remain single-task, vertically centered,
+/// and free of navigation, lists, or secondary actions.
+library;
+
 import 'package:flutter/services.dart' show TextInputAction, TextInputType;
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
@@ -98,60 +103,62 @@ class _EmailSignInScreenState extends State<EmailSignInScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return AppScaffold(
+    return CenteredFocusPage(
       leadingAction: AppBarBackAction(onPressed: _goBack),
-      safeArea: AppSafeArea.all,
-      backgroundSurface: AppBackgroundSurface.base,
-      chromeStyle: AppChromeStyle.transparent,
-      body: KeyboardDismissSurface(child: _buildEmailStep()),
+      child: _buildEmailStep(),
     );
   }
 
   Widget _buildEmailStep() {
     final spacing = Spacing.of;
 
-    return AppPageBody(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          SizedBox(height: spacing.xl),
-          const AppText('Welcome Back', variant: AppTextVariant.display),
-          SizedBox(height: spacing.md),
-          const AppText(
-            'Enter your email to access your health vault.',
-            variant: AppTextVariant.body,
-            color: AppTextColor.secondary,
-          ),
-          SizedBox(height: spacing.xl),
-          AppTextField(
-            controller: _emailController,
-            placeholder: 'you@example.com',
-            leadingIcon: AppIconId.authEmail,
-            keyboardType: TextInputType.emailAddress,
-            textInputAction: TextInputAction.done,
-            enabled: !_isLoading,
-            errorText: _emailError,
-            onChanged: (_) => _clearEmailError(),
-            onSubmitted: _sendCode,
-          ),
-          // Inline validation error (iOS HIG pattern)
-          if (_emailError != null) ...[
-            SizedBox(height: spacing.sm),
-            InlineFeedbackMessage(
-              message: _emailError!,
-              severity: InlineFeedbackSeverity.error,
-            ),
-          ],
-          SizedBox(height: spacing.xl),
-          AppButton(
-            label: 'Send Code',
-            onPressed: _sendCode,
-            loading: _isLoading,
-            enabled: !_isLoading,
-            variant: AppButtonVariant.primary,
+    /// Centered Focus canonical content order — do not reorder.
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // 1. Hero icon
+        const AppFocusHeroIcon(icon: AppIconId.authEmail),
+        SizedBox(height: spacing.xl),
+        const AppText(
+          'Welcome Back',
+          variant: AppTextVariant.display,
+          align: TextAlign.center,
+        ),
+        SizedBox(height: spacing.sm),
+        const AppText(
+          'Enter your email to access your health vault.',
+          variant: AppTextVariant.body,
+          color: AppTextColor.secondary,
+          align: TextAlign.center,
+        ),
+        SizedBox(height: spacing.xl),
+        AppTextField(
+          controller: _emailController,
+          placeholder: 'you@example.com',
+          leadingIcon: AppIconId.authEmail,
+          keyboardType: TextInputType.emailAddress,
+          textInputAction: TextInputAction.done,
+          enabled: !_isLoading,
+          errorText: _emailError,
+          onChanged: (_) => _clearEmailError(),
+          onSubmitted: _sendCode,
+        ),
+        if (_emailError != null) ...[
+          SizedBox(height: spacing.sm),
+          InlineFeedbackMessage(
+            message: _emailError!,
+            severity: InlineFeedbackSeverity.error,
           ),
         ],
-      ),
+        SizedBox(height: spacing.xl),
+        AppButton(
+          label: 'Send Code',
+          onPressed: _sendCode,
+          loading: _isLoading,
+          enabled: !_isLoading,
+          variant: AppButtonVariant.primary,
+        ),
+      ],
     );
   }
 }

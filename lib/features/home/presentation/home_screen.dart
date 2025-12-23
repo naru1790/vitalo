@@ -14,9 +14,7 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppScaffold(
-      safeArea: AppSafeArea.all,
-      backgroundSurface: AppBackgroundSurface.base,
+    return StagePage(
       title: 'Home',
       trailingActions: [
         AppBarIconAction(
@@ -25,27 +23,22 @@ class HomeScreen extends StatelessWidget {
           onPressed: () => context.push(AppRoutes.profile),
         ),
       ],
-      body: const AppPageBody(
-        scroll: AppPageScroll.never,
-        child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              AppText(
-                'Welcome',
-                variant: AppTextVariant.title,
-                align: TextAlign.center,
-              ),
-              AppText(
-                'Your health companion',
-                variant: AppTextVariant.body,
-                align: TextAlign.center,
-              ),
-            ],
+      hero: const Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          AppText(
+            'Welcome',
+            variant: AppTextVariant.title,
+            align: TextAlign.center,
           ),
-        ),
+          AppText(
+            'Your health companion',
+            variant: AppTextVariant.body,
+            align: TextAlign.center,
+          ),
+        ],
       ),
+      actions: const SizedBox.shrink(),
     );
   }
 }

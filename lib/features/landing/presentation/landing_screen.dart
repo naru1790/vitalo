@@ -13,17 +13,9 @@ class LandingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const AppScaffold(
-      safeArea: AppSafeArea.all,
-      body: Column(
-        children: [
-          // Top Section: Brand Hook (flexible, scroll-safe)
-          Flexible(child: _BrandHookSection()),
-
-          // Bottom Section: Actions (bottom-anchored)
-          _ActionsSection(),
-        ],
-      ),
+    return const StagePage(
+      hero: _BrandHookSection(),
+      actions: _ActionsSection(),
     );
   }
 }
@@ -35,38 +27,34 @@ class _BrandHookSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final spacing = Spacing.of;
 
-    return Center(
-      child: AppPageBody(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const FluxMascot(size: 200),
-            SizedBox(height: spacing.xl),
-            // App name uses display variant for hero moment.
-            const AppText(
-              'Vitalo',
-              variant: AppTextVariant.display,
-              align: TextAlign.center,
-            ),
-            SizedBox(height: spacing.md),
-            // Tagline uses title variant for section heading.
-            const AppText(
-              'Awaken Your Intelligent Wellness',
-              variant: AppTextVariant.title,
-              maxLines: 2,
-              align: TextAlign.center,
-            ),
-            SizedBox(height: spacing.sm),
-            // Description uses body variant for primary reading text.
-            const AppText(
-              'Vitalo learns and grows with you — mind, body, and beyond.',
-              variant: AppTextVariant.body,
-              color: AppTextColor.secondary,
-              align: TextAlign.center,
-            ),
-          ],
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const FluxMascot(size: 200),
+        SizedBox(height: spacing.xl),
+        // App name uses display variant for hero moment.
+        const AppText(
+          'Vitalo',
+          variant: AppTextVariant.display,
+          align: TextAlign.center,
         ),
-      ),
+        SizedBox(height: spacing.md),
+        // Tagline uses title variant for section heading.
+        const AppText(
+          'Awaken Your Intelligent Wellness',
+          variant: AppTextVariant.title,
+          maxLines: 2,
+          align: TextAlign.center,
+        ),
+        SizedBox(height: spacing.sm),
+        // Description uses body variant for primary reading text.
+        const AppText(
+          'Vitalo learns and grows with you — mind, body, and beyond.',
+          variant: AppTextVariant.body,
+          color: AppTextColor.secondary,
+          align: TextAlign.center,
+        ),
+      ],
     );
   }
 }
@@ -149,27 +137,20 @@ class _ActionsSectionState extends State<_ActionsSection> {
   Widget build(BuildContext context) {
     final spacing = Spacing.of;
 
-    return AppPageBody(
-      scroll: AppPageScroll.never,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.end,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          AuthActionStack(
-            onApple: _handleAppleSignIn,
-            onGoogle: _handleGoogleSignIn,
-            onEmail: _handleEmailFlow,
-            loadingState: _loadingState,
-          ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        AuthActionStack(
+          onApple: _handleAppleSignIn,
+          onGoogle: _handleGoogleSignIn,
+          onEmail: _handleEmailFlow,
+          loadingState: _loadingState,
+        ),
 
-          SizedBox(height: spacing.xl),
+        SizedBox(height: spacing.xl),
 
-          AuthFooterLinks(
-            onTerms: _handleTermsTap,
-            onPrivacy: _handlePrivacyTap,
-          ),
-        ],
-      ),
+        AuthFooterLinks(onTerms: _handleTermsTap, onPrivacy: _handlePrivacyTap),
+      ],
     );
   }
 }

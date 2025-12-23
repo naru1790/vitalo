@@ -46,6 +46,7 @@ export 'adaptive/nav_motion.dart' show NavMotionScope;
 
 export 'adaptive/widgets/app_button.dart';
 export 'adaptive/widgets/app_divider.dart';
+export 'adaptive/widgets/app_focus_hero_icon.dart';
 export 'adaptive/widgets/app_icon.dart';
 export 'adaptive/widgets/app_icon_button.dart';
 export 'adaptive/widgets/app_list_tile.dart';
@@ -60,6 +61,13 @@ export 'adaptive/widgets/auth_footer_links.dart';
 export 'adaptive/widgets/auth_sign_in_button.dart';
 export 'adaptive/widgets/inline_feedback_message.dart';
 export 'adaptive/widgets/keyboard_dismiss_surface.dart';
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PAGE ARCHETYPES — Semantic page wrappers encoding layout contracts
+// ═══════════════════════════════════════════════════════════════════════════
+
+export 'adaptive/pages/centered_focus_page.dart';
+export 'adaptive/pages/stage_page.dart';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // TOKENS — Design tokens for layout, typography, shape, motion
