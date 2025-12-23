@@ -7,7 +7,7 @@ import '../tokens/color.dart';
 import '../tokens/token_environment.dart';
 import 'android_shell.dart';
 import 'ios_shell.dart';
-import 'platform/app_environment_scope.dart';
+import 'platform/app_color_scope.dart';
 
 // @frozen
 // TIER-0 INFRASTRUCTURE — ACTIVE FREEZE ZONE

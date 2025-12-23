@@ -9,7 +9,7 @@
 
 import 'package:flutter/widgets.dart';
 
-import '../platform/app_environment_scope.dart';
+import '../platform/app_color_scope.dart';
 import '../../tokens/color.dart';
 import '../../tokens/icons.dart' as icons;
 import '../../tokens/spacing.dart';

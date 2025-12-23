@@ -36,7 +36,7 @@ library design;
 // SCOPES — Context providers for adaptive data
 // ═══════════════════════════════════════════════════════════════════════════
 
-export 'adaptive/platform/app_environment_scope.dart' show AppColorScope;
+export 'adaptive/platform/app_color_scope.dart' show AppColorScope;
 export 'adaptive/platform/app_platform_scope.dart' show AppPlatformScope;
 export 'adaptive/nav_motion.dart' show NavMotionScope;
 

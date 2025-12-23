@@ -18,7 +18,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import '../platform/app_environment_scope.dart';
+import '../platform/app_color_scope.dart';
 import '../platform/app_platform_scope.dart';
 
 /// Tier-1 resend OTP action.

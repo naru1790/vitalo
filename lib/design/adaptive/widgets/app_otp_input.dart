@@ -15,7 +15,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../platform/app_environment_scope.dart';
+import '../platform/app_color_scope.dart';
 import '../platform/app_platform_scope.dart';
 import '../../tokens/shape.dart';
 import '../../tokens/spacing.dart';

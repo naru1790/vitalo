@@ -7,7 +7,7 @@ import '../tokens/motion.dart';
 import '../tokens/shape.dart';
 import '../tokens/spacing.dart';
 import '../tokens/typography.dart';
-import 'platform/app_environment_scope.dart';
+import 'platform/app_color_scope.dart';
 import 'platform/app_platform_scope.dart';
 import 'widgets/app_icon.dart';
 

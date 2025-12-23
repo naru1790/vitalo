@@ -8,7 +8,7 @@
 // Palette selection is inferred from semantic colors (not raw brightness).
 import 'package:flutter/widgets.dart';
 
-import '../../design/adaptive/platform/app_environment_scope.dart';
+import '../../design/adaptive/platform/app_color_scope.dart';
 import '../../design/tokens/illustration/flux_mascot_palette.dart';
 import '../../design/tokens/motion.dart';
 import '../../design/tokens/opacity.dart';
