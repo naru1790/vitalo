@@ -1,3 +1,8 @@
+// @frozen
+// Tier-0 adaptive icon button primitive.
+// Owns: platform-appropriate tap feedback, min hit target, disabled state.
+// Must NOT: render labels, custom shapes, hover/focus states, long-press.
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -5,10 +10,6 @@ import '../platform/app_platform_scope.dart';
 import '../../tokens/icons.dart' as icons;
 import '../../tokens/motion.dart';
 import 'app_icon.dart';
-
-// ═══════════════════════════════════════════════════════════════════════════
-// PUBLIC API — ACTIVE FREEZE ZONE
-// ═══════════════════════════════════════════════════════════════════════════
 
 /// Tier-0 adaptive icon button primitive.
 ///

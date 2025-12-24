@@ -45,6 +45,7 @@ export 'adaptive/nav_motion.dart' show NavMotionScope;
 // ═══════════════════════════════════════════════════════════════════════════
 
 export 'adaptive/widgets/app_button.dart';
+export 'adaptive/widgets/app_bottom_sheet.dart';
 export 'adaptive/widgets/app_divider.dart';
 export 'adaptive/widgets/app_focus_hero_icon.dart';
 export 'adaptive/widgets/app_icon.dart';
@@ -69,12 +70,14 @@ export 'adaptive/widgets/keyboard_dismiss_surface.dart';
 export 'adaptive/pages/centered_focus_page.dart';
 export 'adaptive/pages/document_page.dart';
 export 'adaptive/pages/hub_page.dart';
+export 'adaptive/pages/sheet_page.dart';
 export 'adaptive/pages/stage_page.dart';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // COMPOSITE PRIMITIVES — Higher-level adaptive building blocks
 // ═══════════════════════════════════════════════════════════════════════════
 
+export 'adaptive/primitives/inline_editable_header.dart';
 export 'adaptive/primitives/profile_identity_header.dart';
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -89,7 +92,7 @@ export 'document/app_document_section.dart';
 
 export 'tokens/spacing.dart' show Spacing;
 export 'tokens/typography.dart' show AppTextStyles;
-export 'tokens/shape.dart' show AppShape;
+export 'tokens/shape.dart' show AppShape, AppShapeTokens;
 export 'tokens/motion.dart' show AppMotion;
 export 'tokens/opacity.dart' show AppOpacity;
 export 'tokens/elevation.dart' show AppElevation;

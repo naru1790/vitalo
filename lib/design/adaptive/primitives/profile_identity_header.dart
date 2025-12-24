@@ -1,42 +1,23 @@
-// @frozen
-// PRIMITIVE: PROFILE IDENTITY HEADER
-// ═══════════════════════════════════════════════════════════════════════════
-//
-// ProfileIdentityHeader — communicates user identity and allows inline
-// editing of display name.
-//
-// This primitive exists to present the user's identity at the top of
-// profile-style hub screens. It owns the avatar, display name, and
-// optional email display.
-//
-// ProfileIdentityHeader OWNS:
-// - Avatar rendering (initial-based circle, non-interactive)
-// - Display name presentation with inline edit affordance
-// - Email display (read-only)
-// - Internal spacing between identity elements
-//
-// ProfileIdentityHeader MUST NOT:
-// - Contain platform detection logic
-// - Apply page-level padding (owned by page archetype)
-// - Include navigation affordances
-// - Manage scroll behavior
-// - Access authentication or user services directly
-// - Render success/error/toast/snackbar/dialog feedback
-// - Add tap or gesture behavior to the avatar
-//
-// The primitive only invokes onDisplayNameSave.
-// It does not render success, error, or any feedback UI.
-// Feedback is the responsibility of higher-level orchestration.
-//
-// ═══════════════════════════════════════════════════════════════════════════
+// @adaptive-composite
+// Semantics: Profile identity header
+// Owns: avatar + display name (editable) + email display
+// Emits: onDisplayNameSave callback only
+// Must NOT:
+//  - contain platform detection logic
+//  - apply page-level padding (owned by HubPage)
+//  - include navigation affordances
+//  - manage scroll behavior
+//  - access authentication or user services directly
+//  - render success/error/toast/snackbar/dialog feedback
+//  - add tap or gesture behavior to the avatar
 
 import 'package:flutter/widgets.dart';
 
-import '../../../core/widgets/inline_editable_header.dart';
 import '../platform/app_color_scope.dart';
-import '../../tokens/spacing.dart';
-import '../../tokens/shape.dart';
 import '../widgets/app_text.dart';
+import '../../tokens/shape.dart';
+import '../../tokens/spacing.dart';
+import 'inline_editable_header.dart';
 
 /// Profile identity header primitive.
 ///

@@ -1,15 +1,7 @@
 // @frozen
-// CENTERED FOCUS HERO ICON
-// ═══════════════════════════════════════════════════════════════════════════
-//
-// Semantic hero icon for Centered Focus page archetypes.
-//
-// This widget encodes the canonical visual size for hero icons in
-// single-task, attention-critical screens (Email, OTP, Password reset).
-//
-// Feature code must NOT define hero icon sizing — this primitive owns it.
-//
-// ═══════════════════════════════════════════════════════════════════════════
+// Tier-1 hero icon primitive for Centered Focus pages.
+// Owns: canonical visual size for hero icons.
+// Must NOT: manage interaction, accept sizing parameters.
 
 import 'package:flutter/widgets.dart';
 

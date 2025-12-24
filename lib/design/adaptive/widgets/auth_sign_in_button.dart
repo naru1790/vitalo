@@ -1,26 +1,12 @@
+// @frozen
+// Tier-1 auth identity button.
+// Owns: provider → label + icon mapping.
+// Must NOT: expose child, leading, icon, label, or builder slots.
+
 import 'package:flutter/widgets.dart';
 
 import '../../tokens/icons.dart' as icons;
 import 'app_button.dart';
-
-// ═══════════════════════════════════════════════════════════════════════════
-// PUBLIC API — ACTIVE FREEZE ZONE
-// ═══════════════════════════════════════════════════════════════════════════
-//
-// Design decision:
-// AuthSignInButton is a semantic wrapper over AppButton.
-// It enforces provider identity → label + icon mapping.
-// Feature code cannot customize copy, icon, or styling.
-//
-// Emphasis mapping:
-// ┌───────────┬─────────────────────────┐
-// │ Emphasis  │ AppButtonVariant        │
-// ├───────────┼─────────────────────────┤
-// │ primary   │ primary                 │
-// │ secondary │ secondary               │
-// │ tertiary  │ ghost                   │
-// └───────────┴─────────────────────────┘
-// ═══════════════════════════════════════════════════════════════════════════
 
 /// Authentication provider identity.
 ///

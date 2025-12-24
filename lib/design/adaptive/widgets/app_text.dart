@@ -54,6 +54,9 @@ enum AppTextColor {
 
   /// Inverse text for use on dark/colored backgrounds.
   inverse,
+
+  /// Link text using brand primary color.
+  link,
 }
 
 /// Tier-0 adaptive text primitive.
@@ -74,6 +77,7 @@ class AppText extends StatelessWidget {
     this.color = AppTextColor.primary,
     this.maxLines,
     this.align = TextAlign.start,
+    this.underline = false,
   });
 
   /// The text to display.
@@ -91,6 +95,9 @@ class AppText extends StatelessWidget {
   /// Text alignment.
   final TextAlign align;
 
+  /// Whether to show underline decoration (for links).
+  final bool underline;
+
   @override
   Widget build(BuildContext context) {
     final typography = AppTextStyles.of;
@@ -102,8 +109,12 @@ class AppText extends StatelessWidget {
     // Resolve color from environment scope.
     final Color textColor = _resolveColor(colors);
 
-    // Apply color to base style.
-    final TextStyle style = baseStyle.copyWith(color: textColor);
+    // Apply color and optional decoration to base style.
+    final TextStyle style = baseStyle.copyWith(
+      color: textColor,
+      decoration: underline ? TextDecoration.underline : null,
+      decorationColor: underline ? textColor : null,
+    );
 
     // Determine line limit (parameter overrides default).
     final int? effectiveMaxLines = maxLines ?? _defaultMaxLines;
@@ -139,6 +150,7 @@ class AppText extends StatelessWidget {
       AppTextColor.secondary => colors.textSecondary,
       AppTextColor.disabled => colors.textTertiary,
       AppTextColor.inverse => colors.textInverse,
+      AppTextColor.link => colors.brandPrimary,
     };
   }
 

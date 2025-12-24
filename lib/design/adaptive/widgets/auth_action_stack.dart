@@ -1,3 +1,8 @@
+// @frozen
+// Tier-1 auth action stack.
+// Owns: platform gating, loading coordination, button ordering.
+// Must NOT: expose layout or styling parameters to callers.
+
 import 'package:flutter/widgets.dart';
 
 import '../platform/app_platform_scope.dart';
@@ -9,7 +14,7 @@ import '../../tokens/spacing.dart';
 /// Only one authentication method can be in-progress at a time.
 enum AuthLoadingState { none, apple, google }
 
-/// A vertical stack of authentication action buttons.
+/// Tier-1 auth action stack.
 ///
 /// Renders CTAs in priority order:
 /// 1. Apple (iOS only)
@@ -21,7 +26,6 @@ enum AuthLoadingState { none, apple, google }
 ///
 /// Uses [AuthSignInButton] for each provider, enforcing semantic identity
 /// and consistent branding across all authentication surfaces.
-// @frozen
 class AuthActionStack extends StatelessWidget {
   const AuthActionStack({
     super.key,

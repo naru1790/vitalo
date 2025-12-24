@@ -1,3 +1,8 @@
+// @frozen
+// Tier-1 adaptive list tile primitive.
+// Owns: typography, spacing, dividers, platform-correct interaction.
+// Must NOT: accept raw widgets, allow custom styling knobs.
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -8,10 +13,6 @@ import 'app_text.dart';
 import 'app_icon.dart';
 import 'app_icon_button.dart';
 import 'app_divider.dart';
-
-// ═══════════════════════════════════════════════════════════════════════════
-// PUBLIC API — ACTIVE FREEZE ZONE
-// ═══════════════════════════════════════════════════════════════════════════
 
 enum AppListTileDivider { none, full, inset }
 

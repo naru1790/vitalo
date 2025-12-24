@@ -1,12 +1,7 @@
 // @frozen
-// ARCHITECTURAL CONTRACT — DO NOT MODIFY WITHOUT REVIEW
-//
-// Tier-0/1 adaptive primitive.
-// Standardizes persistent, inline (Level 1) feedback messages.
-//
-// Primitives must not branch on brightness or platform appearance.
-// All visual decisions must be expressed via semantic colors.
-// If a role is missing, add it to AppColors — do not read raw signals.
+// Tier-1 inline feedback primitive.
+// Owns: icon choice, color semantics, typography role, spacing.
+// Must NOT: trigger global feedback, animate, dismiss, or time out.
 
 import 'package:flutter/widgets.dart';
 
@@ -24,7 +19,7 @@ import 'app_text.dart';
 /// Must never escalate to overlays or call [AppErrorFeedback].
 enum InlineFeedbackSeverity { error, warning, info, success }
 
-/// Tier-0/1 inline feedback primitive.
+/// Tier-1 inline feedback primitive.
 ///
 /// Responsibility boundaries:
 /// - Owns icon choice, color semantics, typography role, and spacing.

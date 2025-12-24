@@ -13,8 +13,8 @@ import '../platform/app_color_scope.dart';
 import '../../tokens/color.dart';
 import '../../tokens/icons.dart' as icons;
 import '../../tokens/spacing.dart';
-import '../../tokens/typography.dart';
 import 'app_icon.dart';
+import 'app_text.dart';
 
 /// Legal acknowledgement links for authentication screens.
 ///
@@ -56,15 +56,7 @@ class AuthFooterLinks extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final spacing = Spacing.of;
-    final typography = AppTextStyles.of;
-
-    // Resolve colors via semantic tokens — no platform widget dependencies.
     final colors = AppColorScope.of(context).colors;
-
-    // Secondary text for disclaimer line.
-    final TextStyle disclaimerStyle = typography.caption.copyWith(
-      color: colors.textSecondary,
-    );
 
     return Semantics(
       container: true,
@@ -73,14 +65,15 @@ class AuthFooterLinks extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           // Disclaimer line — secondary text, lowest emphasis.
-          Text(
+          const AppText(
             'By continuing, you agree to our',
-            style: disclaimerStyle,
-            textAlign: TextAlign.center,
+            variant: AppTextVariant.caption,
+            color: AppTextColor.secondary,
+            align: TextAlign.center,
           ),
 
           // Vertical gap — xs spacing for tight connection.
-          _VerticalGap(spacing.xs),
+          SizedBox(height: spacing.xs),
 
           // Links row — primary color signals interactivity without button affordance.
           Row(
@@ -91,19 +84,21 @@ class AuthFooterLinks extends StatelessWidget {
                 text: 'Terms of Service',
                 onTap: onTerms,
                 colors: colors,
-                typography: typography,
               ),
 
               // Separator — secondary text, horizontal spacing via gaps.
-              _HorizontalGap(spacing.xs),
-              Text('·', style: disclaimerStyle),
-              _HorizontalGap(spacing.xs),
+              SizedBox(width: spacing.xs),
+              const AppText(
+                '·',
+                variant: AppTextVariant.caption,
+                color: AppTextColor.secondary,
+              ),
+              SizedBox(width: spacing.xs),
 
               _FooterLink(
                 text: 'Privacy Policy',
                 onTap: onPrivacy,
                 colors: colors,
-                typography: typography,
               ),
             ],
           ),
@@ -111,29 +106,6 @@ class AuthFooterLinks extends StatelessWidget {
       ),
     );
   }
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
-// INTERNAL SPACING PRIMITIVES
-// ═══════════════════════════════════════════════════════════════════════════
-// These wrap SizedBox to centralize spacing and avoid raw layout primitives
-// in the main widget tree. Uses spacing tokens exclusively.
-// ═══════════════════════════════════════════════════════════════════════════
-
-class _VerticalGap extends StatelessWidget {
-  const _VerticalGap(this.height);
-  final double height;
-
-  @override
-  Widget build(BuildContext context) => SizedBox(height: height);
-}
-
-class _HorizontalGap extends StatelessWidget {
-  const _HorizontalGap(this.width);
-  final double width;
-
-  @override
-  Widget build(BuildContext context) => SizedBox(width: width);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -150,27 +122,15 @@ class _FooterLink extends StatelessWidget {
     required this.text,
     required this.onTap,
     required this.colors,
-    required this.typography,
   });
 
   final String text;
   final VoidCallback onTap;
   final AppColors colors;
-  final AppTypography typography;
 
   @override
   Widget build(BuildContext context) {
     final spacing = Spacing.of;
-
-    // Brand primary for link color — signals interactivity, remains calm.
-    final linkColor = colors.brandPrimary;
-
-    // Caption typography for low emphasis.
-    final linkStyle = typography.caption.copyWith(
-      color: linkColor,
-      decoration: TextDecoration.underline,
-      decorationColor: linkColor,
-    );
 
     // Intentionally NO motion / press animation here.
     // This is legal acknowledgement (informational, lowest priority), not an action.
@@ -185,14 +145,19 @@ class _FooterLink extends StatelessWidget {
           AppIcon(
             icons.AppIcon.navExternal,
             size: AppIconSize.xs,
-            colorOverride: linkColor,
+            colorOverride: colors.brandPrimary,
           ),
 
           // Horizontal gap — xs for tight icon-text connection.
-          _HorizontalGap(spacing.xs),
+          SizedBox(width: spacing.xs),
 
-          // Link text.
-          Text(text, style: linkStyle),
+          // Link text — uses AppText with link color and underline.
+          AppText(
+            text,
+            variant: AppTextVariant.caption,
+            color: AppTextColor.link,
+            underline: true,
+          ),
         ],
       ),
     );

@@ -10,17 +10,18 @@
 
 ## Overview
 
-Vitalo uses exactly **seven** page archetypes. Each archetype solves a distinct UX problem. Screens must match intent to archetype — not appearance to preference.
+Vitalo uses exactly **eight** page archetypes. Each archetype solves a distinct UX problem. Screens must match intent to archetype — not appearance to preference.
 
-| Archetype            | Primary Intent                             |
-| -------------------- | ------------------------------------------ |
-| Centered Focus       | Single-task completion with full attention |
-| Flow Form            | Sequential multi-step data entry           |
-| Stage / Landing      | Orientation, identity, navigation anchor   |
-| Content Feed         | Browsing, scanning, consuming lists        |
-| Detail / Drill-Down  | Inspecting or editing a single entity      |
-| Utility / Modal-Like | Transient decision or system message       |
-| Hub                  | Dense, scrollable, section-driven anchors  |
+| Archetype            | Primary Intent                                 |
+| -------------------- | ---------------------------------------------- |
+| Centered Focus       | Single-task completion with full attention     |
+| Flow Form            | Sequential multi-step data entry               |
+| Stage / Landing      | Orientation, identity, navigation anchor       |
+| Content Feed         | Browsing, scanning, consuming lists            |
+| Detail / Drill-Down  | Inspecting or editing a single entity          |
+| Utility / Modal-Like | Transient decision or system message           |
+| Hub                  | Dense, scrollable, section-driven anchors      |
+| Sheet                | Modal bottom-sheet for transient child content |
 
 ---
 
@@ -474,6 +475,100 @@ HubPage is a frozen page archetype. Escape hatches are forbidden. Changes requir
 
 ---
 
+## 8. Sheet Page
+
+> **@frozen** — This archetype is architecturally frozen. Changes require review.
+
+### Intent
+
+Provide a canonical modal bottom-sheet layout that owns all sheet-level structure and behavior. Feature code provides pure content; SheetPage owns the container.
+
+### Typical Use Cases
+
+- Inline editing modals (e.g., edit name)
+- Confirmations triggered from a list item
+- Picker sheets (date, option selection)
+- Quick action sheets
+- Any transient UI that does not need full-page navigation
+
+### Structural Characteristics
+
+- **Modal presentation**: Always shown via `AppBottomSheet.show`.
+- **Elevated surface**: Uses `surfaceElevated` semantic color for visual lift.
+- **Rounded top corners**: Uses `AppShapeTokens.of.lg` for sheet radius.
+- **Safe area handling**: Bottom safe area applied; top ignored (sheet does not touch status bar).
+- **Keyboard inset handling**: Reads `MediaQuery.viewInsetsOf(context).bottom` and applies as bottom padding.
+- **Canonical padding**: Consistent internal padding via spacing tokens.
+
+### Ownership Rules (Non-Negotiable)
+
+SheetPage OWNS:
+
+- SafeArea (bottom only)
+- Keyboard inset handling
+- Canonical sheet padding
+- Surface/background styling
+
+Feature code provides only the `child` content.
+
+### Forbidden Behavior
+
+SheetPage MUST NOT:
+
+- Fetch or mutate business data
+- Perform navigation
+- Show snackbars, toasts, or dialogs
+- Branch on platform
+- Expose styling or layout configuration
+- Accept padding, color, or shape parameters
+
+If a parameter does not express semantic intent, it does not belong in the API.
+
+### Public API Expectations
+
+```dart
+class SheetPage extends StatelessWidget {
+  const SheetPage({
+    super.key,
+    required this.child,
+  });
+
+  final Widget child;
+}
+```
+
+No additional parameters. If something is missing, it belongs in another archetype.
+
+### File Location
+
+```
+lib/design/adaptive/pages/sheet_page.dart
+```
+
+### Usage Pattern
+
+```dart
+AppBottomSheet.show(
+  context,
+  child: SheetPage(
+    child: MySheetContent(),
+  ),
+);
+```
+
+SheetPage treats `child` as pure content — it knows nothing about what is rendered inside.
+
+### Comparison: SheetPage vs Utility / Modal-Like
+
+| Concern          | Utility / Modal-Like     | SheetPage                    |
+| ---------------- | ------------------------ | ---------------------------- |
+| **Presentation** | Full-page (pushed route) | Modal overlay (bottom sheet) |
+| **Layout**       | Centered in viewport     | Anchored to bottom edge      |
+| **Dismissal**    | Navigator.pop            | Navigator.pop or swipe down  |
+| **Use Case**     | System messages, errors  | Inline edits, quick actions  |
+
+---
+
 ## Archetype Selection Guide
 
 When designing a new screen, ask:
@@ -485,6 +580,7 @@ When designing a new screen, ask:
 5. **Is the user inspecting a single entity in detail?** → Detail / Drill-Down
 6. **Is this a transient confirmation or system message?** → Utility / Modal-Like
 7. **Is this a dense, scrollable hub for settings or profile?** → Hub
+8. **Is this a transient modal action triggered inline?** → Sheet
 
 If a screen seems to require two archetypes, **split it into two screens** or reconsider the UX.
 
@@ -524,7 +620,8 @@ Violations require architectural review.
 
 ## Changelog
 
-| Date       | Change                                  |
-| ---------- | --------------------------------------- |
-| 2024-12-24 | Added HubPage archetype (7th archetype) |
-| 2024-12-23 | Initial definition of 6 page archetypes |
+| Date       | Change                                    |
+| ---------- | ----------------------------------------- |
+| 2024-12-24 | Added SheetPage archetype (8th archetype) |
+| 2024-12-24 | Added HubPage archetype (7th archetype)   |
+| 2024-12-23 | Initial definition of 6 page archetypes   |

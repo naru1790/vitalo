@@ -1,3 +1,8 @@
+// @frozen
+// Tier-0 canonical page body.
+// Owns: semantic padding only.
+// Must NOT: own scroll (owned by page archetypes).
+
 import 'package:flutter/widgets.dart';
 
 import '../../tokens/spacing.dart';

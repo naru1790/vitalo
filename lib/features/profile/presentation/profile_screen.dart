@@ -250,13 +250,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
       content: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ProfileIdentityHeader(
-            displayName: _displayName ?? _getDisplayName(),
-            email: _getUserEmail(),
-            avatarInitial: _getDisplayName().isNotEmpty
-                ? _getDisplayName()[0].toUpperCase()
-                : '?',
-            onDisplayNameSave: _saveDisplayName,
+          Center(
+            child: ProfileIdentityHeader(
+              displayName: _displayName ?? _getDisplayName(),
+              email: _getUserEmail(),
+              avatarInitial: _getDisplayName().isNotEmpty
+                  ? _getDisplayName()[0].toUpperCase()
+                  : '?',
+              onDisplayNameSave: _saveDisplayName,
+            ),
           ),
 
           const SizedBox(height: AppSpacing.lg),
