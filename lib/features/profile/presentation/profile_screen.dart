@@ -8,7 +8,6 @@ import '../../../main.dart';
 import '../../../core/router.dart';
 import '../../../core/services/auth_service.dart';
 import '../../../core/theme.dart';
-import '../../../core/widgets/inline_editable_header.dart';
 import '../../../core/widgets/year_picker_sheet.dart';
 import '../../../core/widgets/location_picker_sheet.dart';
 import '../../../core/widgets/body_health_card.dart';
@@ -251,7 +250,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
       content: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildHeader(),
+          ProfileIdentityHeader(
+            displayName: _displayName ?? _getDisplayName(),
+            email: _getUserEmail(),
+            avatarInitial: _getDisplayName().isNotEmpty
+                ? _getDisplayName()[0].toUpperCase()
+                : '?',
+            onDisplayNameSave: _saveDisplayName,
+          ),
 
           const SizedBox(height: AppSpacing.lg),
 
@@ -325,52 +331,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
 
           const SizedBox(height: AppSpacing.xxxl),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHeader() {
-    final primaryColor = CupertinoTheme.of(context).primaryColor;
-    final surfaceContainerLow = CupertinoColors.systemGrey6.resolveFrom(
-      context,
-    );
-    final displayName = _getDisplayName();
-
-    return Padding(
-      padding: const EdgeInsets.only(top: AppSpacing.lg),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: AppSpacing.avatarSizeLarge,
-            height: AppSpacing.avatarSizeLarge,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: surfaceContainerLow,
-              border: Border.all(color: primaryColor, width: 3),
-            ),
-            child: Center(
-              child: Text(
-                displayName.isNotEmpty ? displayName[0].toUpperCase() : '?',
-                style: AppleTextStyles.title2(
-                  context,
-                ).copyWith(color: primaryColor),
-              ),
-            ),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          InlineEditableHeader(
-            initialText: _displayName ?? displayName,
-            onSave: _saveDisplayName,
-            placeholder: 'Add your name',
-            fontSize: 22,
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            _getUserEmail(),
-            style: AppleTextStyles.footnoteSecondary(context),
-          ),
         ],
       ),
     );

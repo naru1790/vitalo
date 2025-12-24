@@ -72,6 +72,12 @@ export 'adaptive/pages/hub_page.dart';
 export 'adaptive/pages/stage_page.dart';
 
 // ═══════════════════════════════════════════════════════════════════════════
+// COMPOSITE PRIMITIVES — Higher-level adaptive building blocks
+// ═══════════════════════════════════════════════════════════════════════════
+
+export 'adaptive/primitives/profile_identity_header.dart';
+
+// ═══════════════════════════════════════════════════════════════════════════
 // DOCUMENT PRIMITIVES — Content composites for DocumentPage
 // ═══════════════════════════════════════════════════════════════════════════
 
