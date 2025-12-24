@@ -10,7 +10,7 @@
 
 ## Overview
 
-Vitalo uses exactly **six** page archetypes. Each archetype solves a distinct UX problem. Screens must match intent to archetype — not appearance to preference.
+Vitalo uses exactly **seven** page archetypes. Each archetype solves a distinct UX problem. Screens must match intent to archetype — not appearance to preference.
 
 | Archetype            | Primary Intent                             |
 | -------------------- | ------------------------------------------ |
@@ -20,6 +20,7 @@ Vitalo uses exactly **six** page archetypes. Each archetype solves a distinct UX
 | Content Feed         | Browsing, scanning, consuming lists        |
 | Detail / Drill-Down  | Inspecting or editing a single entity      |
 | Utility / Modal-Like | Transient decision or system message       |
+| Hub                  | Dense, scrollable, section-driven anchors  |
 
 ---
 
@@ -227,7 +228,7 @@ Inspect, view, or edit a single entity in depth. The user has navigated here int
 
 ### Typical Use Cases
 
-- Profile screen
+- Profile subsection or editor (e.g., Edit Profile Details, Edit Personal Info)
 - Settings detail (e.g., notification preferences)
 - Item detail (e.g., a specific log entry)
 - Entity editor (e.g., edit profile)
@@ -316,6 +317,163 @@ Utility pages must fit within the viewport. If they don't, the content is too co
 
 ---
 
+## 7. Hub Page
+
+> **@frozen** — This archetype is architecturally frozen. Changes require review.
+
+### Intent
+
+Present a dense, scrollable, section-driven screen that serves as a navigation anchor. The user has arrived at a hub where they can view, configure, or manage multiple distinct concerns within a single reading flow.
+
+HubPage exists because StagePage is unsuitable for screens with:
+
+- Multiple independent content sections
+- Content that exceeds the viewport height
+- Dense information requiring vertical scroll
+- Settings, preferences, or configuration groups
+
+StagePage is for brand moments and orientation. HubPage is for control and comprehension.
+
+### Typical Use Cases
+
+- Profile screen
+- Settings hub
+- Account management
+- Health overview dashboard
+- Preference editors
+- Configuration screens
+
+### Structural Characteristics
+
+- **Scrollable vertical layout**: Content may exceed viewport; vertical scroll is guaranteed.
+- **Section-driven reading flow**: Multiple independent sections stacked vertically.
+- **Dense content allowed**: Unlike StagePage, HubPage accommodates lists, forms, toggles, and grouped settings.
+- **No hero/action split**: Content flows continuously from top; no anchored bottom region.
+- **Prominent navigation title**: The title may adapt with scroll to maximize content area.
+- **Responsive width policy**: On wide screens, content may be constrained for readability; on narrow screens, content flows naturally without artificial constraints.
+
+### Ownership Rules (Non-Negotiable)
+
+HubPage OWNS:
+
+- Scaffold instantiation (feature code must not use scaffolds)
+- Scroll behavior (feature code must not use scroll views)
+- Safe area handling (feature code must not use safe area wrappers)
+- Horizontal padding via the canonical page body wrapper
+- Navigation chrome (title and back navigation intent)
+- Keyboard inset handling
+
+These concerns terminate at HubPage. Feature code declares content only.
+
+### Forbidden Usage
+
+Feature screens using HubPage MUST NOT:
+
+- Instantiate scaffolds or page-level wrappers
+- Use padding widgets for page margins
+- Use safe area wrappers
+- Use scroll views or scroll controllers
+- Branch on platform for layout decisions
+- Apply visual styling (colors, typography, radii)
+- Pass layout configuration parameters
+
+Violations are architectural bugs, not style preferences.
+
+### What This Page Must NOT Do
+
+- Center content vertically (content is top-aligned and flows down)
+- Use hero/action split layout (that is StagePage)
+- Display minimal, impactful content (that is StagePage)
+- Constrain width artificially on narrow screens
+- Expose scroll position or scroll events to feature code
+- Allow feature code to customize chrome appearance
+
+### Comparison: StagePage vs HubPage
+
+| Concern         | StagePage                       | HubPage                              |
+| --------------- | ------------------------------- | ------------------------------------ |
+| **Use Case**    | Landing, Home, brand moments    | Profile, Settings, Account           |
+| **Scroll**      | ❌ No (content fits viewport)   | ✅ Yes (content may exceed)          |
+| **Layout**      | Split: Hero top, Actions bottom | Continuous vertical flow             |
+| **Density**     | Minimal, impactful              | Dense, comprehensive                 |
+| **Chrome**      | Optional, minimal               | Required, prominent navigation title |
+| **Primary Job** | Orient and navigate             | View, configure, manage              |
+
+These archetypes are mutually exclusive. Using StagePage for a settings screen or HubPage for a landing screen is an architectural violation.
+
+---
+
+## Implementation Contract — HubPage
+
+This section defines the implementation expectations for HubPage. This is a contract, not a tutorial.
+
+### File Location
+
+```
+lib/design/adaptive/pages/hub_page.dart
+```
+
+### Public API Expectations
+
+HubPage exposes a minimal, semantic-only constructor.
+
+**Accepts:**
+
+- `title` — The semantic title for navigation chrome (required)
+- `content` — The feature-provided content subtree (required)
+- `leadingAction` — Semantic navigation intent: back, close, or none (required)
+- `trailingActions` — Optional bounded list of semantic trailing actions
+
+**Does NOT accept:**
+
+- Padding values or padding enums
+- Scroll flags or scroll controllers
+- Colors, typography, or styling parameters
+- Platform hints or branching flags
+- Chrome customization beyond semantic intent
+- Width constraints or breakpoint overrides
+
+If a parameter does not express semantic intent, it does not belong in the API.
+
+### Internal Responsibilities
+
+HubPage internally:
+
+- Instantiates the canonical scaffold with prominent navigation title support
+- Wraps content in the canonical page body wrapper for horizontal padding
+- Provides vertical scrolling with platform-appropriate physics
+- Applies safe area handling for all edges
+- Handles keyboard insets to keep focused inputs visible
+- Applies canonical width constraints on wide screens
+
+These are implementation concerns. Feature code is shielded from them.
+
+### Usage Rules
+
+1. Profile, Settings, Account, and similar dense screens MUST use HubPage.
+2. StagePage MUST NOT be used for scrollable or section-driven content.
+3. If a screen does not fit StagePage or HubPage, a new archetype must be created — not an escape hatch.
+4. Feature screens return pure content declarations; HubPage owns structure.
+5. HubPage and StagePage are mutually exclusive. A screen cannot use both.
+
+### Migration Guidance
+
+When migrating an existing screen to HubPage:
+
+1. Migrate the parent page structure first (replace scaffold with HubPage).
+2. Keep inner widgets temporarily unchanged, even if they contain legacy patterns.
+3. Do not refactor child widgets during archetype migration.
+4. Validate that the screen renders correctly with HubPage owning structure.
+5. Refactor child widgets in a subsequent, separate pass.
+
+This staged approach reduces risk and isolates architectural changes from content changes.
+
+---
+
+HubPage is a frozen page archetype. Escape hatches are forbidden. Changes require architectural review.
+
+---
+
 ## Archetype Selection Guide
 
 When designing a new screen, ask:
@@ -326,6 +484,7 @@ When designing a new screen, ask:
 4. **Is the user browsing a list of items?** → Content Feed
 5. **Is the user inspecting a single entity in detail?** → Detail / Drill-Down
 6. **Is this a transient confirmation or system message?** → Utility / Modal-Like
+7. **Is this a dense, scrollable hub for settings or profile?** → Hub
 
 If a screen seems to require two archetypes, **split it into two screens** or reconsider the UX.
 
@@ -340,6 +499,8 @@ If a screen seems to require two archetypes, **split it into two screens** or re
 | "Detail page with list feed"     | Two intents; split into master/detail navigation   |
 | "Landing page with settings"     | Conflated identity and utility; separate concerns  |
 | "Utility page with many options" | Too complex; promote to Detail or Flow Form        |
+| "Stage page that scrolls"        | Wrong archetype; use HubPage for scrollable hubs   |
+| "Hub page with hero layout"      | Wrong archetype; use StagePage for brand moments   |
 
 ---
 
@@ -352,6 +513,8 @@ Architecture checks may validate:
 - Centered Focus pages do not contain scrollable lists
 - Flow Form pages do not center content vertically
 - Stage pages do not contain form fields
+- Stage pages do not scroll
+- Hub pages do not use hero/action split layout
 - Content Feed pages do not center content (except empty states)
 - Utility pages do not scroll
 
@@ -363,4 +526,5 @@ Violations require architectural review.
 
 | Date       | Change                                  |
 | ---------- | --------------------------------------- |
+| 2024-12-24 | Added HubPage archetype (7th archetype) |
 | 2024-12-23 | Initial definition of 6 page archetypes |

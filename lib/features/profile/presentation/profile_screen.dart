@@ -9,13 +9,13 @@ import '../../../core/router.dart';
 import '../../../core/services/auth_service.dart';
 import '../../../core/theme.dart';
 import '../../../core/widgets/inline_editable_header.dart';
-import '../../../design/adaptive/error_feedback.dart';
 import '../../../core/widgets/year_picker_sheet.dart';
 import '../../../core/widgets/location_picker_sheet.dart';
 import '../../../core/widgets/body_health_card.dart';
 import '../../../core/widgets/lifestyle_card.dart';
 import '../../../core/widgets/coaching_card.dart';
 import '../../../core/widgets/profile_row.dart';
+import '../../../design/design.dart';
 import 'widgets/gender_selection.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -245,109 +245,86 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final primaryColor = CupertinoTheme.of(context).primaryColor;
-    final surfaceColor = CupertinoColors.systemBackground.resolveFrom(context);
+    return HubPage(
+      title: 'Profile',
+      leadingAction: const AppBarBackAction(),
+      content: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildHeader(),
 
-    return CupertinoPageScaffold(
-      backgroundColor: surfaceColor,
-      child: CustomScrollView(
-        slivers: [
-          CupertinoSliverNavigationBar(
-            largeTitle: const Text('Profile'),
-            backgroundColor: surfaceColor,
-            border: null,
-            leading: CupertinoButton(
+          const SizedBox(height: AppSpacing.lg),
+
+          _buildSectionTitle('Personal Info'),
+          const SizedBox(height: AppSpacing.sm),
+          _buildPersonalInfoCard(),
+
+          const SizedBox(height: AppSpacing.xl),
+
+          // Body & Health - new consolidated card
+          BodyHealthCard(
+            data: _bodyHealthData,
+            onDataChanged: (data) {
+              setState(() => _bodyHealthData = data);
+              talker.info('Body health data updated');
+            },
+            isFemale: _gender?.toLowerCase() == 'female',
+          ),
+
+          const SizedBox(height: AppSpacing.xl),
+
+          // Lifestyle - activity, sleep, diet
+          LifestyleCard(
+            data: _lifestyleData,
+            onDataChanged: (data) {
+              setState(() => _lifestyleData = data);
+              talker.info('Lifestyle data updated');
+            },
+          ),
+
+          const SizedBox(height: AppSpacing.xl),
+
+          // Coaching - goal and coach personality
+          CoachingCard(
+            data: _coachingData,
+            onDataChanged: (data) {
+              setState(() => _coachingData = data);
+              talker.info('Coaching data updated');
+            },
+          ),
+
+          const SizedBox(height: AppSpacing.xl),
+
+          _buildSectionTitle('Preferences'),
+          const SizedBox(height: AppSpacing.sm),
+          _buildPreferencesCard(),
+
+          const SizedBox(height: AppSpacing.xl),
+
+          _buildSectionTitle('Integrations'),
+          const SizedBox(height: AppSpacing.sm),
+          _buildIntegrationsCard(),
+
+          const SizedBox(height: AppSpacing.xl),
+
+          _buildSectionTitle('Account'),
+          const SizedBox(height: AppSpacing.sm),
+          _buildAccountCard(),
+
+          const SizedBox(height: AppSpacing.xxl),
+
+          Center(
+            child: CupertinoButton(
               padding: EdgeInsets.zero,
-              onPressed: () => context.pop(),
-              child: Icon(CupertinoIcons.back, color: primaryColor),
+              onPressed: _handleDeleteAccount,
+              child: Text(
+                'Delete My Account',
+                style: AppleTextStyles.footnoteSecondary(context),
+              ),
             ),
           ),
 
-          SliverToBoxAdapter(
-            child: SafeArea(top: false, child: _buildHeader()),
-          ),
-
-          SliverPadding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.pageHorizontalPadding,
-            ),
-            sliver: SliverList(
-              delegate: SliverChildListDelegate([
-                const SizedBox(height: AppSpacing.lg),
-
-                _buildSectionTitle('Personal Info'),
-                const SizedBox(height: AppSpacing.sm),
-                _buildPersonalInfoCard(),
-
-                const SizedBox(height: AppSpacing.xl),
-
-                // Body & Health - new consolidated card
-                BodyHealthCard(
-                  data: _bodyHealthData,
-                  onDataChanged: (data) {
-                    setState(() => _bodyHealthData = data);
-                    talker.info('Body health data updated');
-                  },
-                  isFemale: _gender?.toLowerCase() == 'female',
-                ),
-
-                const SizedBox(height: AppSpacing.xl),
-
-                // Lifestyle - activity, sleep, diet
-                LifestyleCard(
-                  data: _lifestyleData,
-                  onDataChanged: (data) {
-                    setState(() => _lifestyleData = data);
-                    talker.info('Lifestyle data updated');
-                  },
-                ),
-
-                const SizedBox(height: AppSpacing.xl),
-
-                // Coaching - goal and coach personality
-                CoachingCard(
-                  data: _coachingData,
-                  onDataChanged: (data) {
-                    setState(() => _coachingData = data);
-                    talker.info('Coaching data updated');
-                  },
-                ),
-
-                const SizedBox(height: AppSpacing.xl),
-
-                _buildSectionTitle('Preferences'),
-                const SizedBox(height: AppSpacing.sm),
-                _buildPreferencesCard(),
-
-                const SizedBox(height: AppSpacing.xl),
-
-                _buildSectionTitle('Integrations'),
-                const SizedBox(height: AppSpacing.sm),
-                _buildIntegrationsCard(),
-
-                const SizedBox(height: AppSpacing.xl),
-
-                _buildSectionTitle('Account'),
-                const SizedBox(height: AppSpacing.sm),
-                _buildAccountCard(),
-
-                const SizedBox(height: AppSpacing.xxl),
-
-                Center(
-                  child: CupertinoButton(
-                    padding: EdgeInsets.zero,
-                    onPressed: _handleDeleteAccount,
-                    child: Text(
-                      'Delete My Account',
-                      style: AppleTextStyles.footnoteSecondary(context),
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: AppSpacing.xxxl),
-              ]),
-            ),
-          ),
+          const SizedBox(height: AppSpacing.xxxl),
         ],
       ),
     );

@@ -68,6 +68,7 @@ export 'adaptive/widgets/keyboard_dismiss_surface.dart';
 
 export 'adaptive/pages/centered_focus_page.dart';
 export 'adaptive/pages/document_page.dart';
+export 'adaptive/pages/hub_page.dart';
 export 'adaptive/pages/stage_page.dart';
 
 // ═══════════════════════════════════════════════════════════════════════════
