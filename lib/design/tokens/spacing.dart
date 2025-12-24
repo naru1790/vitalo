@@ -53,6 +53,10 @@ abstract class AppSpacing {
   /// Major content transitions and structural breaks.
   double get xl;
 
+  /// Page-level separation.
+  /// Terminal padding and maximum visual breaks.
+  double get xxl;
+
   /// Standard input field height.
   ///
   /// Semantic touch target sizing for text inputs.
@@ -84,6 +88,9 @@ class _IosSpacing extends AppSpacing {
   double get xl => 32.0;
 
   @override
+  double get xxl => 48.0;
+
+  @override
   double get inputHeight => 48.0;
 }
 
@@ -111,6 +118,9 @@ class _AndroidSpacing extends AppSpacing {
   double get xl => 48.0;
 
   @override
+  double get xxl => 64.0;
+
+  @override
   double get inputHeight => 48.0;
 }
 
@@ -136,6 +146,9 @@ class _DefaultSpacing extends AppSpacing {
 
   @override
   double get xl => 40.0;
+
+  @override
+  double get xxl => 56.0;
 
   @override
   double get inputHeight => 48.0;

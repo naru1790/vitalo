@@ -67,7 +67,14 @@ export 'adaptive/widgets/keyboard_dismiss_surface.dart';
 // ═══════════════════════════════════════════════════════════════════════════
 
 export 'adaptive/pages/centered_focus_page.dart';
+export 'adaptive/pages/document_page.dart';
 export 'adaptive/pages/stage_page.dart';
+
+// ═══════════════════════════════════════════════════════════════════════════
+// DOCUMENT PRIMITIVES — Content composites for DocumentPage
+// ═══════════════════════════════════════════════════════════════════════════
+
+export 'document/app_document_section.dart';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // TOKENS — Design tokens for layout, typography, shape, motion

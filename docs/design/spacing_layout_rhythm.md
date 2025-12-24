@@ -150,6 +150,7 @@ The spacing scale provides five semantic levels that apply across all spacing ca
 | 3     | md   | Comfortable relationship — balanced breathing room    |
 | 4     | lg   | Loose relationship — related but distinct             |
 | 5     | xl   | Separation — clear boundary or major pause            |
+| 6     | xxl  | Terminal — page-level breathing and maximum breaks    |
 
 ---
 
@@ -259,6 +260,29 @@ The spacing scale provides five semantic levels that apply across all spacing ca
 - When it fragments content that should feel unified
 
 **Character:** Separated, major pause, boundary.
+
+---
+
+### xxl (Extra Extra Large)
+
+**Intent:** Maximum page-level separation for terminal padding and ultimate visual breaks.
+
+**When to Use:**
+
+- Bottom padding at end of scrollable content
+- Between completely unrelated page regions
+- Terminal spacing before scroll ends
+- Maximum breathing room around hero or featured elements
+- Legal/footer content separation from main content
+
+**When NOT to Use:**
+
+- Within any content section
+- Between elements that share any conceptual relationship
+- When xl already provides sufficient separation
+- In compact or density-constrained layouts
+
+**Character:** Terminal, page-level, maximum breathing room.
 
 ---
 
