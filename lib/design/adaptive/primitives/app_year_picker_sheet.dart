@@ -1,130 +1,113 @@
-// @frozen
-// Feature sheet content.
-// Owns: header, confirm action, navigation, current time reading.
-// Uses: AppYearPicker (domain logic).
-// Must NOT: duplicate domain logic owned by AppYearPicker.
+// @adaptive-composite
+// Semantics: Year picker sheet content
+// Owns: sheet-level year selection UX
+// Emits: selected year via Navigator.pop
+// Must NOT:
+//  - fetch user data
+//  - navigate routes (except pop with value)
+//  - show global feedback (snackbars, toasts, dialogs)
+//  - use Expanded, Spacer, or other constraint-unsafe widgets
 
 import 'package:flutter/widgets.dart';
 
-import 'app_year_picker.dart';
 import '../widgets/app_button.dart';
 import '../widgets/app_text.dart';
+import 'app_year_picker.dart';
 import '../../tokens/spacing.dart';
 
-/// Feature-level year picker sheet content.
+/// Sheet content for year selection.
 ///
-/// Reusable sheet content for birth year selection.
-/// Not a primitive — owns feature concerns (navigation, time).
-/// Use with SheetPage when presenting via AppBottomSheet:
+/// This is pure sheet content — all layout/structure is owned by [SheetPage].
+/// Uses [Column] with [mainAxisSize: MainAxisSize.min] to be constraint-safe.
 ///
-/// ```dart
-/// final year = await AppBottomSheet.show<int>(
-///   context,
-///   sheet: SheetPage(
-///     child: AppYearPickerSheet(initialYear: _birthYear),
-///   ),
-/// );
-/// ```
+/// Returns the selected year via `Navigator.pop(context, year)`.
 class AppYearPickerSheet extends StatefulWidget {
   const AppYearPickerSheet({
     super.key,
-    this.initialYear,
-    this.minYear = 1920,
+    required this.initialYear,
     this.title = 'Birth Year',
-    this.subtitle = 'For age-based health insights',
   });
 
-  final int? initialYear;
-  final int minYear;
+  /// The initially selected year.
+  final int initialYear;
+
+  /// Title displayed at the top of the sheet.
   final String title;
-  final String? subtitle;
 
   @override
   State<AppYearPickerSheet> createState() => _AppYearPickerSheetState();
 }
 
 class _AppYearPickerSheetState extends State<AppYearPickerSheet> {
-  int? _selectedYear;
+  late int _selectedYear;
 
-  void _handleDone() {
-    if (_selectedYear != null) {
-      Navigator.pop(context, _selectedYear);
-    }
+  @override
+  void initState() {
+    super.initState();
+    _selectedYear = widget.initialYear;
+  }
+
+  void _handleConfirm() {
+    Navigator.pop(context, _selectedYear);
   }
 
   @override
   Widget build(BuildContext context) {
     final spacing = Spacing.of;
 
+    // CONSTRAINT-SAFE layout:
+    // - Column with mainAxisSize.min
+    // - No Expanded, Spacer, or Align(center) with unbounded constraints
+    // - All children have intrinsic or explicit sizing
     return Column(
       mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // Header with title, subtitle, and Done button
-        _SheetHeader(
-          title: widget.title,
-          subtitle: widget.subtitle,
-          onDone: _handleDone,
-        ),
+        // Header
+        _SheetHeader(title: widget.title),
 
         SizedBox(height: spacing.md),
 
-        // Year picker — owns all domain logic
+        // Year picker wheel
         AppYearPicker(
-          currentYear: DateTime.now().year,
-          initialYear: widget.initialYear,
-          minYear: widget.minYear,
+          selectedYear: _selectedYear,
           onYearChanged: (year) {
-            _selectedYear = year;
+            setState(() => _selectedYear = year);
           },
+        ),
+
+        SizedBox(height: spacing.lg),
+
+        // Confirm button
+        AppButton(
+          label: 'Confirm',
+          variant: AppButtonVariant.primary,
+          onPressed: _handleConfirm,
         ),
       ],
     );
   }
 }
 
-/// Sheet header with title, subtitle, and done button.
+/// Header row for the sheet.
+///
+/// Constraint-safe: uses Row with MainAxisAlignment, not Expanded.
 class _SheetHeader extends StatelessWidget {
-  const _SheetHeader({
-    required this.title,
-    required this.subtitle,
-    required this.onDone,
-  });
+  const _SheetHeader({required this.title});
 
   final String title;
-  final String? subtitle;
-  final VoidCallback onDone;
 
   @override
   Widget build(BuildContext context) {
-    final spacing = Spacing.of;
-
-    return Padding(
-      padding: EdgeInsets.only(bottom: spacing.sm),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                AppText(title, variant: AppTextVariant.title),
-                if (subtitle != null) ...[
-                  SizedBox(height: spacing.xs),
-                  AppText(
-                    subtitle!,
-                    variant: AppTextVariant.body,
-                    color: AppTextColor.secondary,
-                  ),
-                ],
-              ],
-            ),
-          ),
-          AppButton(
-            label: 'Done',
-            onPressed: onDone,
-            variant: AppButtonVariant.primary,
-          ),
-        ],
-      ),
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        AppText(
+          title,
+          variant: AppTextVariant.title,
+          color: AppTextColor.primary,
+        ),
+      ],
     );
   }
 }

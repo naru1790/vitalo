@@ -106,35 +106,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return _authService.currentUser?.email ?? 'Not signed in';
   }
 
-  String _formatBirthYear() {
-    if (_birthYear == null) return 'Not Set';
-    final age = _calculateAge();
-    final ageStr = age != null ? ' ($age yrs)' : '';
-    return '$_birthYear$ageStr';
-  }
-
-  int? _calculateAge() {
-    if (_birthYear == null) return null;
-    final now = DateTime.now();
-    return now.year - _birthYear!;
-  }
-
-  Future<void> _selectBirthYear() async {
-    final selectedYear = await AppBottomSheet.show<int>(
-      context,
-      sheet: SheetPage(child: AppYearPickerSheet(initialYear: _birthYear)),
-    );
-
-    if (selectedYear != null) {
-      setState(() => _birthYear = selectedYear);
-      talker.info('Birth year set: $_birthYear');
-    }
-  }
-
   String _formatLocation() {
     if (_country == null) return 'Not Set';
     if (_state != null) return '$_state, $_country';
     return _country!;
+  }
+
+  String _formatBirthYear() {
+    if (_birthYear == null) return 'Not Set';
+    final age = DateTime.now().year - _birthYear!;
+    return '$_birthYear ($age years old)';
+  }
+
+  Future<void> _selectBirthYear() async {
+    // Default to 30 years ago if no birth year set
+    final initialYear = _birthYear ?? (DateTime.now().year - 30);
+
+    final result = await AppBottomSheet.show<int>(
+      context,
+      sheet: SheetPage(child: AppYearPickerSheet(initialYear: initialYear)),
+    );
+
+    if (result != null && mounted) {
+      setState(() => _birthYear = result);
+      talker.info('Birth year set: $result');
+    }
   }
 
   Future<void> _selectLocation() async {
@@ -363,8 +359,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             isValuePlaceholder: _birthYear == null,
             showsChevron: true,
             onTap: _selectBirthYear,
-            divider: AppListTileDivider.inset,
           ),
+
+          const AppDivider(inset: AppDividerInset.leading),
 
           AppListTile(
             leading: const AppIcon(

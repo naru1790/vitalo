@@ -1,290 +1,211 @@
 // @frozen
 // Tier-0 adaptive primitive.
-// Owns: platform-appropriate wheel selection mechanics.
-// Uses: ListWheelScrollView, haptic feedback.
-// Must NOT: know about years, ages, domain semantics, or interpret colors.
+// Owns: platform-appropriate wheel/drum picker rendering.
+// Must NOT: fetch data, apply business logic, expose platform knobs.
+// Feature code MUST NOT use CupertinoPicker or ListWheelScrollView directly.
 
-import 'package:flutter/cupertino.dart'
-    show CupertinoPicker, FixedExtentScrollPhysics;
-import 'package:flutter/services.dart' show HapticFeedback;
 import 'package:flutter/widgets.dart';
 
+import '../platform/app_color_scope.dart';
 import '../platform/app_platform_scope.dart';
+import '../../tokens/motion.dart';
+import 'app_text.dart';
 
-/// Tier-0 wheel picker primitive.
+/// Fixed item extent for wheel picker items.
 ///
-/// Provides platform-adaptive wheel selection mechanics.
-/// Owns haptic feedback, scroll physics, and controller lifecycle.
+/// This value ensures proper touch targets and visual rhythm.
+/// It is NOT derived from spacing tokens — touch targets require
+/// specific minimum sizes per accessibility guidelines.
+const double _kItemExtent = 40.0;
+
+/// Tier-0 platform-adaptive wheel picker.
 ///
-/// Tier-0 does NOT interpret semantic colors or visual policy.
-/// All styling is injected from Tier-1 composites.
+/// The ONLY legal way to render drum/wheel pickers in feature code.
+/// Uses [ListWheelScrollView] on both platforms with platform-appropriate
+/// styling (iOS: gradient fade edges, Android: highlight overlay).
 ///
-/// Consumers provide items and receive selection changes.
-/// This primitive knows nothing about domain semantics.
-class AppWheelPicker<T> extends StatelessWidget {
+/// This widget is constraint-safe: it does NOT use [Expanded], [Spacer],
+/// [Align], or any other widget that requires bounded parent constraints.
+/// It works correctly inside [showCupertinoModalPopup] which provides
+/// unbounded constraints during animation.
+///
+/// ## Usage
+/// ```dart
+/// AppWheelPicker<int>(
+///   items: List.generate(100, (i) => 1920 + i),
+///   selectedIndex: 50,
+///   onSelectedItemChanged: (index) => print('Selected: ${items[index]}'),
+///   itemLabelBuilder: (item) => item.toString(),
+/// )
+/// ```
+class AppWheelPicker<T> extends StatefulWidget {
   const AppWheelPicker({
     super.key,
     required this.items,
     required this.selectedIndex,
-    required this.onSelectedIndexChanged,
-    required this.itemBuilder,
-    this.itemExtent = 50.0,
+    required this.onSelectedItemChanged,
+    required this.itemLabelBuilder,
     this.height = 200.0,
-    this.selectionOverlay,
-    this.edgeOverlay,
-    this.emphasizeSelection = true,
   });
 
-  /// Items to display in the wheel.
+  /// The list of items to display.
   final List<T> items;
 
-  /// Currently selected index.
+  /// The index of the currently selected item.
   final int selectedIndex;
 
-  /// Called when selection changes.
-  final ValueChanged<int> onSelectedIndexChanged;
+  /// Called when the selected item changes.
+  final ValueChanged<int> onSelectedItemChanged;
 
-  /// Builds the widget for each item.
-  final Widget Function(BuildContext context, T item, bool isSelected)
-  itemBuilder;
+  /// Builds the display label for each item.
+  final String Function(T item) itemLabelBuilder;
 
-  /// Height of each item.
-  final double itemExtent;
-
-  /// Total height of the wheel.
+  /// The height of the picker widget.
+  /// Default is 200.0 which shows ~5 items.
   final double height;
 
-  /// Optional overlay widget for selection highlight.
-  /// Tier-1 provides semantic styling.
-  final Widget? selectionOverlay;
+  @override
+  State<AppWheelPicker<T>> createState() => _AppWheelPickerState<T>();
+}
 
-  /// Optional overlay for edge fades.
-  /// Tier-1 provides semantic styling.
-  final Widget? edgeOverlay;
+class _AppWheelPickerState<T> extends State<AppWheelPicker<T>> {
+  late FixedExtentScrollController _scrollController;
 
-  /// Whether to emphasize the selected item (magnification on iOS).
-  /// Tier-1 decides intent, Tier-0 implements mechanics.
-  final bool emphasizeSelection;
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = FixedExtentScrollController(
+      initialItem: widget.selectedIndex,
+    );
+  }
+
+  @override
+  void didUpdateWidget(AppWheelPicker<T> oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.selectedIndex != oldWidget.selectedIndex) {
+      // Animate to new position if selection changed externally
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && _scrollController.hasClients) {
+          _scrollController.animateToItem(
+            widget.selectedIndex,
+            duration: AppMotionTokens.of.normal,
+            curve: AppMotionTokens.of.easeOut,
+          );
+        }
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final platform = AppPlatformScope.of(context);
+    final colors = AppColorScope.of(context).colors;
 
-    return platform == AppPlatform.ios
-        ? _CupertinoWheelPicker<T>(
-            items: items,
-            selectedIndex: selectedIndex,
-            onSelectedIndexChanged: onSelectedIndexChanged,
-            itemBuilder: itemBuilder,
-            itemExtent: itemExtent,
-            height: height,
-            selectionOverlay: selectionOverlay,
-            edgeOverlay: edgeOverlay,
-            emphasizeSelection: emphasizeSelection,
-          )
-        : _MaterialWheelPicker<T>(
-            items: items,
-            selectedIndex: selectedIndex,
-            onSelectedIndexChanged: onSelectedIndexChanged,
-            itemBuilder: itemBuilder,
-            itemExtent: itemExtent,
-            height: height,
-            selectionOverlay: selectionOverlay,
-            edgeOverlay: edgeOverlay,
-          );
-  }
-}
-
-class _CupertinoWheelPicker<T> extends StatefulWidget {
-  const _CupertinoWheelPicker({
-    required this.items,
-    required this.selectedIndex,
-    required this.onSelectedIndexChanged,
-    required this.itemBuilder,
-    required this.itemExtent,
-    required this.height,
-    required this.selectionOverlay,
-    required this.edgeOverlay,
-    required this.emphasizeSelection,
-  });
-
-  final List<T> items;
-  final int selectedIndex;
-  final ValueChanged<int> onSelectedIndexChanged;
-  final Widget Function(BuildContext context, T item, bool isSelected)
-  itemBuilder;
-  final double itemExtent;
-  final double height;
-  final Widget? selectionOverlay;
-  final Widget? edgeOverlay;
-  final bool emphasizeSelection;
-
-  @override
-  State<_CupertinoWheelPicker<T>> createState() =>
-      _CupertinoWheelPickerState<T>();
-}
-
-class _CupertinoWheelPickerState<T> extends State<_CupertinoWheelPicker<T>> {
-  late FixedExtentScrollController _controller;
-  late int _currentIndex;
-
-  @override
-  void initState() {
-    super.initState();
-    _currentIndex = widget.selectedIndex;
-    _controller = FixedExtentScrollController(initialItem: _currentIndex);
-  }
-
-  @override
-  void didUpdateWidget(covariant _CupertinoWheelPicker<T> oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.selectedIndex != _currentIndex) {
-      _currentIndex = widget.selectedIndex;
-      _controller.jumpToItem(_currentIndex);
-    }
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
+    // Use SizedBox for explicit height constraint
+    // This is constraint-safe - it provides its own bounds
     return SizedBox(
       height: widget.height,
       child: Stack(
         children: [
-          CupertinoPicker.builder(
-            scrollController: _controller,
-            itemExtent: widget.itemExtent,
-            diameterRatio: 1.5,
-            useMagnifier: widget.emphasizeSelection,
-            magnification: widget.emphasizeSelection ? 1.1 : 1.0,
-            selectionOverlay:
-                widget.selectionOverlay ?? const SizedBox.shrink(),
-            onSelectedItemChanged: (index) {
-              HapticFeedback.selectionClick();
-              _currentIndex = index;
-              widget.onSelectedIndexChanged(index);
-            },
-            childCount: widget.items.length,
-            itemBuilder: (context, index) {
-              return Center(
-                child: widget.itemBuilder(
-                  context,
-                  widget.items[index],
-                  index == _currentIndex,
-                ),
-              );
-            },
-          ),
-          if (widget.edgeOverlay != null) widget.edgeOverlay!,
-        ],
-      ),
-    );
-  }
-}
-
-class _MaterialWheelPicker<T> extends StatefulWidget {
-  const _MaterialWheelPicker({
-    required this.items,
-    required this.selectedIndex,
-    required this.onSelectedIndexChanged,
-    required this.itemBuilder,
-    required this.itemExtent,
-    required this.height,
-    required this.selectionOverlay,
-    required this.edgeOverlay,
-  });
-
-  final List<T> items;
-  final int selectedIndex;
-  final ValueChanged<int> onSelectedIndexChanged;
-  final Widget Function(BuildContext context, T item, bool isSelected)
-  itemBuilder;
-  final double itemExtent;
-  final double height;
-  final Widget? selectionOverlay;
-  final Widget? edgeOverlay;
-
-  @override
-  State<_MaterialWheelPicker<T>> createState() =>
-      _MaterialWheelPickerState<T>();
-}
-
-class _MaterialWheelPickerState<T> extends State<_MaterialWheelPicker<T>> {
-  late FixedExtentScrollController _controller;
-  late int _currentIndex;
-
-  @override
-  void initState() {
-    super.initState();
-    _currentIndex = widget.selectedIndex;
-    _controller = FixedExtentScrollController(initialItem: _currentIndex);
-  }
-
-  @override
-  void didUpdateWidget(covariant _MaterialWheelPicker<T> oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.selectedIndex != _currentIndex) {
-      _currentIndex = widget.selectedIndex;
-      _controller.jumpToItem(_currentIndex);
-    }
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: widget.height,
-      child: Stack(
-        children: [
-          // Wheel
+          // The wheel itself
           ListWheelScrollView.useDelegate(
-            controller: _controller,
-            itemExtent: widget.itemExtent,
+            controller: _scrollController,
+            itemExtent: _kItemExtent,
             physics: const FixedExtentScrollPhysics(),
-            diameterRatio: 1.5,
+            diameterRatio: platform == AppPlatform.ios ? 1.5 : 2.0,
             perspective: 0.003,
-            onSelectedItemChanged: (index) {
-              HapticFeedback.selectionClick();
-              _currentIndex = index;
-              widget.onSelectedIndexChanged(index);
-            },
+            onSelectedItemChanged: widget.onSelectedItemChanged,
             childDelegate: ListWheelChildBuilderDelegate(
               childCount: widget.items.length,
               builder: (context, index) {
-                return Center(
-                  child: widget.itemBuilder(
-                    context,
-                    widget.items[index],
-                    index == _currentIndex,
+                if (index < 0 || index >= widget.items.length) {
+                  return null;
+                }
+                final item = widget.items[index];
+                final label = widget.itemLabelBuilder(item);
+
+                return SizedBox(
+                  height: _kItemExtent,
+                  child: Center(
+                    child: AppText(
+                      label,
+                      variant: AppTextVariant.body,
+                      color: AppTextColor.primary,
+                    ),
                   ),
                 );
               },
             ),
           ),
 
-          // Selection highlight (injected from Tier-1)
-          if (widget.selectionOverlay != null)
-            Center(
-              child: IgnorePointer(
-                child: SizedBox(
-                  height: widget.itemExtent,
-                  child: widget.selectionOverlay,
+          // Selection highlight overlay (center band)
+          Positioned.fill(
+            child: IgnorePointer(
+              child: Center(
+                child: Container(
+                  height: _kItemExtent,
+                  decoration: BoxDecoration(
+                    border: Border.symmetric(
+                      horizontal: BorderSide(
+                        color: colors.neutralDivider,
+                        width: 1.0,
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),
+          ),
 
-          // Edge overlay (injected from Tier-1)
-          if (widget.edgeOverlay != null) widget.edgeOverlay!,
+          // Top fade gradient
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            height: widget.height * 0.3,
+            child: IgnorePointer(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      colors.surfaceElevated,
+                      colors.surfaceElevated.withValues(alpha: 0.0),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          // Bottom fade gradient
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: widget.height * 0.3,
+            child: IgnorePointer(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.bottomCenter,
+                    end: Alignment.topCenter,
+                    colors: [
+                      colors.surfaceElevated,
+                      colors.surfaceElevated.withValues(alpha: 0.0),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );
