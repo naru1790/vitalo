@@ -1,16 +1,8 @@
 // @frozen
-// ARCHITECTURAL CONTRACT — DO NOT MODIFY WITHOUT REVIEW
-//
 // Tier-0 adaptive primitive.
-//
-// Responsibility:
-// - Present a modal bottom sheet via SheetPage
-// - Branch between Cupertino vs Material presentation
-//
-// This primitive MUST NOT:
-// - Accept generic Widget content (SheetPage only)
-// - Apply padding, styling, or business logic
-// - Return values beyond Navigator.pop
+// Owns: platform-appropriate modal presentation.
+// Must NOT: accept generic Widget, apply styling, expose platform knobs.
+// Feature code MUST NOT call showCupertinoModalPopup or showModalBottomSheet.
 
 import 'package:flutter/cupertino.dart' show showCupertinoModalPopup;
 import 'package:flutter/material.dart' show BuildContext, showModalBottomSheet;
@@ -18,24 +10,22 @@ import 'package:flutter/material.dart' show BuildContext, showModalBottomSheet;
 import '../pages/sheet_page.dart';
 import '../platform/app_platform_scope.dart';
 
-/// Platform-adaptive bottom sheet presenter.
+/// Tier-0 platform-adaptive bottom sheet presenter.
 ///
-/// Use this instead of calling [showCupertinoModalPopup] or [showModalBottomSheet]
-/// directly in feature code.
-///
-/// Requires a [SheetPage] to enforce architectural layering.
+/// The ONLY legal way to present bottom sheets in feature code.
+/// Requires [SheetPage] to enforce content structure.
+/// Dismiss with value via `Navigator.pop(context, value)`.
 abstract final class AppBottomSheet {
   AppBottomSheet._();
 
-  /// Presents a modal bottom sheet with platform-appropriate behavior.
+  /// Presents a modal bottom sheet.
   ///
-  /// The only way to dismiss with a value is calling `Navigator.pop(context, value)`
-  /// from within [sheet].
+  /// [sheet] — The [SheetPage] containing sheet content.
+  /// [isDismissible] — Whether barrier tap dismisses. Default `true`.
   static Future<T?> show<T>(
     BuildContext context, {
     required SheetPage sheet,
     bool isDismissible = true,
-    bool enableDrag = true,
   }) {
     final platform = AppPlatformScope.of(context);
 
@@ -50,7 +40,7 @@ abstract final class AppBottomSheet {
     return showModalBottomSheet<T>(
       context: context,
       isDismissible: isDismissible,
-      enableDrag: enableDrag,
+      enableDrag: true,
       builder: (_) => sheet,
     );
   }
