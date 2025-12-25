@@ -8,13 +8,13 @@ import '../../../main.dart';
 import '../../../core/router.dart';
 import '../../../core/services/auth_service.dart';
 import '../../../core/theme.dart';
-import '../../../core/widgets/location_picker_sheet.dart';
 import '../../../core/widgets/body_health_card.dart';
 import '../../../core/widgets/lifestyle_card.dart';
 import '../../../core/widgets/coaching_card.dart';
 import '../../../core/widgets/profile_row.dart';
 import '../../../design/design.dart';
 import '../../../design/tokens/icons.dart' as icons;
+import '../repositories/location_repository.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -25,6 +25,21 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   final _authService = AuthService();
+  final _locationRepository = LocationRepository();
+
+  /// Popular country codes shown at top of location picker.
+  static const _popularCountryCodes = [
+    'US', // United States
+    'GB', // United Kingdom
+    'CA', // Canada
+    'AU', // Australia
+    'IN', // India
+    'DE', // Germany
+    'FR', // France
+    'JP', // Japan
+    'BR', // Brazil
+    'MX', // Mexico
+  ];
 
   // User name for header
   String? _displayName;
@@ -36,7 +51,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   AppGender _gender = AppGender.male;
   int? _birthYear;
   String? _country;
+  String? _countryCode;
   String? _state;
+  String? _stateCode;
 
   // Body & Health data
   BodyHealthData _bodyHealthData = const BodyHealthData();
@@ -142,16 +159,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _selectLocation() async {
-    final result = await LocationPickerSheet.show(
-      context: context,
-      // Note: We store country name, but the picker now expects ISO codes
-      // For now, pass null for initial values until we store codes
+    // Load countries from repository (feature layer owns data loading)
+    // Parallelize independent data fetches to minimize cold start latency
+    final results = await Future.wait([
+      _locationRepository.getCountries(),
+      _locationRepository.getPopularCountries(_popularCountryCodes),
+    ]);
+
+    final countries = results[0];
+    final popularCountries = results[1];
+
+    if (!mounted) return;
+
+    final result = await AppBottomSheet.show<LocationResult>(
+      context,
+      sheet: SheetPage(
+        child: AppLocationPickerSheet(
+          countries: countries,
+          popularCountries: popularCountries,
+          statesLoader: _locationRepository.getStates,
+          initialCountryCode: _countryCode,
+          initialStateCode: _stateCode,
+        ),
+      ),
     );
 
-    if (result != null) {
+    if (result != null && mounted) {
       setState(() {
         _country = result.countryName;
+        _countryCode = result.countryCode;
         _state = result.stateName;
+        _stateCode = result.stateCode;
       });
       talker.info('Location set: ${result.displayWithFlag}');
     }

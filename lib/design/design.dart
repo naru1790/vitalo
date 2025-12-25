@@ -80,6 +80,8 @@ export 'adaptive/pages/stage_page.dart';
 // ═══════════════════════════════════════════════════════════════════════════
 
 export 'adaptive/primitives/app_gender_selector.dart';
+export 'adaptive/primitives/app_location_picker_sheet.dart';
+export 'adaptive/primitives/app_searchable_list_picker.dart';
 export 'adaptive/primitives/app_section.dart';
 export 'adaptive/primitives/app_surface.dart';
 export 'adaptive/primitives/app_year_picker.dart';
