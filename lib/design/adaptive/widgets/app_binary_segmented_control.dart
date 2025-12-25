@@ -85,14 +85,14 @@ class _IosBinarySegmentedControl extends StatelessWidget {
     final spacing = Spacing.of;
     final textStyles = AppTextStyles.of;
 
-    // Raw Text with typography tokens only.
-    // Platform control owns selection color state - we must not override.
+    // Get text color from CupertinoTheme's textStyle.
+    // This ensures proper color inheritance in light/dark modes.
+    final textColor = CupertinoTheme.of(context).textTheme.textStyle.color;
+
     return CupertinoSlidingSegmentedControl<bool>(
       groupValue: value,
       onValueChanged: (newValue) {
-        if (newValue != null) {
-          onChanged(newValue);
-        }
+        if (newValue != null) onChanged(newValue);
       },
       padding: EdgeInsets.all(spacing.xs),
       children: {
@@ -101,14 +101,20 @@ class _IosBinarySegmentedControl extends StatelessWidget {
             horizontal: spacing.sm,
             vertical: spacing.xs,
           ),
-          child: Text(leftLabel, style: textStyles.label),
+          child: Text(
+            leftLabel,
+            style: textStyles.label.copyWith(color: textColor),
+          ),
         ),
         true: Padding(
           padding: EdgeInsets.symmetric(
             horizontal: spacing.sm,
             vertical: spacing.xs,
           ),
-          child: Text(rightLabel, style: textStyles.label),
+          child: Text(
+            rightLabel,
+            style: textStyles.label.copyWith(color: textColor),
+          ),
         ),
       },
     );
