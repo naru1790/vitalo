@@ -85,6 +85,8 @@ class _IosBinarySegmentedControl extends StatelessWidget {
     final spacing = Spacing.of;
     final textStyles = AppTextStyles.of;
 
+    // Raw Text with typography tokens only.
+    // Platform control owns selection color state - we must not override.
     return CupertinoSlidingSegmentedControl<bool>(
       groupValue: value,
       onValueChanged: (newValue) {
@@ -128,10 +130,20 @@ class _AndroidBinarySegmentedControl extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textStyles = AppTextStyles.of;
+
+    // Raw Text with typography tokens only.
+    // Platform control owns selection color state - we must not override.
     return SegmentedButton<bool>(
       segments: [
-        ButtonSegment<bool>(value: false, label: Text(leftLabel)),
-        ButtonSegment<bool>(value: true, label: Text(rightLabel)),
+        ButtonSegment<bool>(
+          value: false,
+          label: Text(leftLabel, style: textStyles.label),
+        ),
+        ButtonSegment<bool>(
+          value: true,
+          label: Text(rightLabel, style: textStyles.label),
+        ),
       ],
       selected: {value},
       onSelectionChanged: (selection) {
