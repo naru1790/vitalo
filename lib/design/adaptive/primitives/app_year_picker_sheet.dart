@@ -7,9 +7,11 @@
 //  - navigate routes (except pop with value)
 //  - show global feedback (snackbars, toasts, dialogs)
 //  - use Expanded, Spacer, or other constraint-unsafe widgets
+//  - call DateTime.now() — time is injected
 
 import 'package:flutter/widgets.dart';
 
+import '../platform/app_platform_scope.dart';
 import '../widgets/app_button.dart';
 import '../widgets/app_text.dart';
 import 'app_year_picker.dart';
@@ -21,12 +23,22 @@ import '../../tokens/spacing.dart';
 /// Uses [Column] with [mainAxisSize: MainAxisSize.min] to be constraint-safe.
 ///
 /// Returns the selected year via `Navigator.pop(context, year)`.
+///
+/// ## Environmental Inputs
+/// - [currentYear] — must be injected by feature code
+/// - Platform is resolved here to pass diameterRatio to AppYearPicker
 class AppYearPickerSheet extends StatefulWidget {
   const AppYearPickerSheet({
     super.key,
+    required this.currentYear,
     required this.initialYear,
     this.title = 'Birth Year',
   });
+
+  /// The current calendar year.
+  ///
+  /// Must be injected by feature code. Sheet does NOT call DateTime.now().
+  final int currentYear;
 
   /// The initially selected year.
   final int initialYear;
@@ -54,6 +66,10 @@ class _AppYearPickerSheetState extends State<AppYearPickerSheet> {
   @override
   Widget build(BuildContext context) {
     final spacing = Spacing.of;
+    final platform = AppPlatformScope.of(context);
+
+    // Platform-resolved diameter ratio for AppYearPicker
+    final diameterRatio = platform == AppPlatform.ios ? 1.5 : 2.0;
 
     // CONSTRAINT-SAFE layout:
     // - Column with mainAxisSize.min
@@ -70,10 +86,12 @@ class _AppYearPickerSheetState extends State<AppYearPickerSheet> {
 
         // Year picker wheel
         AppYearPicker(
+          currentYear: widget.currentYear,
           selectedYear: _selectedYear,
           onYearChanged: (year) {
             setState(() => _selectedYear = year);
           },
+          diameterRatio: diameterRatio,
         ),
 
         SizedBox(height: spacing.lg),

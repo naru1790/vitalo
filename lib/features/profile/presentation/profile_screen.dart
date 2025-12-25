@@ -114,17 +114,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   String _formatBirthYear() {
     if (_birthYear == null) return 'Not Set';
-    final age = DateTime.now().year - _birthYear!;
+    final currentYear = DateTime.now().year;
+    final age = currentYear - _birthYear!;
     return '$_birthYear ($age years old)';
   }
 
   Future<void> _selectBirthYear() async {
+    // Feature code owns time resolution
+    final currentYear = DateTime.now().year;
     // Default to 30 years ago if no birth year set
-    final initialYear = _birthYear ?? (DateTime.now().year - 30);
+    final initialYear = _birthYear ?? (currentYear - 30);
 
     final result = await AppBottomSheet.show<int>(
       context,
-      sheet: SheetPage(child: AppYearPickerSheet(initialYear: initialYear)),
+      sheet: SheetPage(
+        child: AppYearPickerSheet(
+          currentYear: currentYear,
+          initialYear: initialYear,
+        ),
+      ),
     );
 
     if (result != null && mounted) {
