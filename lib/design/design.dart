@@ -44,6 +44,7 @@ export 'adaptive/nav_motion.dart' show NavMotionScope;
 // PRIMITIVES — Adaptive widgets for feature consumption
 // ═══════════════════════════════════════════════════════════════════════════
 
+export 'adaptive/widgets/app_binary_segmented_control.dart';
 export 'adaptive/widgets/app_button.dart';
 export 'adaptive/widgets/app_bottom_sheet.dart';
 export 'adaptive/widgets/app_divider.dart';
@@ -57,6 +58,7 @@ export 'adaptive/widgets/app_page_body.dart';
 export 'adaptive/widgets/app_scaffold.dart';
 export 'adaptive/widgets/app_text.dart';
 export 'adaptive/widgets/app_text_field.dart';
+export 'adaptive/widgets/app_wheel_picker.dart';
 export 'adaptive/widgets/auth_action_stack.dart';
 export 'adaptive/widgets/auth_footer_links.dart';
 export 'adaptive/widgets/auth_sign_in_button.dart';
@@ -77,6 +79,11 @@ export 'adaptive/pages/stage_page.dart';
 // COMPOSITE PRIMITIVES — Higher-level adaptive building blocks
 // ═══════════════════════════════════════════════════════════════════════════
 
+export 'adaptive/primitives/app_gender_selector.dart';
+export 'adaptive/primitives/app_section.dart';
+export 'adaptive/primitives/app_surface.dart';
+export 'adaptive/primitives/app_year_picker.dart';
+export 'adaptive/primitives/app_year_picker_sheet.dart';
 export 'adaptive/primitives/inline_editable_header.dart';
 export 'adaptive/primitives/profile_identity_header.dart';
 

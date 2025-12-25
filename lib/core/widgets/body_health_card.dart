@@ -10,8 +10,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 
+import '../../design/design.dart';
 import '../theme.dart';
-import 'app_segmented_button.dart';
 import 'height_picker_sheet.dart';
 import 'profile_row.dart';
 import 'weight_picker_sheet.dart';
@@ -266,18 +266,12 @@ class _BodyHealthCardState extends State<BodyHealthCard> {
                     ),
                   ),
                 ),
-                AppSegmentedButton<bool>(
-                  children: const {
-                    true: Text('Metric'),
-                    false: Text('Imperial'),
-                  },
-                  groupValue: widget.data.isMetric,
-                  onValueChanged: (value) {
-                    if (value != null) {
-                      widget.onDataChanged(
-                        widget.data.copyWith(isMetric: value),
-                      );
-                    }
+                AppBinarySegmentedControl(
+                  leftLabel: 'Imperial',
+                  rightLabel: 'Metric',
+                  value: widget.data.isMetric,
+                  onChanged: (value) {
+                    widget.onDataChanged(widget.data.copyWith(isMetric: value));
                   },
                 ),
               ],

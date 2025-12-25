@@ -58,6 +58,11 @@ class AndroidLightColors extends AppColors {
       const Color(0xFFE7E5E4);
 
   @override
+  Color get surfaceBorder =>
+      // Subtle card outline; lower contrast than dividers.
+      const Color(0x1AE7E5E4);
+
+  @override
   Color get textPrimary => const Color(0xFF1F1F1F);
 
   @override

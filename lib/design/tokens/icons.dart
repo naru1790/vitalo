@@ -47,6 +47,10 @@ enum AppIcon {
   // ──────────────────────────────────────────────────────────
   navBack,
   navForward,
+
+  /// Disclosure indicator for navigable list rows (settings, profile, preferences).
+  navDisclosure,
+
   navHome,
   navMenu,
   navSettings,
@@ -162,6 +166,8 @@ abstract final class AppIcons {
         return CupertinoIcons.back;
       case AppIcon.navForward:
         return CupertinoIcons.forward;
+      case AppIcon.navDisclosure:
+        return CupertinoIcons.chevron_right;
       case AppIcon.navHome:
         return CupertinoIcons.home;
       case AppIcon.navMenu:
@@ -314,6 +320,8 @@ abstract final class AppIcons {
         return Icons.arrow_back;
       case AppIcon.navForward:
         return Icons.arrow_forward;
+      case AppIcon.navDisclosure:
+        return Icons.chevron_right;
       case AppIcon.navHome:
         return Icons.home;
       case AppIcon.navMenu:

@@ -56,6 +56,11 @@ class IosLightColors extends AppColors {
   Color get neutralDivider => const Color(0xFFC6C6C8);
 
   @override
+  Color get surfaceBorder =>
+      // Subtle card outline; lower contrast than dividers.
+      const Color(0x1AC6C6C8);
+
+  @override
   Color get textPrimary => const Color(0xFF1F1F1F);
 
   @override

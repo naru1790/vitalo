@@ -35,6 +35,7 @@ abstract class AppColors {
   Color get neutralSurface;
   Color get surfaceElevated;
   Color get neutralDivider;
+  Color get surfaceBorder;
 
   // Text
   Color get textPrimary;

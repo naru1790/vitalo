@@ -8,14 +8,13 @@ import '../../../main.dart';
 import '../../../core/router.dart';
 import '../../../core/services/auth_service.dart';
 import '../../../core/theme.dart';
-import '../../../core/widgets/year_picker_sheet.dart';
 import '../../../core/widgets/location_picker_sheet.dart';
 import '../../../core/widgets/body_health_card.dart';
 import '../../../core/widgets/lifestyle_card.dart';
 import '../../../core/widgets/coaching_card.dart';
 import '../../../core/widgets/profile_row.dart';
 import '../../../design/design.dart';
-import 'widgets/gender_selection.dart';
+import '../../../design/tokens/icons.dart' as icons;
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -34,7 +33,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool _notificationsEnabled = true;
 
   // Personal info
-  String? _gender;
+  AppGender _gender = AppGender.male;
   int? _birthYear;
   String? _country;
   String? _state;
@@ -121,9 +120,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _selectBirthYear() async {
-    final selectedYear = await YearPickerSheet.show(
-      context: context,
-      initialYear: _birthYear,
+    final selectedYear = await AppBottomSheet.show<int>(
+      context,
+      sheet: SheetPage(child: AppYearPickerSheet(initialYear: _birthYear)),
     );
 
     if (selectedYear != null) {
@@ -261,13 +260,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
 
-          const SizedBox(height: AppSpacing.lg),
-
-          _buildSectionTitle('Personal Info'),
-          const SizedBox(height: AppSpacing.sm),
-          _buildPersonalInfoCard(),
-
-          const SizedBox(height: AppSpacing.xl),
+          AppSection(title: 'Personal Info', child: _buildPersonalInfoCard()),
 
           // Body & Health - new consolidated card
           BodyHealthCard(
@@ -276,7 +269,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               setState(() => _bodyHealthData = data);
               talker.info('Body health data updated');
             },
-            isFemale: _gender?.toLowerCase() == 'female',
+            isFemale: _gender == AppGender.female,
           ),
 
           const SizedBox(height: AppSpacing.xl),
@@ -346,32 +339,42 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildPersonalInfoCard() {
-    return ProfileCard(
+    return AppSurface(
+      variant: AppSurfaceVariant.card,
       child: Column(
         children: [
-          GenderSelection(
-            selectedGender: _gender,
-            onGenderSelected: (value) {
+          AppGenderSelector(
+            value: _gender,
+            onChanged: (value) {
               setState(() => _gender = value);
               talker.info('Gender set: $value');
             },
           ),
 
-          const ProfileRowDivider(),
+          const AppDivider(inset: AppDividerInset.leading),
 
-          ProfileTappableRow(
-            icon: CupertinoIcons.gift,
-            label: 'Birth Year',
+          AppListTile(
+            leading: const AppIcon(
+              icons.AppIcon.systemCalendar,
+              size: AppIconSize.small,
+            ),
+            title: 'Birth Year',
             value: _formatBirthYear(),
+            isValuePlaceholder: _birthYear == null,
+            showsChevron: true,
             onTap: _selectBirthYear,
+            divider: AppListTileDivider.inset,
           ),
 
-          const ProfileRowDivider(),
-
-          ProfileTappableRow(
-            icon: CupertinoIcons.location,
-            label: 'Location',
+          AppListTile(
+            leading: const AppIcon(
+              icons.AppIcon.systemLocation,
+              size: AppIconSize.small,
+            ),
+            title: 'Location',
             value: _formatLocation(),
+            isValuePlaceholder: _country == null,
+            showsChevron: true,
             onTap: _selectLocation,
           ),
         ],

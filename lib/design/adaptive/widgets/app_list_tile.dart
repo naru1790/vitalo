@@ -2,11 +2,18 @@
 // Tier-1 adaptive list tile primitive.
 // Owns: typography, spacing, dividers, platform-correct interaction.
 // Must NOT: accept raw widgets, allow custom styling knobs.
+//
+// Extended to support Profile → Personal Info migration:
+// - value: right-aligned semantic text
+// - showsChevron: disclosure indicator for navigable rows
+//
+// Future modifications require architectural review.
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../platform/app_platform_scope.dart';
+import '../../tokens/icons.dart' as icons;
 import '../../tokens/motion.dart';
 import '../../tokens/spacing.dart';
 import 'app_text.dart';
@@ -32,7 +39,10 @@ class AppListTile extends StatelessWidget {
     this.leading,
     required this.title,
     this.subtitle,
+    this.value,
+    this.isValuePlaceholder = false,
     this.trailing,
+    this.showsChevron = false,
     this.onTap,
     this.divider = AppListTileDivider.none,
     this.enabled = true,
@@ -43,12 +53,30 @@ class AppListTile extends StatelessWidget {
        assert(
          trailing == null || trailing is AppIcon || trailing is AppIconButton,
          'trailing must be AppIcon or AppIconButton',
+       ),
+       assert(
+         value == null || trailing == null,
+         'value and trailing are mutually exclusive',
        );
 
   final Widget? leading;
   final String title;
   final String? subtitle;
+
+  /// Right-aligned semantic value text.
+  final String? value;
+
+  /// Whether [value] represents a placeholder (e.g., "Not set").
+  /// When true, value renders with secondary color.
+  /// Feature code decides semantic meaning; primitive handles presentation.
+  final bool isValuePlaceholder;
+
   final Widget? trailing;
+
+  /// Whether to show a disclosure chevron.
+  /// Only visible when [onTap] is non-null.
+  final bool showsChevron;
+
   final VoidCallback? onTap;
   final AppListTileDivider divider;
   final bool enabled;
@@ -86,6 +114,28 @@ class AppListTile extends StatelessWidget {
               ],
             ),
           ),
+          if (value != null) ...[
+            SizedBox(width: spacing.md),
+            Flexible(
+              child: AppText(
+                value!,
+                variant: AppTextVariant.body,
+                color: isValuePlaceholder
+                    ? AppTextColor.secondary
+                    : AppTextColor.primary,
+                maxLines: 1,
+                align: TextAlign.end,
+              ),
+            ),
+          ],
+          if (showsChevron && _isInteractive) ...[
+            SizedBox(width: spacing.sm),
+            const AppIcon(
+              icons.AppIcon.navDisclosure,
+              size: AppIconSize.small,
+              color: AppIconColor.secondary,
+            ),
+          ],
           if (trailing != null) ...[
             SizedBox(width: spacing.md),
             ExcludeSemantics(child: trailing!),
