@@ -127,6 +127,7 @@ enum AppIcon {
   systemSecurity,
   systemLanguage,
   systemAccessibility,
+  systemBirthday,
 
   // ──────────────────────────────────────────────────────────
   // Auth Identity
@@ -299,6 +300,8 @@ abstract final class AppIcons {
         return CupertinoIcons.globe;
       case AppIcon.systemAccessibility:
         return CupertinoIcons.person_crop_circle;
+      case AppIcon.systemBirthday:
+        return CupertinoIcons.gift;
 
       // Auth Identity
       case AppIcon.authGoogle:
@@ -446,6 +449,8 @@ abstract final class AppIcons {
         return Icons.language;
       case AppIcon.systemAccessibility:
         return Icons.accessibility;
+      case AppIcon.systemBirthday:
+        return Icons.cake;
 
       // Auth Identity
       case AppIcon.authGoogle:

@@ -63,7 +63,7 @@ class AppGenderSelector extends StatelessWidget {
         // Semantically represents "personal identity" in profile context.
         icons.AppIcon.navProfile,
         size: AppIconSize.small,
-        color: AppIconColor.primary,
+        color: AppIconColor.brand,
       ),
       label: AppText(
         label,

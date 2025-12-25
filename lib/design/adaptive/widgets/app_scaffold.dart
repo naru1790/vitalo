@@ -409,17 +409,28 @@ final class _MaterialPageStructure extends StatelessWidget {
     final action = leadingAction;
     if (action == null) return null;
 
+    final colors = AppColorScope.of(context).colors;
+
     return switch (action) {
       AppBarBackAction() => IconButton(
-        icon: Icon(AppIcons.resolve(AppIcon.navBack)),
+        icon: primitives.AppIcon(
+          AppIcon.navBack,
+          colorOverride: colors.brandPrimary,
+        ),
         onPressed: action.onPressed ?? _defaultDismiss(context),
       ),
       AppBarCloseAction() => IconButton(
-        icon: Icon(AppIcons.resolve(AppIcon.actionClose)),
+        icon: primitives.AppIcon(
+          AppIcon.actionClose,
+          colorOverride: colors.brandPrimary,
+        ),
         onPressed: action.onPressed ?? _defaultDismiss(context),
       ),
       AppBarIconAction() => IconButton(
-        icon: Icon(AppIcons.resolve(action.icon)),
+        icon: primitives.AppIcon(
+          action.icon,
+          colorOverride: colors.brandPrimary,
+        ),
         tooltip: action.semanticLabel,
         onPressed: action.onPressed,
       ),
@@ -429,19 +440,30 @@ final class _MaterialPageStructure extends StatelessWidget {
   List<Widget> _buildActions(BuildContext context) {
     if (trailingActions.isEmpty) return const [];
 
+    final colors = AppColorScope.of(context).colors;
+
     return trailingActions
         .map((action) {
           return switch (action) {
             AppBarBackAction() => IconButton(
-              icon: Icon(AppIcons.resolve(AppIcon.navBack)),
+              icon: primitives.AppIcon(
+                AppIcon.navBack,
+                colorOverride: colors.brandPrimary,
+              ),
               onPressed: action.onPressed ?? _defaultDismiss(context),
             ),
             AppBarCloseAction() => IconButton(
-              icon: Icon(AppIcons.resolve(AppIcon.actionClose)),
+              icon: primitives.AppIcon(
+                AppIcon.actionClose,
+                colorOverride: colors.brandPrimary,
+              ),
               onPressed: action.onPressed ?? _defaultDismiss(context),
             ),
             AppBarIconAction() => IconButton(
-              icon: Icon(AppIcons.resolve(action.icon)),
+              icon: primitives.AppIcon(
+                action.icon,
+                colorOverride: colors.brandPrimary,
+              ),
               tooltip: action.semanticLabel,
               onPressed: action.onPressed,
             ),

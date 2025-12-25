@@ -6,7 +6,6 @@
 import 'package:flutter/widgets.dart';
 
 import '../platform/app_color_scope.dart';
-import '../../tokens/spacing.dart';
 import '../../tokens/shape.dart';
 
 /// Subtle elevated surface for inline controls.
@@ -26,11 +25,11 @@ class AppControlSurface extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = AppColorScope.of(context).colors;
-    final spacing = Spacing.of;
     final shape = AppShapeTokens.of;
 
+    // No padding - surface provides only background + shape.
+    // Control's intrinsic padding is sufficient.
     return Container(
-      padding: EdgeInsets.all(spacing.xs),
       decoration: BoxDecoration(
         color: colors.surfaceElevated,
         borderRadius: BorderRadius.circular(shape.sm),

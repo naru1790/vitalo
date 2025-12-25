@@ -94,53 +94,78 @@ class AppListTile extends StatelessWidget {
         horizontal: spacing.lg,
         vertical: spacing.md,
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          if (leading != null) ...[
-            ExcludeSemantics(child: leading!),
-            SizedBox(width: spacing.md),
-          ],
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                AppText(title, variant: AppTextVariant.body),
-                if (subtitle != null) ...[
-                  SizedBox(height: spacing.xs),
-                  AppText(subtitle!, variant: AppTextVariant.caption),
-                ],
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          // Prevent long values from stealing the entire row.
+          // Keep trailing values readable without clipping short values.
+          final maxValueWidth = constraints.maxWidth * 0.55;
+
+          final Widget? trailingCluster =
+              (value != null) ||
+                  ((showsChevron && _isInteractive)) ||
+                  (trailing != null)
+              ? Row(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    if (value != null) ...[
+                      ConstrainedBox(
+                        constraints: BoxConstraints(maxWidth: maxValueWidth),
+                        child: AppText(
+                          value!,
+                          variant: AppTextVariant.body,
+                          color: isValuePlaceholder
+                              ? AppTextColor.secondary
+                              : AppTextColor.primary,
+                          maxLines: 1,
+                          align: TextAlign.end,
+                        ),
+                      ),
+                    ],
+                    if (showsChevron && _isInteractive) ...[
+                      if (value != null) SizedBox(width: spacing.sm),
+                      const AppIcon(
+                        icons.AppIcon.navDisclosure,
+                        size: AppIconSize.small,
+                        color: AppIconColor.secondary,
+                      ),
+                    ],
+                    if (trailing != null) ...[
+                      if (value != null || (showsChevron && _isInteractive))
+                        SizedBox(width: spacing.md),
+                      ExcludeSemantics(child: trailing!),
+                    ],
+                  ],
+                )
+              : null;
+
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              if (leading != null) ...[
+                ExcludeSemantics(child: leading!),
+                SizedBox(width: spacing.md),
               ],
-            ),
-          ),
-          if (value != null) ...[
-            SizedBox(width: spacing.md),
-            Flexible(
-              child: AppText(
-                value!,
-                variant: AppTextVariant.body,
-                color: isValuePlaceholder
-                    ? AppTextColor.secondary
-                    : AppTextColor.primary,
-                maxLines: 1,
-                align: TextAlign.end,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    AppText(title, variant: AppTextVariant.body),
+                    if (subtitle != null) ...[
+                      SizedBox(height: spacing.xs),
+                      AppText(subtitle!, variant: AppTextVariant.caption),
+                    ],
+                  ],
+                ),
               ),
-            ),
-          ],
-          if (showsChevron && _isInteractive) ...[
-            SizedBox(width: spacing.sm),
-            const AppIcon(
-              icons.AppIcon.navDisclosure,
-              size: AppIconSize.small,
-              color: AppIconColor.secondary,
-            ),
-          ],
-          if (trailing != null) ...[
-            SizedBox(width: spacing.md),
-            ExcludeSemantics(child: trailing!),
-          ],
-        ],
+              if (trailingCluster != null) ...[
+                SizedBox(width: spacing.md),
+                trailingCluster,
+              ],
+            ],
+          );
+        },
       ),
     );
 

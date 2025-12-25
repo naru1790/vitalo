@@ -133,7 +133,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (_birthYear == null) return 'Not Set';
     final currentYear = DateTime.now().year;
     final age = currentYear - _birthYear!;
-    return '$_birthYear ($age years old)';
+    return '$_birthYear ($age years)';
   }
 
   Future<void> _selectBirthYear() async {
@@ -397,8 +397,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
           AppListTile(
             leading: const AppIcon(
-              icons.AppIcon.systemCalendar,
+              icons.AppIcon.systemBirthday,
               size: AppIconSize.small,
+              color: AppIconColor.brand,
             ),
             title: 'Birth Year',
             value: _formatBirthYear(),
@@ -413,6 +414,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             leading: const AppIcon(
               icons.AppIcon.systemLocation,
               size: AppIconSize.small,
+              color: AppIconColor.brand,
             ),
             title: 'Location',
             value: _formatLocation(),

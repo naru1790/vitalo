@@ -54,6 +54,9 @@ enum AppIconColor {
 
   /// Inverse icon color for dark/colored backgrounds.
   inverse,
+
+  /// Brand icon color for accent/branded elements.
+  brand,
 }
 
 /// Tier-0 adaptive icon primitive.
@@ -156,6 +159,7 @@ class AppIcon extends StatelessWidget {
       AppIconColor.secondary => colors.textSecondary,
       AppIconColor.disabled => colors.textTertiary,
       AppIconColor.inverse => colors.textInverse,
+      AppIconColor.brand => colors.brandPrimary,
     };
   }
 }
