@@ -34,7 +34,7 @@ class AppSection extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         // Section top spacing
-        SizedBox(height: spacing.lg),
+        SizedBox(height: spacing.xl),
 
         // Section label
         AppText(title, variant: AppTextVariant.label),
