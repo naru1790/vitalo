@@ -62,6 +62,7 @@ export 'adaptive/widgets/app_wheel_picker.dart';
 export 'adaptive/widgets/auth_action_stack.dart';
 export 'adaptive/widgets/auth_footer_links.dart';
 export 'adaptive/widgets/auth_sign_in_button.dart';
+export 'adaptive/widgets/flux_mascot.dart';
 export 'adaptive/widgets/inline_feedback_message.dart';
 export 'adaptive/widgets/keyboard_dismiss_surface.dart';
 

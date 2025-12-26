@@ -8,11 +8,11 @@
 // Palette selection is inferred from semantic colors (not raw brightness).
 import 'package:flutter/widgets.dart';
 
-import '../../design/adaptive/platform/app_color_scope.dart';
-import '../../design/tokens/illustration/flux_mascot_palette.dart';
-import '../../design/tokens/motion.dart';
-import '../../design/tokens/opacity.dart';
-import '../../design/tokens/shape.dart';
+import '../platform/app_color_scope.dart';
+import '../../tokens/illustration/flux_mascot_palette.dart';
+import '../../tokens/motion.dart';
+import '../../tokens/opacity.dart';
+import '../../tokens/shape.dart';
 
 /// FluxMascot - 3-layer animated vitality indicator
 /// Represents Physical (outer), Nutritional (middle), Mental (core) health dimensions

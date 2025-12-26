@@ -8,13 +8,13 @@ import '../../../main.dart';
 import '../../../core/router.dart';
 import '../../../core/services/auth_service.dart';
 import '../../../core/theme.dart';
-import '../../../core/widgets/body_health_card.dart';
 import '../../../core/widgets/lifestyle_card.dart';
 import '../../../core/widgets/coaching_card.dart';
 import '../../../core/widgets/profile_row.dart';
 import '../../../design/design.dart';
-import '../../../design/tokens/icons.dart' as icons;
 import '../repositories/location_repository.dart';
+import 'widgets/body_health_card.dart';
+import 'widgets/profile_personal_info_card.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -57,6 +57,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   // Body & Health data
   BodyHealthData _bodyHealthData = const BodyHealthData();
+  UnitSystem _bodyHealthUnitSystem = UnitSystem.metric;
 
   // Lifestyle data (activity, sleep, diet)
   LifestyleData _lifestyleData = const LifestyleData();
@@ -123,17 +124,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return _authService.currentUser?.email ?? 'Not signed in';
   }
 
-  String _formatLocation() {
-    if (_country == null) return 'Not Set';
-    if (_state != null) return '$_state, $_country';
-    return _country!;
-  }
-
-  String _formatBirthYear() {
+  String _birthYearLabel() {
     if (_birthYear == null) return 'Not Set';
     final currentYear = DateTime.now().year;
     final age = currentYear - _birthYear!;
     return '$_birthYear ($age years)';
+  }
+
+  String _locationLabel() {
+    if (_country == null) return 'Not Set';
+    if (_state != null) return '$_state, $_country';
+    return _country!;
   }
 
   Future<void> _selectBirthYear() async {
@@ -302,19 +303,81 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
 
-          AppSection(title: 'Personal Info', child: _buildPersonalInfoCard()),
-
-          // Body & Health - new consolidated card
-          BodyHealthCard(
-            data: _bodyHealthData,
-            onDataChanged: (data) {
-              setState(() => _bodyHealthData = data);
-              talker.info('Body health data updated');
-            },
-            isFemale: _gender == AppGender.female,
+          AppSection(
+            title: 'Personal Info',
+            child: ProfilePersonalInfoCard(
+              gender: _gender,
+              onGenderChanged: (value) {
+                setState(() => _gender = value);
+                talker.info('Gender set: $value');
+              },
+              birthYearLabel: _birthYearLabel(),
+              isBirthYearPlaceholder: _birthYear == null,
+              onBirthYearTap: _selectBirthYear,
+              locationLabel: _locationLabel(),
+              isLocationPlaceholder: _country == null,
+              onLocationTap: _selectLocation,
+            ),
           ),
 
-          const SizedBox(height: AppSpacing.xl),
+          AppSection(
+            title: 'Body & Health',
+            child: ProfileCard(
+              child: Column(
+                children: [
+                  // Unit System row at top for easy selection before entering values
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.md,
+                      vertical: AppSpacing.sm,
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          CupertinoIcons.resize,
+                          size: AppSpacing.iconSizeSmall,
+                          color: CupertinoTheme.of(context).primaryColor,
+                        ),
+                        const SizedBox(width: AppSpacing.md),
+                        Expanded(
+                          child: Text(
+                            'Unit System',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: CupertinoColors.label.resolveFrom(context),
+                            ),
+                          ),
+                        ),
+                        AppBinarySegmentedControl(
+                          leftLabel: 'Imperial',
+                          rightLabel: 'Metric',
+                          value: _bodyHealthUnitSystem == UnitSystem.metric,
+                          onChanged: (isMetric) {
+                            setState(() {
+                              _bodyHealthUnitSystem = isMetric
+                                  ? UnitSystem.metric
+                                  : UnitSystem.imperial;
+                            });
+                            talker.info('Body health unit system updated');
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  const ProfileRowDivider(),
+                  BodyHealthCard(
+                    data: _bodyHealthData,
+                    unitSystem: _bodyHealthUnitSystem,
+                    onDataChanged: (data) {
+                      setState(() => _bodyHealthData = data);
+                      talker.info('Body health data updated');
+                    },
+                    gender: _gender,
+                  ),
+                ],
+              ),
+            ),
+          ),
 
           // Lifestyle - activity, sleep, diet
           LifestyleCard(
@@ -377,53 +440,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Padding(
       padding: const EdgeInsets.only(left: AppSpacing.xxs),
       child: Text(title, style: AppleTextStyles.headline(context)),
-    );
-  }
-
-  Widget _buildPersonalInfoCard() {
-    return AppSurface(
-      variant: AppSurfaceVariant.card,
-      child: Column(
-        children: [
-          AppGenderSelector(
-            value: _gender,
-            onChanged: (value) {
-              setState(() => _gender = value);
-              talker.info('Gender set: $value');
-            },
-          ),
-
-          const AppDivider(inset: AppDividerInset.leading),
-
-          AppListTile(
-            leading: const AppIcon(
-              icons.AppIcon.systemBirthday,
-              size: AppIconSize.small,
-              color: AppIconColor.brand,
-            ),
-            title: 'Birth Year',
-            value: _formatBirthYear(),
-            isValuePlaceholder: _birthYear == null,
-            showsChevron: true,
-            onTap: _selectBirthYear,
-          ),
-
-          const AppDivider(inset: AppDividerInset.leading),
-
-          AppListTile(
-            leading: const AppIcon(
-              icons.AppIcon.systemLocation,
-              size: AppIconSize.small,
-              color: AppIconColor.brand,
-            ),
-            title: 'Location',
-            value: _formatLocation(),
-            isValuePlaceholder: _country == null,
-            showsChevron: true,
-            onTap: _selectLocation,
-          ),
-        ],
-      ),
     );
   }
 

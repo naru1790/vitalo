@@ -4,7 +4,6 @@ import '../../../design/design.dart';
 
 import '../../../core/router.dart';
 import '../../../core/services/auth_service.dart';
-import '../../../core/widgets/flux_mascot.dart';
 import '../../../main.dart';
 
 // @frozen

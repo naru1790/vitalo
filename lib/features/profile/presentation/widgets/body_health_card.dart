@@ -10,12 +10,17 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 
-import '../../design/design.dart';
-import '../theme.dart';
-import 'height_picker_sheet.dart';
-import 'profile_row.dart';
-import 'weight_picker_sheet.dart';
-import 'wheel_picker.dart';
+import '../../../../core/theme.dart';
+import '../../../../core/widgets/height_picker_sheet.dart';
+import '../../../../core/widgets/profile_row.dart';
+import '../../../../core/widgets/weight_picker_sheet.dart';
+import '../../../../core/widgets/wheel_picker.dart';
+import '../../../../design/design.dart';
+
+/// Unit system preference for displaying values in Body & Health.
+///
+/// This is owned by the parent page and passed into [BodyHealthCard].
+enum UnitSystem { imperial, metric }
 
 /// Predefined health conditions with simple, user-friendly labels
 /// Focus on conditions that significantly impact diet/nutrition recommendations
@@ -46,6 +51,18 @@ enum HealthCondition {
   bool get isFemaleOnly => this == pregnant || this == lactating;
 }
 
+extension HealthConditionAvailability on HealthCondition {
+  /// Lists health conditions available for the given gender.
+  ///
+  /// Domain rules live here; sheets must not infer availability.
+  static List<HealthCondition> availableFor(AppGender gender) {
+    return HealthCondition.values
+        .where((c) => c != HealthCondition.none)
+        .where((c) => !c.isFemaleOnly || gender == AppGender.female)
+        .toList(growable: false);
+  }
+}
+
 /// Result from body & health card
 class BodyHealthData {
   const BodyHealthData({
@@ -54,7 +71,6 @@ class BodyHealthData {
     this.waistCm,
     this.conditions = const {},
     this.customConditions = const [],
-    this.isMetric = true,
   });
 
   final double? weightKg;
@@ -62,7 +78,6 @@ class BodyHealthData {
   final double? waistCm;
   final Set<HealthCondition> conditions;
   final List<String> customConditions;
-  final bool isMetric;
 
   BodyHealthData copyWith({
     double? weightKg,
@@ -70,7 +85,6 @@ class BodyHealthData {
     double? waistCm,
     Set<HealthCondition>? conditions,
     List<String>? customConditions,
-    bool? isMetric,
   }) {
     return BodyHealthData(
       weightKg: weightKg ?? this.weightKg,
@@ -78,7 +92,6 @@ class BodyHealthData {
       waistCm: waistCm ?? this.waistCm,
       conditions: conditions ?? this.conditions,
       customConditions: customConditions ?? this.customConditions,
-      isMetric: isMetric ?? this.isMetric,
     );
   }
 
@@ -87,18 +100,67 @@ class BodyHealthData {
       (conditions.length == 1 && conditions.contains(HealthCondition.none));
 }
 
+extension BodyHealthConditionsDisplay on BodyHealthData {
+  String get conditionsSummary {
+    final items = conditions
+        .where((c) => c != HealthCondition.none)
+        .map((c) => c.label)
+        .toList();
+    items.addAll(customConditions);
+
+    if (items.isEmpty) {
+      return 'I\'m healthy';
+    }
+    if (items.length <= 2) {
+      return items.join(', ');
+    }
+    return '${items.take(2).join(', ')} +${items.length - 2} more';
+  }
+}
+
+extension BodyHealthDisplay on BodyHealthData {
+  String weightLabel(UnitSystem unitSystem) {
+    if (weightKg == null) return '—';
+    if (unitSystem == UnitSystem.metric) {
+      return '${weightKg!.toStringAsFixed(1)} kg';
+    }
+    final lbs = weightKg! * 2.20462;
+    return '${lbs.toStringAsFixed(0)} lbs';
+  }
+
+  String heightLabel(UnitSystem unitSystem) {
+    if (heightCm == null) return '—';
+    if (unitSystem == UnitSystem.metric) return '${heightCm!.toInt()} cm';
+    final totalInches = heightCm! / 2.54;
+    final feet = (totalInches / 12).floor();
+    final inches = (totalInches % 12).round();
+    return "$feet'$inches\"";
+  }
+
+  String waistLabel(UnitSystem unitSystem) {
+    if (waistCm == null) return '—';
+    if (unitSystem == UnitSystem.metric) return '${waistCm!.toInt()} cm';
+    final inches = waistCm! / 2.54;
+    return '${inches.toStringAsFixed(1)}\"';
+  }
+}
+
 /// Body & Health section following standard profile section design
 class BodyHealthCard extends StatefulWidget {
   const BodyHealthCard({
     super.key,
     required this.data,
     required this.onDataChanged,
-    this.isFemale = false,
+    required this.gender,
+    required this.unitSystem,
   });
 
   final BodyHealthData data;
   final ValueChanged<BodyHealthData> onDataChanged;
-  final bool isFemale;
+  final AppGender gender;
+
+  /// Parent-owned unit system preference.
+  final UnitSystem unitSystem;
 
   @override
   State<BodyHealthCard> createState() => _BodyHealthCardState();
@@ -110,43 +172,13 @@ class _BodyHealthCardState extends State<BodyHealthCard> {
     super.dispose();
   }
 
-  String _formatWeight() {
-    if (widget.data.weightKg == null) return '—';
-    if (widget.data.isMetric) {
-      return '${widget.data.weightKg!.toStringAsFixed(1)} kg';
-    } else {
-      final lbs = widget.data.weightKg! * 2.20462;
-      return '${lbs.toStringAsFixed(0)} lbs';
-    }
-  }
-
-  String _formatHeight() {
-    if (widget.data.heightCm == null) return '—';
-    if (widget.data.isMetric) {
-      return '${widget.data.heightCm!.toInt()} cm';
-    } else {
-      final totalInches = widget.data.heightCm! / 2.54;
-      final feet = (totalInches / 12).floor();
-      final inches = (totalInches % 12).round();
-      return "$feet'$inches\"";
-    }
-  }
-
-  String _formatWaist() {
-    if (widget.data.waistCm == null) return '—';
-    if (widget.data.isMetric) {
-      return '${widget.data.waistCm!.toInt()} cm';
-    } else {
-      final inches = widget.data.waistCm! / 2.54;
-      return '${inches.toStringAsFixed(1)}"';
-    }
-  }
+  bool get _isMetric => widget.unitSystem == UnitSystem.metric;
 
   Future<void> _selectWeight() async {
     final result = await WeightPickerSheet.show(
       context: context,
       initialWeight: widget.data.weightKg,
-      initialUnit: widget.data.isMetric ? WeightUnit.kg : WeightUnit.lbs,
+      initialUnit: _isMetric ? WeightUnit.kg : WeightUnit.lbs,
     );
     if (result != null && mounted) {
       widget.onDataChanged(widget.data.copyWith(weightKg: result.asKg));
@@ -157,7 +189,7 @@ class _BodyHealthCardState extends State<BodyHealthCard> {
     final result = await HeightPickerSheet.show(
       context: context,
       initialHeightCm: widget.data.heightCm,
-      initialUnit: widget.data.isMetric ? HeightUnit.cm : HeightUnit.ftIn,
+      initialUnit: _isMetric ? HeightUnit.cm : HeightUnit.ftIn,
     );
     if (result != null && mounted) {
       widget.onDataChanged(widget.data.copyWith(heightCm: result.valueCm));
@@ -169,7 +201,7 @@ class _BodyHealthCardState extends State<BodyHealthCard> {
       context: context,
       builder: (context) => _WaistPickerSheet(
         initialValue: widget.data.waistCm,
-        isMetric: widget.data.isMetric,
+        isMetric: _isMetric,
       ),
     );
 
@@ -182,7 +214,7 @@ class _BodyHealthCardState extends State<BodyHealthCard> {
     final result = await showCupertinoModalPopup<BodyHealthData?>(
       context: context,
       builder: (context) =>
-          _HealthConditionsSheet(data: widget.data, isFemale: widget.isFemale),
+          _HealthConditionsSheet(data: widget.data, gender: widget.gender),
     );
 
     if (result != null && mounted) {
@@ -190,125 +222,48 @@ class _BodyHealthCardState extends State<BodyHealthCard> {
     }
   }
 
-  String _formatConditions() {
-    final conditions = widget.data.conditions
-        .where((c) => c != HealthCondition.none)
-        .map((c) => c.label)
-        .toList();
-    conditions.addAll(widget.data.customConditions);
-
-    if (conditions.isEmpty) {
-      return 'I\'m healthy';
-    }
-    if (conditions.length <= 2) {
-      return conditions.join(', ');
-    }
-    return '${conditions.take(2).join(', ')} +${conditions.length - 2} more';
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Section title
-        _buildSectionHeader(context),
-        const SizedBox(height: AppSpacing.sm),
-
-        // All body & health rows in a single card
-        _buildBodyHealthCard(context),
-      ],
-    );
+    // BodyHealthCard owns content/policy; ProfileScreen owns section wrapper.
+    return _buildBodyHealthRows(context);
   }
 
-  Widget _buildSectionHeader(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(left: AppSpacing.xxs),
-      child: Text(
-        'Body & Health',
-        style: TextStyle(
-          fontSize: 17,
-          fontWeight: FontWeight.w600,
-          color: CupertinoColors.label.resolveFrom(context),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBodyHealthCard(BuildContext context) {
+  Widget _buildBodyHealthRows(BuildContext context) {
     final hasConditions = !widget.data.hasNoConditions;
-    final conditionsSummary = _formatConditions();
-    final primaryColor = CupertinoTheme.of(context).primaryColor;
+    final conditionsSummary = widget.data.conditionsSummary;
 
-    return ProfileCard(
-      child: Column(
-        children: [
-          // Unit System row at top for easy selection before entering values
-          Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.md,
-              vertical: AppSpacing.sm,
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  CupertinoIcons.resize,
-                  size: AppSpacing.iconSizeSmall,
-                  color: primaryColor,
-                ),
-                const SizedBox(width: AppSpacing.md),
-                Expanded(
-                  child: Text(
-                    'Unit System',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: CupertinoColors.label.resolveFrom(context),
-                    ),
-                  ),
-                ),
-                AppBinarySegmentedControl(
-                  leftLabel: 'Imperial',
-                  rightLabel: 'Metric',
-                  value: widget.data.isMetric,
-                  onChanged: (value) {
-                    widget.onDataChanged(widget.data.copyWith(isMetric: value));
-                  },
-                ),
-              ],
-            ),
-          ),
-          const ProfileRowDivider(),
-          ProfileTappableRow(
-            icon: CupertinoIcons.speedometer,
-            label: 'Weight',
-            value: _formatWeight(),
-            onTap: _selectWeight,
-          ),
-          const ProfileRowDivider(),
-          ProfileTappableRow(
-            icon: CupertinoIcons.arrow_up_arrow_down,
-            label: 'Height',
-            value: _formatHeight(),
-            onTap: _selectHeight,
-          ),
-          const ProfileRowDivider(),
-          ProfileTappableRow(
-            icon: CupertinoIcons.resize_h,
-            label: 'Waist',
-            value: _formatWaist(),
-            onTap: _selectWaist,
-          ),
-          const ProfileRowDivider(),
-          // Health Conditions row
-          ProfileTappableRow(
-            icon: CupertinoIcons.heart_circle,
-            label: 'Health Conditions',
-            value: hasConditions ? null : 'I\'m healthy',
-            subtitle: hasConditions ? conditionsSummary : null,
-            onTap: _selectHealthConditions,
-          ),
-        ],
-      ),
+    return Column(
+      children: [
+        ProfileTappableRow(
+          icon: CupertinoIcons.speedometer,
+          label: 'Weight',
+          value: widget.data.weightLabel(widget.unitSystem),
+          onTap: _selectWeight,
+        ),
+        const ProfileRowDivider(),
+        ProfileTappableRow(
+          icon: CupertinoIcons.arrow_up_arrow_down,
+          label: 'Height',
+          value: widget.data.heightLabel(widget.unitSystem),
+          onTap: _selectHeight,
+        ),
+        const ProfileRowDivider(),
+        ProfileTappableRow(
+          icon: CupertinoIcons.resize_h,
+          label: 'Waist',
+          value: widget.data.waistLabel(widget.unitSystem),
+          onTap: _selectWaist,
+        ),
+        const ProfileRowDivider(),
+        // Health Conditions row
+        ProfileTappableRow(
+          icon: CupertinoIcons.heart_circle,
+          label: 'Health Conditions',
+          value: hasConditions ? null : 'I\'m healthy',
+          subtitle: hasConditions ? conditionsSummary : null,
+          onTap: _selectHealthConditions,
+        ),
+      ],
     );
   }
 }
@@ -316,9 +271,9 @@ class _BodyHealthCardState extends State<BodyHealthCard> {
 /// Bottom sheet for selecting health conditions
 class _HealthConditionsSheet extends StatefulWidget {
   final BodyHealthData data;
-  final bool isFemale;
+  final AppGender gender;
 
-  const _HealthConditionsSheet({required this.data, required this.isFemale});
+  const _HealthConditionsSheet({required this.data, required this.gender});
 
   @override
   State<_HealthConditionsSheet> createState() => _HealthConditionsSheetState();
@@ -419,11 +374,9 @@ class _HealthConditionsSheetState extends State<_HealthConditionsSheet> {
   Widget build(BuildContext context) {
     final primaryColor = CupertinoTheme.of(context).primaryColor;
 
-    // Filter conditions based on gender
-    final availableConditions = HealthCondition.values
-        .where((c) => c != HealthCondition.none)
-        .where((c) => !c.isFemaleOnly || widget.isFemale)
-        .toList();
+    final availableConditions = HealthConditionAvailability.availableFor(
+      widget.gender,
+    );
 
     return Container(
       decoration: BoxDecoration(
