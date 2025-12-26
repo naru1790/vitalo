@@ -16,20 +16,17 @@ class ProfileBodyHealthSection extends StatelessWidget {
     required this.heightLabel,
     required this.weightLabel,
     required this.waistLabel,
-    required this.unitSystem,
     required this.healthConditionsValue,
     required this.healthConditionsSubtitle,
     required this.onHeightTap,
     required this.onWeightTap,
     required this.onWaistTap,
-    required this.onUnitSystemChanged,
     required this.onHealthConditionsTap,
   });
 
   final String heightLabel;
   final String weightLabel;
   final String waistLabel;
-  final AppUnitSystem unitSystem;
 
   /// When the user has no conditions, this should usually be "I'm healthy".
   /// When the user has conditions, this should typically be null and the
@@ -42,7 +39,6 @@ class ProfileBodyHealthSection extends StatelessWidget {
   final VoidCallback onHeightTap;
   final VoidCallback onWeightTap;
   final VoidCallback onWaistTap;
-  final ValueChanged<AppUnitSystem> onUnitSystemChanged;
   final VoidCallback onHealthConditionsTap;
 
   @override
@@ -51,30 +47,6 @@ class ProfileBodyHealthSection extends StatelessWidget {
       variant: AppSurfaceVariant.card,
       child: Column(
         children: [
-          AppUnitSystemSelector(
-            value: unitSystem,
-            onChanged: onUnitSystemChanged,
-            label: Row(
-              children: [
-                const AppIcon(
-                  icons.AppIcon.systemUnits,
-                  size: AppIconSize.small,
-                  color: AppIconColor.brand,
-                ),
-                SizedBox(width: Spacing.of.md),
-                const AppText(
-                  'Unit System',
-                  variant: AppTextVariant.body,
-                  color: AppTextColor.primary,
-                ),
-              ],
-            ),
-            metricLabel: 'Metric',
-            imperialLabel: 'Imperial',
-          ),
-
-          const AppDivider(inset: AppDividerInset.leading),
-
           AppListTile(
             leading: const AppIcon(
               icons.AppIcon.healthWeight,

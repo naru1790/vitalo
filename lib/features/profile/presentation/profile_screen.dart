@@ -16,6 +16,7 @@ import '../../../core/widgets/height_picker_sheet.dart';
 import '../../../core/widgets/weight_picker_sheet.dart';
 import '../../../core/widgets/wheel_picker.dart';
 import '../../../design/design.dart';
+import '../../../design/tokens/icons.dart' as icons;
 import '../flows/identity_flows.dart';
 import '../flows/personal_info_flows.dart';
 import 'widgets/profile_body_health_section.dart';
@@ -47,7 +48,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   // Body & Health data
   BodyHealthData _bodyHealthData = const BodyHealthData();
-  AppUnitSystem _bodyHealthUnitSystem = AppUnitSystem.metric;
+
+  // Measurement unit system is a global user preference.
+  // Body & Health consumes this value but does not own it.
+  AppUnitSystem _unitSystem = AppUnitSystem.metric;
 
   // Lifestyle data (activity, sleep, diet)
   LifestyleData _lifestyleData = const LifestyleData();
@@ -140,16 +144,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return _country!;
   }
 
-  void _setBodyHealthUnitSystem(AppUnitSystem value) {
-    setState(() => _bodyHealthUnitSystem = value);
-    talker.info('Body health unit system updated');
+  void _setUnitSystem(AppUnitSystem value) {
+    setState(() => _unitSystem = value);
+    talker.info('Unit system updated');
   }
 
   Future<void> _editWeight() async {
     final result = await WeightPickerSheet.show(
       context: context,
       initialWeight: _bodyHealthData.weightKg,
-      initialUnit: _bodyHealthUnitSystem == AppUnitSystem.metric
+      initialUnit: _unitSystem == AppUnitSystem.metric
           ? WeightUnit.kg
           : WeightUnit.lbs,
     );
@@ -166,7 +170,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final result = await HeightPickerSheet.show(
       context: context,
       initialHeightCm: _bodyHealthData.heightCm,
-      initialUnit: _bodyHealthUnitSystem == AppUnitSystem.metric
+      initialUnit: _unitSystem == AppUnitSystem.metric
           ? HeightUnit.cm
           : HeightUnit.ftIn,
     );
@@ -184,7 +188,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       context: context,
       builder: (context) => _WaistPickerSheet(
         initialValue: _bodyHealthData.waistCm,
-        isMetric: _bodyHealthUnitSystem == AppUnitSystem.metric,
+        isMetric: _unitSystem == AppUnitSystem.metric,
       ),
     );
 
@@ -380,10 +384,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           AppSection(
             title: 'Body & Health',
             child: ProfileBodyHealthSection(
-              heightLabel: _bodyHealthData.heightLabel(_bodyHealthUnitSystem),
-              weightLabel: _bodyHealthData.weightLabel(_bodyHealthUnitSystem),
-              waistLabel: _bodyHealthData.waistLabel(_bodyHealthUnitSystem),
-              unitSystem: _bodyHealthUnitSystem,
+              heightLabel: _bodyHealthData.heightLabel(_unitSystem),
+              weightLabel: _bodyHealthData.weightLabel(_unitSystem),
+              waistLabel: _bodyHealthData.waistLabel(_unitSystem),
               healthConditionsValue: _bodyHealthData.hasNoConditions
                   ? 'I\'m healthy'
                   : null,
@@ -393,7 +396,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               onHeightTap: _editHeight,
               onWeightTap: _editWeight,
               onWaistTap: _editWaist,
-              onUnitSystemChanged: _setBodyHealthUnitSystem,
               onHealthConditionsTap: _editHealthConditions,
             ),
           ),
@@ -464,14 +466,42 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildPreferencesCard() {
     return ProfileCard(
-      child: ProfileSwitchRow(
-        icon: CupertinoIcons.bell,
-        label: 'Notifications',
-        value: _notificationsEnabled,
-        onChanged: (value) {
-          setState(() => _notificationsEnabled = value);
-          talker.info('Notifications: $value');
-        },
+      child: Column(
+        children: [
+          // Measurement unit system is a global user preference.
+          // Body & Health consumes this value but does not own it.
+          AppUnitSystemSelector(
+            value: _unitSystem,
+            onChanged: _setUnitSystem,
+            label: Row(
+              children: [
+                const AppIcon(
+                  icons.AppIcon.systemUnits,
+                  size: AppIconSize.small,
+                  color: AppIconColor.brand,
+                ),
+                SizedBox(width: Spacing.of.md),
+                const AppText(
+                  'Unit System',
+                  variant: AppTextVariant.body,
+                  color: AppTextColor.primary,
+                ),
+              ],
+            ),
+            metricLabel: 'Metric',
+            imperialLabel: 'Imperial',
+          ),
+          const ProfileRowDivider(),
+          ProfileSwitchRow(
+            icon: CupertinoIcons.bell,
+            label: 'Notifications',
+            value: _notificationsEnabled,
+            onChanged: (value) {
+              setState(() => _notificationsEnabled = value);
+              talker.info('Notifications: $value');
+            },
+          ),
+        ],
       ),
     );
   }
