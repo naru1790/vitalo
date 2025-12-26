@@ -6,7 +6,6 @@
 import 'package:flutter/widgets.dart';
 
 import '../widgets/app_labeled_binary_choice.dart';
-import '../widgets/app_text.dart';
 
 /// Semantic gender representation.
 ///
