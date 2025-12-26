@@ -17,7 +17,6 @@ import '../../../design/design.dart';
 import '../repositories/location_repository.dart';
 import 'widgets/profile_body_health_section.dart';
 import 'widgets/profile_personal_info_section.dart';
-import 'widgets/profile_unit_system_picker_sheet.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -60,7 +59,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   // Body & Health data
   BodyHealthData _bodyHealthData = const BodyHealthData();
-  UnitSystem _bodyHealthUnitSystem = UnitSystem.metric;
+  AppUnitSystem _bodyHealthUnitSystem = AppUnitSystem.metric;
 
   // Lifestyle data (activity, sleep, diet)
   LifestyleData _lifestyleData = const LifestyleData();
@@ -140,32 +139,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return _country!;
   }
 
-  String _bodyHealthUnitSystemLabel() {
-    return switch (_bodyHealthUnitSystem) {
-      UnitSystem.metric => 'Metric',
-      UnitSystem.imperial => 'Imperial',
-    };
-  }
-
-  Future<void> _selectBodyHealthUnitSystem() async {
-    final result = await AppBottomSheet.show<UnitSystem>(
-      context,
-      sheet: SheetPage(
-        child: ProfileUnitSystemPickerSheet(value: _bodyHealthUnitSystem),
-      ),
-    );
-
-    if (result != null && mounted) {
-      setState(() => _bodyHealthUnitSystem = result);
-      talker.info('Body health unit system updated');
-    }
+  void _setBodyHealthUnitSystem(AppUnitSystem value) {
+    setState(() => _bodyHealthUnitSystem = value);
+    talker.info('Body health unit system updated');
   }
 
   Future<void> _editWeight() async {
     final result = await WeightPickerSheet.show(
       context: context,
       initialWeight: _bodyHealthData.weightKg,
-      initialUnit: _bodyHealthUnitSystem == UnitSystem.metric
+      initialUnit: _bodyHealthUnitSystem == AppUnitSystem.metric
           ? WeightUnit.kg
           : WeightUnit.lbs,
     );
@@ -182,7 +165,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final result = await HeightPickerSheet.show(
       context: context,
       initialHeightCm: _bodyHealthData.heightCm,
-      initialUnit: _bodyHealthUnitSystem == UnitSystem.metric
+      initialUnit: _bodyHealthUnitSystem == AppUnitSystem.metric
           ? HeightUnit.cm
           : HeightUnit.ftIn,
     );
@@ -198,7 +181,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<void> _editWaist() async {
     final result = await BodyHealthFlows.selectWaist(
       context: context,
-      isMetric: _bodyHealthUnitSystem == UnitSystem.metric,
+      isMetric: _bodyHealthUnitSystem == AppUnitSystem.metric,
       initialValueCm: _bodyHealthData.waistCm,
     );
 
@@ -414,7 +397,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               heightLabel: _bodyHealthData.heightLabel(_bodyHealthUnitSystem),
               weightLabel: _bodyHealthData.weightLabel(_bodyHealthUnitSystem),
               waistLabel: _bodyHealthData.waistLabel(_bodyHealthUnitSystem),
-              unitSystemLabel: _bodyHealthUnitSystemLabel(),
+              unitSystem: _bodyHealthUnitSystem,
               healthConditionsValue: _bodyHealthData.hasNoConditions
                   ? 'I\'m healthy'
                   : null,
@@ -424,7 +407,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               onHeightTap: _editHeight,
               onWeightTap: _editWeight,
               onWaistTap: _editWaist,
-              onUnitSystemTap: _selectBodyHealthUnitSystem,
+              onUnitSystemChanged: _setBodyHealthUnitSystem,
               onHealthConditionsTap: _editHealthConditions,
             ),
           ),

@@ -130,6 +130,15 @@ enum AppIcon {
   systemBirthday,
 
   // ──────────────────────────────────────────────────────────
+  // Health & Body
+  // ──────────────────────────────────────────────────────────
+  systemUnits,
+  healthWeight,
+  healthHeight,
+  healthWaist,
+  healthConditions,
+
+  // ──────────────────────────────────────────────────────────
   // Auth Identity
   // ──────────────────────────────────────────────────────────
   // These icons represent authentication provider identity.
@@ -303,6 +312,20 @@ abstract final class AppIcons {
       case AppIcon.systemBirthday:
         return CupertinoIcons.gift;
 
+      // Health & Body
+      case AppIcon.systemUnits:
+        // Use sliders as the stable, universal metaphor for changing units.
+        return CupertinoIcons.slider_horizontal_3;
+      case AppIcon.healthWeight:
+        // Closest stable Cupertino metaphor available across Flutter versions.
+        return CupertinoIcons.chart_bar;
+      case AppIcon.healthHeight:
+        return CupertinoIcons.arrow_up_arrow_down;
+      case AppIcon.healthWaist:
+        return CupertinoIcons.resize;
+      case AppIcon.healthConditions:
+        return CupertinoIcons.heart;
+
       // Auth Identity
       case AppIcon.authGoogle:
         // Google brand icon from Font Awesome.
@@ -451,6 +474,17 @@ abstract final class AppIcons {
         return Icons.accessibility;
       case AppIcon.systemBirthday:
         return Icons.cake;
+
+      case AppIcon.systemUnits:
+        return Icons.rule;
+      case AppIcon.healthWeight:
+        return Icons.monitor_weight;
+      case AppIcon.healthHeight:
+        return Icons.height;
+      case AppIcon.healthWaist:
+        return Icons.straighten;
+      case AppIcon.healthConditions:
+        return Icons.favorite;
 
       // Auth Identity
       case AppIcon.authGoogle:

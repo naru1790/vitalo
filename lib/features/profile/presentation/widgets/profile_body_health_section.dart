@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../../../../core/theme.dart';
 import '../../../../core/widgets/wheel_picker.dart';
 import '../../../../design/design.dart';
+import '../../../../design/tokens/icons.dart' as icons;
 
 /// Feature widget for the Profile → Body & Health section content.
 ///
@@ -16,13 +17,13 @@ class ProfileBodyHealthSection extends StatelessWidget {
     required this.heightLabel,
     required this.weightLabel,
     required this.waistLabel,
-    required this.unitSystemLabel,
+    required this.unitSystem,
     required this.healthConditionsValue,
     required this.healthConditionsSubtitle,
     required this.onHeightTap,
     required this.onWeightTap,
     required this.onWaistTap,
-    required this.onUnitSystemTap,
+    required this.onUnitSystemChanged,
     required this.onHealthConditionsTap,
     this.onBodyHealthEditTap,
   });
@@ -30,7 +31,7 @@ class ProfileBodyHealthSection extends StatelessWidget {
   final String heightLabel;
   final String weightLabel;
   final String waistLabel;
-  final String unitSystemLabel;
+  final AppUnitSystem unitSystem;
 
   /// When the user has no conditions, this should usually be "I'm healthy".
   /// When the user has conditions, this should typically be null and the
@@ -43,7 +44,7 @@ class ProfileBodyHealthSection extends StatelessWidget {
   final VoidCallback onHeightTap;
   final VoidCallback onWeightTap;
   final VoidCallback onWaistTap;
-  final VoidCallback onUnitSystemTap;
+  final ValueChanged<AppUnitSystem> onUnitSystemChanged;
   final VoidCallback onHealthConditionsTap;
 
   /// Optional "edit" affordance if the hub needs a single entrypoint.
@@ -57,16 +58,19 @@ class ProfileBodyHealthSection extends StatelessWidget {
       variant: AppSurfaceVariant.card,
       child: Column(
         children: [
-          AppListTile(
-            title: 'Unit System',
-            value: unitSystemLabel,
-            showsChevron: true,
-            onTap: onUnitSystemTap,
+          AppUnitSystemSelector(
+            value: unitSystem,
+            onChanged: onUnitSystemChanged,
           ),
 
           const AppDivider(inset: AppDividerInset.leading),
 
           AppListTile(
+            leading: const AppIcon(
+              icons.AppIcon.healthWeight,
+              size: AppIconSize.small,
+              color: AppIconColor.brand,
+            ),
             title: 'Weight',
             value: weightLabel,
             showsChevron: true,
@@ -76,6 +80,11 @@ class ProfileBodyHealthSection extends StatelessWidget {
           const AppDivider(inset: AppDividerInset.leading),
 
           AppListTile(
+            leading: const AppIcon(
+              icons.AppIcon.healthHeight,
+              size: AppIconSize.small,
+              color: AppIconColor.brand,
+            ),
             title: 'Height',
             value: heightLabel,
             showsChevron: true,
@@ -85,6 +94,11 @@ class ProfileBodyHealthSection extends StatelessWidget {
           const AppDivider(inset: AppDividerInset.leading),
 
           AppListTile(
+            leading: const AppIcon(
+              icons.AppIcon.healthWaist,
+              size: AppIconSize.small,
+              color: AppIconColor.brand,
+            ),
             title: 'Waist',
             value: waistLabel,
             showsChevron: true,
@@ -94,6 +108,11 @@ class ProfileBodyHealthSection extends StatelessWidget {
           const AppDivider(inset: AppDividerInset.leading),
 
           AppListTile(
+            leading: const AppIcon(
+              icons.AppIcon.healthConditions,
+              size: AppIconSize.small,
+              color: AppIconColor.brand,
+            ),
             title: 'Health Conditions',
             value: healthConditionsValue,
             subtitle: healthConditionsSubtitle,
@@ -149,11 +168,6 @@ abstract final class BodyHealthFlows {
     );
   }
 }
-
-/// Unit system preference for displaying values in Body & Health.
-///
-/// This is owned by the parent page.
-enum UnitSystem { imperial, metric }
 
 /// Predefined health conditions with simple, user-friendly labels.
 ///
@@ -251,29 +265,29 @@ extension BodyHealthConditionsDisplay on BodyHealthData {
 }
 
 extension BodyHealthDisplay on BodyHealthData {
-  String weightLabel(UnitSystem unitSystem) {
+  String weightLabel(AppUnitSystem unitSystem) {
     if (weightKg == null) return '—';
-    if (unitSystem == UnitSystem.metric) {
+    if (unitSystem == AppUnitSystem.metric) {
       return '${weightKg!.toStringAsFixed(1)} kg';
     }
     final lbs = weightKg! * 2.20462;
     return '${lbs.toStringAsFixed(0)} lbs';
   }
 
-  String heightLabel(UnitSystem unitSystem) {
+  String heightLabel(AppUnitSystem unitSystem) {
     if (heightCm == null) return '—';
-    if (unitSystem == UnitSystem.metric) return '${heightCm!.toInt()} cm';
+    if (unitSystem == AppUnitSystem.metric) return '${heightCm!.toInt()} cm';
     final totalInches = heightCm! / 2.54;
     final feet = (totalInches / 12).floor();
     final inches = (totalInches % 12).round();
     return "$feet'$inches\"";
   }
 
-  String waistLabel(UnitSystem unitSystem) {
+  String waistLabel(AppUnitSystem unitSystem) {
     if (waistCm == null) return '—';
-    if (unitSystem == UnitSystem.metric) return '${waistCm!.toInt()} cm';
+    if (unitSystem == AppUnitSystem.metric) return '${waistCm!.toInt()} cm';
     final inches = waistCm! / 2.54;
-    return '${inches.toStringAsFixed(1)}\"';
+    return '${inches.toStringAsFixed(1)}"';
   }
 }
 
