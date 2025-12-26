@@ -1,7 +1,7 @@
 // @adaptive-composite
 // Semantics: Profile identity header
 // Owns: avatar + display name (editable) + email display
-// Emits: onDisplayNameSave callback only
+// Emits: onEditDisplayName callback only
 // Must NOT:
 //  - contain platform detection logic
 //  - apply page-level padding (owned by HubPage)
@@ -47,7 +47,7 @@ class ProfileIdentityHeader extends StatelessWidget {
     required this.displayName,
     required this.email,
     required this.avatarInitial,
-    required this.onDisplayNameSave,
+    required this.onEditDisplayName,
   });
 
   /// The user's display name.
@@ -67,11 +67,10 @@ class ProfileIdentityHeader extends StatelessWidget {
   /// Used when no profile image is available.
   final String avatarInitial;
 
-  /// Callback invoked when the user saves a new display name.
+  /// Semantic intent to edit the display name.
   ///
-  /// Returns true if the save succeeded, false otherwise.
-  /// This primitive does not render feedback based on the result.
-  final Future<bool> Function(String) onDisplayNameSave;
+  /// Feature code owns modal orchestration and persistence.
+  final VoidCallback onEditDisplayName;
 
   @override
   Widget build(BuildContext context) {
@@ -107,8 +106,8 @@ class ProfileIdentityHeader extends StatelessWidget {
 
         // Display name with inline edit
         InlineEditableHeader(
-          initialText: displayName,
-          onSave: onDisplayNameSave,
+          text: displayName,
+          onEdit: onEditDisplayName,
           placeholder: 'Add name',
         ),
 

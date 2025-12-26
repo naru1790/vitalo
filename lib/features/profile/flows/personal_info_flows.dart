@@ -46,6 +46,8 @@ abstract final class PersonalInfoFlows {
       repo.getPopularCountries(popularCodes),
     ]);
 
+    if (!context.mounted) return null;
+
     return AppBottomSheet.show<LocationResult>(
       context,
       sheet: SheetPage(

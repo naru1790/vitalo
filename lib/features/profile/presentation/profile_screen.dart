@@ -16,6 +16,7 @@ import '../../../core/widgets/height_picker_sheet.dart';
 import '../../../core/widgets/weight_picker_sheet.dart';
 import '../../../core/widgets/wheel_picker.dart';
 import '../../../design/design.dart';
+import '../flows/identity_flows.dart';
 import '../flows/personal_info_flows.dart';
 import 'widgets/profile_body_health_section.dart';
 import 'widgets/profile_personal_info_section.dart';
@@ -88,11 +89,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<bool> _saveDisplayName(String newName) async {
-    // TODO: Implement profile table update once fields are added
     // For now, just update local state
     talker.info('Name update requested: $newName (pending profile table)');
     setState(() => _displayName = newName);
     return true;
+  }
+
+  Future<void> _editDisplayName() async {
+    final result = await IdentityFlows.editDisplayName(
+      context: context,
+      initialText: _displayName ?? _getDisplayName(),
+      onSave: _saveDisplayName,
+      placeholder: 'Add name',
+    );
+
+    if (result != null && mounted) {
+      setState(() => _displayName = result);
+      talker.info('Display name updated');
+    }
   }
 
   String _getDisplayName() {
@@ -342,7 +356,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               avatarInitial: _getDisplayName().isNotEmpty
                   ? _getDisplayName()[0].toUpperCase()
                   : '?',
-              onDisplayNameSave: _saveDisplayName,
+              onEditDisplayName: _editDisplayName,
             ),
           ),
 
