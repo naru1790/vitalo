@@ -61,6 +61,23 @@ class ProfileBodyHealthSection extends StatelessWidget {
           AppUnitSystemSelector(
             value: unitSystem,
             onChanged: onUnitSystemChanged,
+            label: Row(
+              children: [
+                const AppIcon(
+                  icons.AppIcon.systemUnits,
+                  size: AppIconSize.small,
+                  color: AppIconColor.brand,
+                ),
+                SizedBox(width: Spacing.of.md),
+                const AppText(
+                  'Unit System',
+                  variant: AppTextVariant.body,
+                  color: AppTextColor.primary,
+                ),
+              ],
+            ),
+            metricLabel: 'Metric',
+            imperialLabel: 'Imperial',
           ),
 
           const AppDivider(inset: AppDividerInset.leading),

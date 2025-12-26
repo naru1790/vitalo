@@ -1,17 +1,12 @@
 // @frozen
-// Tier-1 composite primitive.
-// Owns: semantic unit-system selection layout.
-// Uses: AppLabeledRow (label) + AppBinarySegmentedControl (selection).
-// Must NOT: access platform APIs or raw widgets.
+// Tier-1 semantic composite.
+// Owns: mapping AppUnitSystem ↔ binary choice.
+// Does NOT own layout or copy defaults.
 
 import 'package:flutter/widgets.dart';
 
-import '../widgets/app_binary_segmented_control.dart';
-import '../widgets/app_control_surface.dart';
-import '../widgets/app_icon.dart';
-import '../widgets/app_labeled_row.dart';
+import '../widgets/app_labeled_binary_choice.dart';
 import '../widgets/app_text.dart';
-import '../../tokens/icons.dart' as icons;
 
 /// Semantic unit system representation.
 ///
@@ -28,43 +23,28 @@ class AppUnitSystemSelector extends StatelessWidget {
     super.key,
     required this.value,
     required this.onChanged,
-    this.label = 'Unit System',
-    this.metricLabel = 'Metric',
-    this.imperialLabel = 'Imperial',
+    required this.label,
+    required this.metricLabel,
+    required this.imperialLabel,
   });
 
   final AppUnitSystem value;
   final ValueChanged<AppUnitSystem> onChanged;
 
-  final String label;
+  final Widget label;
   final String metricLabel;
   final String imperialLabel;
 
   @override
   Widget build(BuildContext context) {
-    return AppLabeledRow(
-      leading: const AppIcon(
-        icons.AppIcon.systemUnits,
-        size: AppIconSize.small,
-        color: AppIconColor.brand,
-      ),
-      label: AppText(
-        label,
-        variant: AppTextVariant.body,
-        color: AppTextColor.primary,
-      ),
-      trailing: AppControlSurface(
-        child: AppBinarySegmentedControl(
-          leftLabel: metricLabel,
-          rightLabel: imperialLabel,
-          value: value == AppUnitSystem.imperial,
-          onChanged: (isImperial) {
-            onChanged(
-              isImperial ? AppUnitSystem.imperial : AppUnitSystem.metric,
-            );
-          },
-        ),
-      ),
+    return AppLabeledBinaryChoice(
+      label: label,
+      leftLabel: metricLabel,
+      rightLabel: imperialLabel,
+      value: value == AppUnitSystem.imperial,
+      onChanged: (isImperial) {
+        onChanged(isImperial ? AppUnitSystem.imperial : AppUnitSystem.metric);
+      },
     );
   }
 }

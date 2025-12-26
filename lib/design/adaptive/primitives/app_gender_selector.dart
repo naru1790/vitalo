@@ -1,17 +1,12 @@
 // @frozen
-// Tier-1 composite primitive.
-// Owns: semantic gender selection layout.
-// Uses: AppLabeledRow (label) + AppBinarySegmentedControl (selection).
-// Must NOT: access platform APIs or raw widgets.
+// Tier-1 semantic composite.
+// Owns: mapping AppGender ↔ binary choice.
+// Does NOT own layout or copy defaults.
 
 import 'package:flutter/widgets.dart';
 
-import '../widgets/app_binary_segmented_control.dart';
-import '../widgets/app_control_surface.dart';
-import '../widgets/app_icon.dart';
-import '../widgets/app_labeled_row.dart';
+import '../widgets/app_labeled_binary_choice.dart';
 import '../widgets/app_text.dart';
-import '../../tokens/icons.dart' as icons;
 
 /// Semantic gender representation.
 ///
@@ -35,9 +30,9 @@ class AppGenderSelector extends StatelessWidget {
     super.key,
     required this.value,
     required this.onChanged,
-    this.label = 'Gender',
-    this.maleLabel = 'Male',
-    this.femaleLabel = 'Female',
+    required this.label,
+    required this.maleLabel,
+    required this.femaleLabel,
   });
 
   /// Currently selected gender.
@@ -46,8 +41,8 @@ class AppGenderSelector extends StatelessWidget {
   /// Called when gender changes.
   final ValueChanged<AppGender> onChanged;
 
-  /// Label text (for localization override).
-  final String label;
+  /// Label widget owned by feature code.
+  final Widget label;
 
   /// Male option label (for localization override).
   final String maleLabel;
@@ -57,29 +52,14 @@ class AppGenderSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppLabeledRow(
-      leading: const AppIcon(
-        // Using navProfile (person silhouette) as gender-neutral icon.
-        // Semantically represents "personal identity" in profile context.
-        icons.AppIcon.navProfile,
-        size: AppIconSize.small,
-        color: AppIconColor.brand,
-      ),
-      label: AppText(
-        label,
-        variant: AppTextVariant.body,
-        color: AppTextColor.primary,
-      ),
-      trailing: AppControlSurface(
-        child: AppBinarySegmentedControl(
-          leftLabel: maleLabel,
-          rightLabel: femaleLabel,
-          value: value == AppGender.female,
-          onChanged: (isFemale) {
-            onChanged(isFemale ? AppGender.female : AppGender.male);
-          },
-        ),
-      ),
+    return AppLabeledBinaryChoice(
+      label: label,
+      leftLabel: maleLabel,
+      rightLabel: femaleLabel,
+      value: value == AppGender.female,
+      onChanged: (isFemale) {
+        onChanged(isFemale ? AppGender.female : AppGender.male);
+      },
     );
   }
 }

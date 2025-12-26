@@ -315,7 +315,7 @@ abstract final class AppIcons {
       // Health & Body
       case AppIcon.systemUnits:
         // Use sliders as the stable, universal metaphor for changing units.
-        return CupertinoIcons.slider_horizontal_3;
+        return CupertinoIcons.gauge;
       case AppIcon.healthWeight:
         // Closest stable Cupertino metaphor available across Flutter versions.
         return CupertinoIcons.chart_bar;
@@ -476,7 +476,7 @@ abstract final class AppIcons {
         return Icons.cake;
 
       case AppIcon.systemUnits:
-        return Icons.rule;
+        return Icons.straighten;
       case AppIcon.healthWeight:
         return Icons.monitor_weight;
       case AppIcon.healthHeight:

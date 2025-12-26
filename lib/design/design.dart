@@ -59,6 +59,7 @@ export 'adaptive/widgets/app_scaffold.dart';
 export 'adaptive/widgets/app_text.dart';
 export 'adaptive/widgets/app_text_field.dart';
 export 'adaptive/widgets/app_wheel_picker.dart';
+export 'adaptive/widgets/app_labeled_binary_choice.dart';
 export 'adaptive/widgets/auth_action_stack.dart';
 export 'adaptive/widgets/auth_footer_links.dart';
 export 'adaptive/widgets/auth_sign_in_button.dart';

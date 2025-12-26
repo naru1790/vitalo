@@ -33,7 +33,27 @@ class ProfilePersonalInfoSection extends StatelessWidget {
       variant: AppSurfaceVariant.card,
       child: Column(
         children: [
-          AppGenderSelector(value: gender, onChanged: onGenderChanged),
+          AppGenderSelector(
+            value: gender,
+            onChanged: onGenderChanged,
+            label: Row(
+              children: [
+                const AppIcon(
+                  icons.AppIcon.navProfile,
+                  size: AppIconSize.small,
+                  color: AppIconColor.brand,
+                ),
+                SizedBox(width: Spacing.of.md),
+                const AppText(
+                  'Gender',
+                  variant: AppTextVariant.body,
+                  color: AppTextColor.primary,
+                ),
+              ],
+            ),
+            maleLabel: 'Male',
+            femaleLabel: 'Female',
+          ),
 
           const AppDivider(inset: AppDividerInset.leading),
 
