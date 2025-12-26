@@ -16,7 +16,7 @@ import '../../../core/widgets/height_picker_sheet.dart';
 import '../../../core/widgets/weight_picker_sheet.dart';
 import '../../../core/widgets/wheel_picker.dart';
 import '../../../design/design.dart';
-import '../repositories/location_repository.dart';
+import '../flows/personal_info_flows.dart';
 import 'widgets/profile_body_health_section.dart';
 import 'widgets/profile_personal_info_section.dart';
 
@@ -29,21 +29,6 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   final _authService = AuthService();
-  final _locationRepository = LocationRepository();
-
-  /// Popular country codes shown at top of location picker.
-  static const _popularCountryCodes = [
-    'US', // United States
-    'GB', // United Kingdom
-    'CA', // Canada
-    'AU', // Australia
-    'IN', // India
-    'DE', // Germany
-    'FR', // France
-    'JP', // Japan
-    'BR', // Brazil
-    'MX', // Mexico
-  ];
 
   // User name for header
   String? _displayName;
@@ -213,19 +198,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _selectBirthYear() async {
-    // Feature code owns time resolution
-    final currentYear = DateTime.now().year;
-    // Default to 30 years ago if no birth year set
-    final initialYear = _birthYear ?? (currentYear - 30);
-
-    final result = await AppBottomSheet.show<int>(
-      context,
-      sheet: SheetPage(
-        child: AppYearPickerSheet(
-          currentYear: currentYear,
-          initialYear: initialYear,
-        ),
-      ),
+    final result = await PersonalInfoFlows.selectBirthYear(
+      context: context,
+      initialYear: _birthYear,
     );
 
     if (result != null && mounted) {
@@ -235,29 +210,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _selectLocation() async {
-    // Load countries from repository (feature layer owns data loading)
-    // Parallelize independent data fetches to minimize cold start latency
-    final results = await Future.wait([
-      _locationRepository.getCountries(),
-      _locationRepository.getPopularCountries(_popularCountryCodes),
-    ]);
+    final initialValue = (_countryCode == null || _country == null)
+        ? null
+        : LocationResult(
+            country: LocationCountry(name: _country!, isoCode: _countryCode!),
+            state: (_stateCode == null || _state == null)
+                ? null
+                : LocationState(
+                    name: _state!,
+                    isoCode: _stateCode!,
+                    countryCode: _countryCode!,
+                  ),
+          );
 
-    final countries = results[0];
-    final popularCountries = results[1];
-
-    if (!mounted) return;
-
-    final result = await AppBottomSheet.show<LocationResult>(
-      context,
-      sheet: SheetPage(
-        child: AppLocationPickerSheet(
-          countries: countries,
-          popularCountries: popularCountries,
-          statesLoader: _locationRepository.getStates,
-          initialCountryCode: _countryCode,
-          initialStateCode: _stateCode,
-        ),
-      ),
+    final result = await PersonalInfoFlows.selectLocation(
+      context: context,
+      initialValue: initialValue,
     );
 
     if (result != null && mounted) {
