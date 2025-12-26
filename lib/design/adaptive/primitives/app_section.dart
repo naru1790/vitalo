@@ -44,9 +44,6 @@ class AppSection extends StatelessWidget {
 
         // Section body
         child,
-
-        // Section bottom spacing
-        SizedBox(height: spacing.xl),
       ],
     );
   }

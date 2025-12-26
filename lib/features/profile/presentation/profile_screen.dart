@@ -11,10 +11,13 @@ import '../../../core/theme.dart';
 import '../../../core/widgets/lifestyle_card.dart';
 import '../../../core/widgets/coaching_card.dart';
 import '../../../core/widgets/profile_row.dart';
+import '../../../core/widgets/height_picker_sheet.dart';
+import '../../../core/widgets/weight_picker_sheet.dart';
 import '../../../design/design.dart';
 import '../repositories/location_repository.dart';
-import 'widgets/body_health_card.dart';
-import 'widgets/profile_personal_info_card.dart';
+import 'widgets/profile_body_health_section.dart';
+import 'widgets/profile_personal_info_section.dart';
+import 'widgets/profile_unit_system_picker_sheet.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -135,6 +138,91 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (_country == null) return 'Not Set';
     if (_state != null) return '$_state, $_country';
     return _country!;
+  }
+
+  String _bodyHealthUnitSystemLabel() {
+    return switch (_bodyHealthUnitSystem) {
+      UnitSystem.metric => 'Metric',
+      UnitSystem.imperial => 'Imperial',
+    };
+  }
+
+  Future<void> _selectBodyHealthUnitSystem() async {
+    final result = await AppBottomSheet.show<UnitSystem>(
+      context,
+      sheet: SheetPage(
+        child: ProfileUnitSystemPickerSheet(value: _bodyHealthUnitSystem),
+      ),
+    );
+
+    if (result != null && mounted) {
+      setState(() => _bodyHealthUnitSystem = result);
+      talker.info('Body health unit system updated');
+    }
+  }
+
+  Future<void> _editWeight() async {
+    final result = await WeightPickerSheet.show(
+      context: context,
+      initialWeight: _bodyHealthData.weightKg,
+      initialUnit: _bodyHealthUnitSystem == UnitSystem.metric
+          ? WeightUnit.kg
+          : WeightUnit.lbs,
+    );
+
+    if (result != null && mounted) {
+      setState(() {
+        _bodyHealthData = _bodyHealthData.copyWith(weightKg: result.asKg);
+      });
+      talker.info('Weight updated');
+    }
+  }
+
+  Future<void> _editHeight() async {
+    final result = await HeightPickerSheet.show(
+      context: context,
+      initialHeightCm: _bodyHealthData.heightCm,
+      initialUnit: _bodyHealthUnitSystem == UnitSystem.metric
+          ? HeightUnit.cm
+          : HeightUnit.ftIn,
+    );
+
+    if (result != null && mounted) {
+      setState(() {
+        _bodyHealthData = _bodyHealthData.copyWith(heightCm: result.valueCm);
+      });
+      talker.info('Height updated');
+    }
+  }
+
+  Future<void> _editWaist() async {
+    final result = await BodyHealthFlows.selectWaist(
+      context: context,
+      isMetric: _bodyHealthUnitSystem == UnitSystem.metric,
+      initialValueCm: _bodyHealthData.waistCm,
+    );
+
+    if (result != null && mounted) {
+      setState(() {
+        _bodyHealthData = _bodyHealthData.copyWith(waistCm: result);
+      });
+      talker.info('Waist updated');
+    }
+  }
+
+  Future<void> _editHealthConditions() async {
+    final result = await BodyHealthFlows.selectHealthConditions(
+      context: context,
+      data: _bodyHealthData,
+      gender: _gender,
+    );
+
+    if (result != null && mounted) {
+      setState(() {
+        _bodyHealthData = result;
+      });
+      talker.info('Health conditions updated');
+    }
   }
 
   Future<void> _selectBirthYear() async {
@@ -305,7 +393,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
           AppSection(
             title: 'Personal Info',
-            child: ProfilePersonalInfoCard(
+            child: ProfilePersonalInfoSection(
               gender: _gender,
               onGenderChanged: (value) {
                 setState(() => _gender = value);
@@ -322,60 +410,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
           AppSection(
             title: 'Body & Health',
-            child: ProfileCard(
-              child: Column(
-                children: [
-                  // Unit System row at top for easy selection before entering values
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.md,
-                      vertical: AppSpacing.sm,
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          CupertinoIcons.resize,
-                          size: AppSpacing.iconSizeSmall,
-                          color: CupertinoTheme.of(context).primaryColor,
-                        ),
-                        const SizedBox(width: AppSpacing.md),
-                        Expanded(
-                          child: Text(
-                            'Unit System',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: CupertinoColors.label.resolveFrom(context),
-                            ),
-                          ),
-                        ),
-                        AppBinarySegmentedControl(
-                          leftLabel: 'Imperial',
-                          rightLabel: 'Metric',
-                          value: _bodyHealthUnitSystem == UnitSystem.metric,
-                          onChanged: (isMetric) {
-                            setState(() {
-                              _bodyHealthUnitSystem = isMetric
-                                  ? UnitSystem.metric
-                                  : UnitSystem.imperial;
-                            });
-                            talker.info('Body health unit system updated');
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                  const ProfileRowDivider(),
-                  BodyHealthCard(
-                    data: _bodyHealthData,
-                    unitSystem: _bodyHealthUnitSystem,
-                    onDataChanged: (data) {
-                      setState(() => _bodyHealthData = data);
-                      talker.info('Body health data updated');
-                    },
-                    gender: _gender,
-                  ),
-                ],
-              ),
+            child: ProfileBodyHealthSection(
+              heightLabel: _bodyHealthData.heightLabel(_bodyHealthUnitSystem),
+              weightLabel: _bodyHealthData.weightLabel(_bodyHealthUnitSystem),
+              waistLabel: _bodyHealthData.waistLabel(_bodyHealthUnitSystem),
+              unitSystemLabel: _bodyHealthUnitSystemLabel(),
+              healthConditionsValue: _bodyHealthData.hasNoConditions
+                  ? 'I\'m healthy'
+                  : null,
+              healthConditionsSubtitle: _bodyHealthData.hasNoConditions
+                  ? null
+                  : _bodyHealthData.conditionsSummary,
+              onHeightTap: _editHeight,
+              onWeightTap: _editWeight,
+              onWaistTap: _editWaist,
+              onUnitSystemTap: _selectBodyHealthUnitSystem,
+              onHealthConditionsTap: _editHealthConditions,
             ),
           ),
 

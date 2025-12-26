@@ -3,8 +3,8 @@ import 'package:flutter/widgets.dart';
 import '../../../../design/design.dart';
 import '../../../../design/tokens/icons.dart' as icons;
 
-class ProfilePersonalInfoCard extends StatelessWidget {
-  const ProfilePersonalInfoCard({
+class ProfilePersonalInfoSection extends StatelessWidget {
+  const ProfilePersonalInfoSection({
     super.key,
     required this.gender,
     required this.onGenderChanged,

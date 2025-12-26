@@ -1,29 +1,163 @@
-// =============================================================================
-// BODY & HEALTH SECTION - iOS 26 Liquid Glass Design
-// =============================================================================
-// Matches the standard profile section design (same as Personal Info, etc.)
-// Uses WheelPicker for waist measurement (Cupertino-style wheel).
-// Follows dietary preferences pattern for "+Other" chip with inline input.
-// iOS-first: CupertinoIcons, Cupertino controls, glass bottom sheets.
-// =============================================================================
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 
 import '../../../../core/theme.dart';
-import '../../../../core/widgets/height_picker_sheet.dart';
-import '../../../../core/widgets/profile_row.dart';
-import '../../../../core/widgets/weight_picker_sheet.dart';
 import '../../../../core/widgets/wheel_picker.dart';
 import '../../../../design/design.dart';
 
+/// Feature widget for the Profile → Body & Health section content.
+///
+/// Mirrors the usage pattern of [ProfilePersonalInfoSection]: the parent page owns
+/// the semantic section boundary (via [AppSection]) and passes semantic labels
+/// + intent callbacks down.
+class ProfileBodyHealthSection extends StatelessWidget {
+  const ProfileBodyHealthSection({
+    super.key,
+    required this.heightLabel,
+    required this.weightLabel,
+    required this.waistLabel,
+    required this.unitSystemLabel,
+    required this.healthConditionsValue,
+    required this.healthConditionsSubtitle,
+    required this.onHeightTap,
+    required this.onWeightTap,
+    required this.onWaistTap,
+    required this.onUnitSystemTap,
+    required this.onHealthConditionsTap,
+    this.onBodyHealthEditTap,
+  });
+
+  final String heightLabel;
+  final String weightLabel;
+  final String waistLabel;
+  final String unitSystemLabel;
+
+  /// When the user has no conditions, this should usually be "I'm healthy".
+  /// When the user has conditions, this should typically be null and the
+  /// summary should be provided via [healthConditionsSubtitle].
+  final String? healthConditionsValue;
+
+  /// Summary of conditions, shown only when the user has selected issues.
+  final String? healthConditionsSubtitle;
+
+  final VoidCallback onHeightTap;
+  final VoidCallback onWeightTap;
+  final VoidCallback onWaistTap;
+  final VoidCallback onUnitSystemTap;
+  final VoidCallback onHealthConditionsTap;
+
+  /// Optional "edit" affordance if the hub needs a single entrypoint.
+  ///
+  /// Keep unused by default to avoid changing the visible UI.
+  final VoidCallback? onBodyHealthEditTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return AppSurface(
+      variant: AppSurfaceVariant.card,
+      child: Column(
+        children: [
+          AppListTile(
+            title: 'Unit System',
+            value: unitSystemLabel,
+            showsChevron: true,
+            onTap: onUnitSystemTap,
+          ),
+
+          const AppDivider(inset: AppDividerInset.leading),
+
+          AppListTile(
+            title: 'Weight',
+            value: weightLabel,
+            showsChevron: true,
+            onTap: onWeightTap,
+          ),
+
+          const AppDivider(inset: AppDividerInset.leading),
+
+          AppListTile(
+            title: 'Height',
+            value: heightLabel,
+            showsChevron: true,
+            onTap: onHeightTap,
+          ),
+
+          const AppDivider(inset: AppDividerInset.leading),
+
+          AppListTile(
+            title: 'Waist',
+            value: waistLabel,
+            showsChevron: true,
+            onTap: onWaistTap,
+          ),
+
+          const AppDivider(inset: AppDividerInset.leading),
+
+          AppListTile(
+            title: 'Health Conditions',
+            value: healthConditionsValue,
+            subtitle: healthConditionsSubtitle,
+            showsChevron: true,
+            onTap: onHealthConditionsTap,
+          ),
+
+          if (onBodyHealthEditTap != null) ...[
+            const AppDivider(inset: AppDividerInset.leading),
+            AppListTile(
+              title: 'Edit Body & Health',
+              showsChevron: true,
+              onTap: onBodyHealthEditTap,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+// ───────────────────────────────────────────────────────────────────────────
+// Models + flows (single source of truth)
+// ───────────────────────────────────────────────────────────────────────────
+
+/// Navigation entrypoints for Body & Health editing flows.
+///
+/// These preserve the existing native sheets while allowing hub pages to remain
+/// summary-only (tap → navigate → return result).
+abstract final class BodyHealthFlows {
+  BodyHealthFlows._();
+
+  static Future<double?> selectWaist({
+    required BuildContext context,
+    required bool isMetric,
+    double? initialValueCm,
+  }) {
+    return showCupertinoModalPopup<double?>(
+      context: context,
+      builder: (context) =>
+          _WaistPickerSheet(initialValue: initialValueCm, isMetric: isMetric),
+    );
+  }
+
+  static Future<BodyHealthData?> selectHealthConditions({
+    required BuildContext context,
+    required BodyHealthData data,
+    required AppGender gender,
+  }) {
+    return showCupertinoModalPopup<BodyHealthData?>(
+      context: context,
+      builder: (context) => _HealthConditionsSheet(data: data, gender: gender),
+    );
+  }
+}
+
 /// Unit system preference for displaying values in Body & Health.
 ///
-/// This is owned by the parent page and passed into [BodyHealthCard].
+/// This is owned by the parent page.
 enum UnitSystem { imperial, metric }
 
-/// Predefined health conditions with simple, user-friendly labels
-/// Focus on conditions that significantly impact diet/nutrition recommendations
+/// Predefined health conditions with simple, user-friendly labels.
+///
+/// Focus on conditions that significantly impact diet/nutrition recommendations.
 enum HealthCondition {
   none('I\'m healthy', null),
   // Metabolic conditions
@@ -47,7 +181,6 @@ enum HealthCondition {
   final String label;
   final IconData? icon;
 
-  /// Returns true if this is a female-only condition
   bool get isFemaleOnly => this == pregnant || this == lactating;
 }
 
@@ -63,7 +196,6 @@ extension HealthConditionAvailability on HealthCondition {
   }
 }
 
-/// Result from body & health card
 class BodyHealthData {
   const BodyHealthData({
     this.weightKg,
@@ -145,135 +277,11 @@ extension BodyHealthDisplay on BodyHealthData {
   }
 }
 
-/// Body & Health section following standard profile section design
-class BodyHealthCard extends StatefulWidget {
-  const BodyHealthCard({
-    super.key,
-    required this.data,
-    required this.onDataChanged,
-    required this.gender,
-    required this.unitSystem,
-  });
-
-  final BodyHealthData data;
-  final ValueChanged<BodyHealthData> onDataChanged;
-  final AppGender gender;
-
-  /// Parent-owned unit system preference.
-  final UnitSystem unitSystem;
-
-  @override
-  State<BodyHealthCard> createState() => _BodyHealthCardState();
-}
-
-class _BodyHealthCardState extends State<BodyHealthCard> {
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
-  bool get _isMetric => widget.unitSystem == UnitSystem.metric;
-
-  Future<void> _selectWeight() async {
-    final result = await WeightPickerSheet.show(
-      context: context,
-      initialWeight: widget.data.weightKg,
-      initialUnit: _isMetric ? WeightUnit.kg : WeightUnit.lbs,
-    );
-    if (result != null && mounted) {
-      widget.onDataChanged(widget.data.copyWith(weightKg: result.asKg));
-    }
-  }
-
-  Future<void> _selectHeight() async {
-    final result = await HeightPickerSheet.show(
-      context: context,
-      initialHeightCm: widget.data.heightCm,
-      initialUnit: _isMetric ? HeightUnit.cm : HeightUnit.ftIn,
-    );
-    if (result != null && mounted) {
-      widget.onDataChanged(widget.data.copyWith(heightCm: result.valueCm));
-    }
-  }
-
-  Future<void> _selectWaist() async {
-    final result = await showCupertinoModalPopup<double?>(
-      context: context,
-      builder: (context) => _WaistPickerSheet(
-        initialValue: widget.data.waistCm,
-        isMetric: _isMetric,
-      ),
-    );
-
-    if (result != null && mounted) {
-      widget.onDataChanged(widget.data.copyWith(waistCm: result));
-    }
-  }
-
-  Future<void> _selectHealthConditions() async {
-    final result = await showCupertinoModalPopup<BodyHealthData?>(
-      context: context,
-      builder: (context) =>
-          _HealthConditionsSheet(data: widget.data, gender: widget.gender),
-    );
-
-    if (result != null && mounted) {
-      widget.onDataChanged(result);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // BodyHealthCard owns content/policy; ProfileScreen owns section wrapper.
-    return _buildBodyHealthRows(context);
-  }
-
-  Widget _buildBodyHealthRows(BuildContext context) {
-    final hasConditions = !widget.data.hasNoConditions;
-    final conditionsSummary = widget.data.conditionsSummary;
-
-    return Column(
-      children: [
-        ProfileTappableRow(
-          icon: CupertinoIcons.speedometer,
-          label: 'Weight',
-          value: widget.data.weightLabel(widget.unitSystem),
-          onTap: _selectWeight,
-        ),
-        const ProfileRowDivider(),
-        ProfileTappableRow(
-          icon: CupertinoIcons.arrow_up_arrow_down,
-          label: 'Height',
-          value: widget.data.heightLabel(widget.unitSystem),
-          onTap: _selectHeight,
-        ),
-        const ProfileRowDivider(),
-        ProfileTappableRow(
-          icon: CupertinoIcons.resize_h,
-          label: 'Waist',
-          value: widget.data.waistLabel(widget.unitSystem),
-          onTap: _selectWaist,
-        ),
-        const ProfileRowDivider(),
-        // Health Conditions row
-        ProfileTappableRow(
-          icon: CupertinoIcons.heart_circle,
-          label: 'Health Conditions',
-          value: hasConditions ? null : 'I\'m healthy',
-          subtitle: hasConditions ? conditionsSummary : null,
-          onTap: _selectHealthConditions,
-        ),
-      ],
-    );
-  }
-}
-
-/// Bottom sheet for selecting health conditions
 class _HealthConditionsSheet extends StatefulWidget {
+  const _HealthConditionsSheet({required this.data, required this.gender});
+
   final BodyHealthData data;
   final AppGender gender;
-
-  const _HealthConditionsSheet({required this.data, required this.gender});
 
   @override
   State<_HealthConditionsSheet> createState() => _HealthConditionsSheetState();
@@ -308,9 +316,9 @@ class _HealthConditionsSheetState extends State<_HealthConditionsSheet> {
     HapticFeedback.selectionClick();
     setState(() {
       if (condition == HealthCondition.none) {
-        // Selecting "I'm healthy" clears all conditions
-        _conditions.clear();
-        _conditions.add(HealthCondition.none);
+        _conditions
+          ..clear()
+          ..add(HealthCondition.none);
         _customConditions.clear();
         return;
       }
@@ -390,7 +398,6 @@ class _HealthConditionsSheetState extends State<_HealthConditionsSheet> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Drag handle
             Padding(
               padding: const EdgeInsets.only(top: AppSpacing.sm),
               child: Container(
@@ -403,7 +410,6 @@ class _HealthConditionsSheetState extends State<_HealthConditionsSheet> {
               ),
             ),
 
-            // Header with Done button
             Padding(
               padding: const EdgeInsets.fromLTRB(
                 AppSpacing.xl,
@@ -452,14 +458,12 @@ class _HealthConditionsSheetState extends State<_HealthConditionsSheet> {
 
             const SizedBox(height: AppSpacing.sm),
 
-            // Chips wrap
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
               child: Wrap(
                 spacing: AppSpacing.xs,
                 runSpacing: AppSpacing.xs,
                 children: [
-                  // "I'm healthy" chip - iOS style
                   _buildIOSChip(
                     context: context,
                     label: HealthCondition.none.label,
@@ -468,7 +472,6 @@ class _HealthConditionsSheetState extends State<_HealthConditionsSheet> {
                     primaryColor: primaryColor,
                   ),
 
-                  // Condition chips - iOS style
                   ...availableConditions.map((condition) {
                     final isSelected = _conditions.contains(condition);
                     return _buildIOSChip(
@@ -480,7 +483,6 @@ class _HealthConditionsSheetState extends State<_HealthConditionsSheet> {
                     );
                   }),
 
-                  // Custom conditions (deletable) - iOS style
                   ..._customConditions.map((condition) {
                     return _buildIOSDeletableChip(
                       context: context,
@@ -490,7 +492,6 @@ class _HealthConditionsSheetState extends State<_HealthConditionsSheet> {
                     );
                   }),
 
-                  // "+ Other" chip - iOS style
                   if (!_showInput)
                     _buildIOSActionChip(
                       context: context,
@@ -506,7 +507,6 @@ class _HealthConditionsSheetState extends State<_HealthConditionsSheet> {
               ),
             ),
 
-            // Inline input for custom conditions
             AnimatedSize(
               duration: AppSpacing.durationFast,
               curve: Curves.easeOutCubic,
@@ -583,7 +583,6 @@ class _HealthConditionsSheetState extends State<_HealthConditionsSheet> {
     );
   }
 
-  /// iOS-style selectable chip with checkmark
   Widget _buildIOSChip({
     required BuildContext context,
     required String label,
@@ -638,7 +637,6 @@ class _HealthConditionsSheetState extends State<_HealthConditionsSheet> {
     );
   }
 
-  /// iOS-style deletable chip (for custom conditions)
   Widget _buildIOSDeletableChip({
     required BuildContext context,
     required String label,
@@ -682,7 +680,6 @@ class _HealthConditionsSheetState extends State<_HealthConditionsSheet> {
     );
   }
 
-  /// iOS-style "+ Other" action chip
   Widget _buildIOSActionChip({
     required BuildContext context,
     required VoidCallback onTap,
@@ -726,12 +723,12 @@ class _HealthConditionsSheetState extends State<_HealthConditionsSheet> {
   }
 }
 
-/// Waist picker sheet using Cupertino-style wheel picker
+/// Waist picker sheet using Cupertino-style wheel picker.
 class _WaistPickerSheet extends StatefulWidget {
+  const _WaistPickerSheet({this.initialValue, required this.isMetric});
+
   final double? initialValue;
   final bool isMetric;
-
-  const _WaistPickerSheet({this.initialValue, required this.isMetric});
 
   @override
   State<_WaistPickerSheet> createState() => _WaistPickerSheetState();
@@ -742,9 +739,6 @@ class _WaistPickerSheetState extends State<_WaistPickerSheet> {
   late bool _isMetric;
   late FixedExtentScrollController _controller;
 
-  // Waist ranges
-  // Men: 65-130 cm (26-51 in), Women: 55-115 cm (22-45 in)
-  // Using expanded range to accommodate all body types
   static const _minCm = 50;
   static const _maxCm = 200;
   static const _minInch = 20;
@@ -782,7 +776,6 @@ class _WaistPickerSheetState extends State<_WaistPickerSheet> {
       _isMetric = !_isMetric;
     });
 
-    // Jump after frame renders (controller needs to be attached)
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_isMetric) {
         _controller.jumpToItem(_valueCm.toInt() - _minCm);
@@ -826,7 +819,6 @@ class _WaistPickerSheetState extends State<_WaistPickerSheet> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Drag handle
             Padding(
               padding: const EdgeInsets.only(top: AppSpacing.sm),
               child: Container(
@@ -839,7 +831,6 @@ class _WaistPickerSheetState extends State<_WaistPickerSheet> {
               ),
             ),
 
-            // Header with Done button
             Padding(
               padding: const EdgeInsets.fromLTRB(
                 AppSpacing.xl,
@@ -886,7 +877,6 @@ class _WaistPickerSheetState extends State<_WaistPickerSheet> {
               ),
             ),
 
-            // Instruction tip
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
               child: Container(
@@ -920,7 +910,6 @@ class _WaistPickerSheetState extends State<_WaistPickerSheet> {
 
             const SizedBox(height: AppSpacing.lg),
 
-            // Large value display
             Text(
               '$_displayValue $_unitLabel',
               style: TextStyle(
@@ -933,7 +922,6 @@ class _WaistPickerSheetState extends State<_WaistPickerSheet> {
 
             const SizedBox(height: AppSpacing.lg),
 
-            // Unit toggle
             WheelUnitToggle(
               options: const ['cm', 'in'],
               selectedIndex: _isMetric ? 0 : 1,
@@ -942,12 +930,10 @@ class _WaistPickerSheetState extends State<_WaistPickerSheet> {
 
             const SizedBox(height: AppSpacing.lg),
 
-            // Wheel picker
             SizedBox(
               height: WheelConstants.defaultHeight,
               child: Stack(
                 children: [
-                  // Value wheel
                   ListWheelScrollView.useDelegate(
                     controller: _controller,
                     itemExtent: WheelConstants.itemExtent,
@@ -980,7 +966,6 @@ class _WaistPickerSheetState extends State<_WaistPickerSheet> {
                     ),
                   ),
 
-                  // Arrow indicators
                   const Positioned(
                     left: AppSpacing.lg,
                     top: 0,
@@ -1002,7 +987,6 @@ class _WaistPickerSheetState extends State<_WaistPickerSheet> {
                     ),
                   ),
 
-                  // Gradient fades
                   const WheelGradientOverlay(),
                 ],
               ),
