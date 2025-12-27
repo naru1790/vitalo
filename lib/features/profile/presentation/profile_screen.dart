@@ -12,8 +12,6 @@ import '../../../core/theme.dart';
 import '../../../core/widgets/lifestyle_card.dart';
 import '../../../core/widgets/coaching_card.dart';
 import '../../../core/widgets/profile_row.dart';
-import '../../../core/widgets/height_picker_sheet.dart';
-import '../../../core/widgets/wheel_picker.dart';
 import '../../../design/design.dart';
 import '../../../design/tokens/icons.dart' as icons;
 import '../flows/body_health_flows.dart';
@@ -165,29 +163,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _editHeight() async {
-    final result = await HeightPickerSheet.show(
+    final result = await BodyHealthFlows.editHeight(
       context: context,
-      initialHeightCm: _bodyHealthData.heightCm,
-      initialUnit: _unitSystem == AppUnitSystem.metric
-          ? HeightUnit.cm
-          : HeightUnit.ftIn,
+      initialCm: _bodyHealthData.heightCm,
+      unitSystem: _unitSystem,
     );
 
     if (result != null && mounted) {
       setState(() {
-        _bodyHealthData = _bodyHealthData.copyWith(heightCm: result.valueCm);
+        _bodyHealthData = _bodyHealthData.copyWith(heightCm: result);
       });
       talker.info('Height updated');
     }
   }
 
   Future<void> _editWaist() async {
-    final result = await showCupertinoModalPopup<double?>(
+    final result = await BodyHealthFlows.editWaist(
       context: context,
-      builder: (context) => _WaistPickerSheet(
-        initialValue: _bodyHealthData.waistCm,
-        isMetric: _unitSystem == AppUnitSystem.metric,
-      ),
+      initialCm: _bodyHealthData.waistCm,
+      unitSystem: _unitSystem,
     );
 
     if (result != null && mounted) {
@@ -1163,283 +1157,6 @@ class _HealthConditionsSheetState extends State<_HealthConditionsSheet> {
                 fontWeight: FontWeight.w500,
               ),
             ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// Waist picker sheet using Cupertino-style wheel picker.
-class _WaistPickerSheet extends StatefulWidget {
-  const _WaistPickerSheet({this.initialValue, required this.isMetric});
-
-  final double? initialValue;
-  final bool isMetric;
-
-  @override
-  State<_WaistPickerSheet> createState() => _WaistPickerSheetState();
-}
-
-class _WaistPickerSheetState extends State<_WaistPickerSheet> {
-  late double _valueCm;
-  late bool _isMetric;
-  late FixedExtentScrollController _controller;
-
-  static const _minCm = 50;
-  static const _maxCm = 200;
-  static const _minInch = 20;
-  static const _maxInch = 79;
-
-  @override
-  void initState() {
-    super.initState();
-    _valueCm =
-        widget.initialValue?.clamp(_minCm.toDouble(), _maxCm.toDouble()) ??
-        80.0;
-    _isMetric = widget.isMetric;
-    _controller = FixedExtentScrollController(
-      initialItem: _isMetric
-          ? _valueCm.toInt() - _minCm
-          : (_valueCm / 2.54).round() - _minInch,
-    );
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  int get _displayValue {
-    if (_isMetric) return _valueCm.toInt();
-    return (_valueCm / 2.54).round();
-  }
-
-  String get _unitLabel => _isMetric ? 'cm' : 'in';
-
-  void _toggleUnit() {
-    setState(() {
-      _isMetric = !_isMetric;
-    });
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_isMetric) {
-        _controller.jumpToItem(_valueCm.toInt() - _minCm);
-      } else {
-        _controller.jumpToItem((_valueCm / 2.54).round() - _minInch);
-      }
-    });
-  }
-
-  void _onValueChanged(int index) {
-    HapticFeedback.selectionClick();
-    setState(() {
-      if (_isMetric) {
-        _valueCm = (index + _minCm).toDouble();
-      } else {
-        _valueCm = (index + _minInch) * 2.54;
-      }
-    });
-  }
-
-  void _confirmSelection() {
-    Navigator.pop(context, _valueCm);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final primaryColor = CupertinoTheme.of(context).primaryColor;
-
-    final itemCount = _isMetric ? _maxCm - _minCm + 1 : _maxInch - _minInch + 1;
-    final minVal = _isMetric ? _minCm : _minInch;
-
-    return Container(
-      decoration: BoxDecoration(
-        color: CupertinoColors.systemBackground.resolveFrom(context),
-        borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(AppSpacing.cardRadiusLarge),
-        ),
-      ),
-      child: SafeArea(
-        top: false,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(top: AppSpacing.sm),
-              child: Container(
-                width: 32,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: CupertinoColors.separator.resolveFrom(context),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.xl,
-                AppSpacing.lg,
-                AppSpacing.xl,
-                AppSpacing.sm,
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Waist',
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w600,
-                            color: CupertinoColors.label.resolveFrom(context),
-                          ),
-                        ),
-                        const SizedBox(height: AppSpacing.xxs),
-                        Text(
-                          'Scroll to set your waist size',
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: CupertinoColors.secondaryLabel.resolveFrom(
-                              context,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  CupertinoButton.filled(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppSpacing.lg,
-                      vertical: AppSpacing.sm,
-                    ),
-                    onPressed: _confirmSelection,
-                    child: const Text('Done'),
-                  ),
-                ],
-              ),
-            ),
-
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(AppSpacing.sm),
-                decoration: BoxDecoration(
-                  color: primaryColor.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      CupertinoIcons.lightbulb,
-                      size: 18,
-                      color: primaryColor,
-                    ),
-                    const SizedBox(width: AppSpacing.sm),
-                    Expanded(
-                      child: Text(
-                        'Measure at belly button level, breathing out naturally',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: CupertinoColors.label.resolveFrom(context),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            const SizedBox(height: AppSpacing.lg),
-
-            Text(
-              '$_displayValue $_unitLabel',
-              style: TextStyle(
-                fontSize: 45,
-                fontWeight: FontWeight.w600,
-                color: primaryColor,
-                height: 1,
-              ),
-            ),
-
-            const SizedBox(height: AppSpacing.lg),
-
-            WheelUnitToggle(
-              options: const ['cm', 'in'],
-              selectedIndex: _isMetric ? 0 : 1,
-              onChanged: (_) => _toggleUnit(),
-            ),
-
-            const SizedBox(height: AppSpacing.lg),
-
-            SizedBox(
-              height: WheelConstants.defaultHeight,
-              child: Stack(
-                children: [
-                  ListWheelScrollView.useDelegate(
-                    controller: _controller,
-                    itemExtent: WheelConstants.itemExtent,
-                    physics: const FixedExtentScrollPhysics(),
-                    diameterRatio: WheelConstants.diameterRatio,
-                    perspective: WheelConstants.perspective,
-                    onSelectedItemChanged: _onValueChanged,
-                    childDelegate: ListWheelChildBuilderDelegate(
-                      childCount: itemCount,
-                      builder: (ctx, index) {
-                        final value = index + minVal;
-                        final isSelected = value == _displayValue;
-                        return Center(
-                          child: Text(
-                            '$value',
-                            style: TextStyle(
-                              fontSize: 28,
-                              color: isSelected
-                                  ? primaryColor
-                                  : CupertinoColors.secondaryLabel.resolveFrom(
-                                      context,
-                                    ),
-                              fontWeight: isSelected
-                                  ? FontWeight.w600
-                                  : FontWeight.w400,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-
-                  const Positioned(
-                    left: AppSpacing.lg,
-                    top: 0,
-                    bottom: 0,
-                    child: Center(
-                      child: WheelArrowIndicator(
-                        direction: ArrowDirection.right,
-                      ),
-                    ),
-                  ),
-                  const Positioned(
-                    right: AppSpacing.lg,
-                    top: 0,
-                    bottom: 0,
-                    child: Center(
-                      child: WheelArrowIndicator(
-                        direction: ArrowDirection.left,
-                      ),
-                    ),
-                  ),
-
-                  const WheelGradientOverlay(),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: AppSpacing.xxl),
           ],
         ),
       ),
