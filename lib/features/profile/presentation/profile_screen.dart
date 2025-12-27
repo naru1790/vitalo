@@ -13,10 +13,10 @@ import '../../../core/widgets/lifestyle_card.dart';
 import '../../../core/widgets/coaching_card.dart';
 import '../../../core/widgets/profile_row.dart';
 import '../../../core/widgets/height_picker_sheet.dart';
-import '../../../core/widgets/weight_picker_sheet.dart';
 import '../../../core/widgets/wheel_picker.dart';
 import '../../../design/design.dart';
 import '../../../design/tokens/icons.dart' as icons;
+import '../flows/body_health_flows.dart';
 import '../flows/identity_flows.dart';
 import '../flows/personal_info_flows.dart';
 import 'widgets/profile_body_health_section.dart';
@@ -150,17 +150,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _editWeight() async {
-    final result = await WeightPickerSheet.show(
+    final result = await BodyHealthFlows.editWeight(
       context: context,
-      initialWeight: _bodyHealthData.weightKg,
-      initialUnit: _unitSystem == AppUnitSystem.metric
-          ? WeightUnit.kg
-          : WeightUnit.lbs,
+      initialKg: _bodyHealthData.weightKg,
+      unitSystem: _unitSystem,
     );
 
     if (result != null && mounted) {
       setState(() {
-        _bodyHealthData = _bodyHealthData.copyWith(weightKg: result.asKg);
+        _bodyHealthData = _bodyHealthData.copyWith(weightKg: result);
       });
       talker.info('Weight updated');
     }

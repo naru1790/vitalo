@@ -4,13 +4,8 @@
 // Does NOT own layout or copy defaults.
 
 import 'package:flutter/widgets.dart';
-
+import '../models/app_unit_system.dart';
 import '../widgets/app_labeled_binary_choice.dart';
-
-/// Semantic unit system representation.
-///
-/// Binary selection for measurement display.
-enum AppUnitSystem { metric, imperial }
 
 /// Tier-1 unit system selector primitive.
 ///
