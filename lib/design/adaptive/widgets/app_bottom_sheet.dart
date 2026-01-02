@@ -55,6 +55,7 @@ abstract final class AppBottomSheet {
 
     return showModalBottomSheet<T>(
       context: context,
+      isScrollControlled: true,
       isDismissible: isDismissible,
       enableDrag: true,
       builder: (_) => sheet,

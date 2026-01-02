@@ -33,6 +33,8 @@ class _HealthConditionsSheetState extends State<HealthConditionsSheet> {
   late Set<HealthCondition> _conditions;
   late List<String> _customConditions;
 
+  bool _isAddingCustom = false;
+
   late final TextEditingController _customController;
 
   @override
@@ -42,8 +44,6 @@ class _HealthConditionsSheetState extends State<HealthConditionsSheet> {
     _conditions = Set<HealthCondition>.from(widget.initialData.conditions);
     _customConditions = List<String>.from(widget.initialData.customConditions);
     _customController = TextEditingController();
-
-    _normalizeDraft();
   }
 
   @override
@@ -53,62 +53,32 @@ class _HealthConditionsSheetState extends State<HealthConditionsSheet> {
   }
 
   bool get _hasAnyCondition =>
-      _conditions.where((c) => c != HealthCondition.none).isNotEmpty ||
-      _customConditions.isNotEmpty;
+      _conditions.isNotEmpty || _customConditions.isNotEmpty;
 
   bool get _canAddCustom {
     return _parseCustomInput(_customController.text).isNotEmpty;
   }
 
-  void _normalizeDraft() {
-    // Invariant:
-    // - "Healthy" is represented by either an empty selection OR {none}
-    // - If any real condition/custom exists, "none" must be absent.
-    final hasReal =
-        _conditions.where((c) => c != HealthCondition.none).isNotEmpty ||
-        _customConditions.isNotEmpty;
-
-    if (hasReal) {
-      _conditions.remove(HealthCondition.none);
-      return;
-    }
-
-    if (_conditions.isEmpty) {
-      _conditions = {HealthCondition.none};
-    } else if (_conditions.length > 1) {
-      _conditions.remove(HealthCondition.none);
-      if (_conditions.isEmpty) {
-        _conditions = {HealthCondition.none};
-      }
-    }
+  void _selectHealthy() {
+    setState(() {
+      _conditions.clear();
+      _customConditions.clear();
+    });
   }
 
   void _toggleCondition(HealthCondition condition) {
     setState(() {
-      if (condition == HealthCondition.none) {
-        _conditions
-          ..clear()
-          ..add(HealthCondition.none);
-        _customConditions.clear();
-        return;
-      }
-
-      _conditions.remove(HealthCondition.none);
-
       if (_conditions.contains(condition)) {
         _conditions.remove(condition);
       } else {
         _conditions.add(condition);
       }
-
-      _normalizeDraft();
     });
   }
 
   void _removeCustomCondition(String condition) {
     setState(() {
       _customConditions.remove(condition);
-      _normalizeDraft();
     });
   }
 
@@ -128,19 +98,32 @@ class _HealthConditionsSheetState extends State<HealthConditionsSheet> {
         .toList(growable: false);
   }
 
-  void _addCustomConditions() {
+  void _enterCustomEditMode() {
+    setState(() {
+      _isAddingCustom = true;
+    });
+  }
+
+  void _addCustomAndExit() {
     final items = _parseCustomInput(_customController.text);
     if (items.isEmpty) return;
 
+    FocusManager.instance.primaryFocus?.unfocus();
+
     setState(() {
-      _conditions.remove(HealthCondition.none);
       _customConditions = [..._customConditions, ...items];
       _customController.clear();
-      _normalizeDraft();
+      _isAddingCustom = false;
     });
   }
 
   void _confirmSelection() {
+    FocusManager.instance.primaryFocus?.unfocus();
+
+    setState(() {
+      _isAddingCustom = false;
+    });
+
     Navigator.pop(
       context,
       widget.initialData.copyWith(
@@ -158,20 +141,20 @@ class _HealthConditionsSheetState extends State<HealthConditionsSheet> {
       widget.gender,
     );
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        const Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            AppText(
-              'Health Conditions',
-              variant: AppTextVariant.title,
-              color: AppTextColor.primary,
-            ),
-          ],
-        ),
+    final isCompactHeader = _isAddingCustom;
+
+    final header = <Widget>[
+      const Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          AppText(
+            'Health Conditions',
+            variant: AppTextVariant.title,
+            color: AppTextColor.primary,
+          ),
+        ],
+      ),
+      if (!isCompactHeader) ...[
         SizedBox(height: spacing.xs),
         const AppText(
           'Help us personalize your experience safely',
@@ -179,61 +162,93 @@ class _HealthConditionsSheetState extends State<HealthConditionsSheet> {
           color: AppTextColor.secondary,
           align: TextAlign.center,
         ),
-        SizedBox(height: spacing.lg),
+      ],
+      SizedBox(height: isCompactHeader ? spacing.md : spacing.lg),
+    ];
 
-        AppSurface(
-          variant: AppSurfaceVariant.card,
-          child: AppSurfaceBody(
-            child: Wrap(
-              spacing: spacing.sm,
-              runSpacing: spacing.sm,
-              children: [
-                AppChoiceChip(
-                  label: HealthCondition.none.label,
+    final conditionsSurface = AppSurface(
+      variant: AppSurfaceVariant.card,
+      child: AppSurfaceBody(
+        child: Wrap(
+          spacing: spacing.sm,
+          runSpacing: spacing.sm,
+          children: [
+            // Semantics: reset action (button) that clears all selections.
+            Semantics(
+              button: true,
+              label: "I'm healthy",
+              onTapHint: 'Clears all selected conditions',
+              onTap: _selectHealthy,
+              child: ExcludeSemantics(
+                child: AppChoiceChip(
+                  label: "I'm healthy",
                   selected: !_hasAnyCondition,
-                  onSelected: () => _toggleCondition(HealthCondition.none),
+                  onSelected: _selectHealthy,
                 ),
-                for (final condition in availableConditions)
-                  AppChoiceChip(
-                    label: condition.label,
-                    selected: _conditions.contains(condition),
-                    onSelected: () => _toggleCondition(condition),
-                  ),
-              ],
+              ),
             ),
-          ),
+            for (final condition in availableConditions)
+              AppChoiceChip(
+                label: condition.label,
+                selected: _conditions.contains(condition),
+                onSelected: () => _toggleCondition(condition),
+              ),
+          ],
         ),
+      ),
+    );
 
-        SizedBox(height: spacing.lg),
-
-        const AppText(
-          'Other (comma-separated)',
-          variant: AppTextVariant.label,
-          color: AppTextColor.secondary,
-        ),
-        SizedBox(height: spacing.xs),
-        AppTextField(
-          controller: _customController,
-          placeholder: 'e.g., IBS, Celiac, Arthritis',
-          textInputAction: TextInputAction.done,
-          onSubmitted: _addCustomConditions,
-          onChanged: (_) => setState(() {}),
-        ),
-        SizedBox(height: spacing.sm),
-        AppButton(
-          label: 'Add',
-          variant: AppButtonVariant.secondary,
-          enabled: _canAddCustom,
-          onPressed: _addCustomConditions,
-          leadingIcon: icons.AppIcon.actionAdd,
-        ),
-
-        if (_customConditions.isNotEmpty) ...[
-          SizedBox(height: spacing.lg),
-          AppSurface(
+    final readOnlyCustomSurface = _customConditions.isEmpty
+        ? null
+        : AppSurface(
             variant: AppSurfaceVariant.card,
             child: AppSurfaceBody(
               child: Wrap(
+                spacing: spacing.sm,
+                runSpacing: spacing.sm,
+                children: [
+                  for (final condition in _customConditions)
+                    // Read-only informational pill (must announce as text).
+                    Semantics(
+                      label: condition,
+                      container: true,
+                      child: ExcludeSemantics(
+                        child: AppChoiceChip(
+                          label: condition,
+                          selected: true,
+                          onSelected: null,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          );
+
+    final customEditSurface = AppSurface(
+      variant: AppSurfaceVariant.card,
+      child: AppSurfaceBody(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            AppTextField(
+              controller: _customController,
+              placeholder: 'e.g., IBS, Celiac, Arthritis',
+              textInputAction: TextInputAction.done,
+              onSubmitted: _addCustomAndExit,
+              onChanged: (_) => setState(() {}),
+            ),
+            SizedBox(height: spacing.sm),
+            AppButton(
+              label: 'Add',
+              variant: AppButtonVariant.secondary,
+              enabled: _canAddCustom,
+              onPressed: _addCustomAndExit,
+              leadingIcon: icons.AppIcon.actionConfirm,
+            ),
+            if (_customConditions.isNotEmpty) ...[
+              SizedBox(height: spacing.lg),
+              Wrap(
                 spacing: spacing.sm,
                 runSpacing: spacing.sm,
                 children: [
@@ -244,12 +259,49 @@ class _HealthConditionsSheetState extends State<HealthConditionsSheet> {
                     ),
                 ],
               ),
-            ),
+            ],
+          ],
+        ),
+      ),
+    );
+
+    if (!_isAddingCustom) {
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          ...header,
+          conditionsSurface,
+          if (readOnlyCustomSurface != null) ...[
+            SizedBox(height: spacing.lg),
+            readOnlyCustomSurface,
+          ],
+          SizedBox(height: spacing.lg),
+          AppButton(
+            label: 'Other',
+            variant: AppButtonVariant.secondary,
+            onPressed: _enterCustomEditMode,
+            leadingIcon: icons.AppIcon.actionAdd,
+          ),
+          SizedBox(height: spacing.lg),
+          AppButton(
+            label: 'Done',
+            variant: AppButtonVariant.primary,
+            onPressed: _confirmSelection,
           ),
         ],
+      );
+    }
 
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        ...header,
+        conditionsSurface,
         SizedBox(height: spacing.lg),
-
+        customEditSurface,
+        SizedBox(height: spacing.lg),
         AppButton(
           label: 'Done',
           variant: AppButtonVariant.primary,

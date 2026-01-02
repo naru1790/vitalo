@@ -9,7 +9,6 @@ enum HealthConditionIcon { metabolic, heart, hormone, kidney, liver, female }
 /// NOTE: This enum is part of the feature domain model and is shared across
 /// Profile → Body & Health flows and sheets.
 enum HealthCondition {
-  none('I\'m healthy', null),
   // Metabolic conditions
   diabetes('Diabetes (Type 2)', HealthConditionIcon.metabolic),
   preDiabetes('Pre-diabetic', HealthConditionIcon.metabolic),
@@ -27,9 +26,10 @@ enum HealthCondition {
   pregnant('Pregnant', HealthConditionIcon.female),
   lactating('Breastfeeding', HealthConditionIcon.female);
 
-  const HealthCondition(this.label, this.icon);
+  const HealthCondition(this.label, this.icon, {this.selectable = true});
   final String label;
   final HealthConditionIcon? icon;
+  final bool selectable;
 
   bool get isFemaleOnly => this == pregnant || this == lactating;
 }
@@ -40,7 +40,7 @@ extension HealthConditionAvailability on HealthCondition {
   /// Domain rules live here; sheets must not infer availability.
   static List<HealthCondition> availableFor(AppGender gender) {
     return HealthCondition.values
-        .where((c) => c != HealthCondition.none)
+        .where((c) => c.selectable)
         .where((c) => !c.isFemaleOnly || gender == AppGender.female)
         .toList(growable: false);
   }
@@ -77,18 +77,18 @@ class BodyHealthData {
     );
   }
 
-  bool get hasNoConditions =>
-      conditions.isEmpty ||
-      (conditions.length == 1 && conditions.contains(HealthCondition.none));
+  bool get hasNoConditions {
+    return conditions.isEmpty && customConditions.isEmpty;
+  }
 }
 
 extension BodyHealthConditionsDisplay on BodyHealthData {
   String get conditionsSummary {
-    final items = conditions
-        .where((c) => c != HealthCondition.none)
-        .map((c) => c.label)
-        .toList();
-    items.addAll(customConditions);
+    final predefined = conditions.toList(growable: false)
+      ..sort((a, b) => a.label.toLowerCase().compareTo(b.label.toLowerCase()));
+
+    final items = predefined.map((c) => c.label).toList(growable: true)
+      ..addAll(customConditions);
 
     if (items.isEmpty) {
       return 'I\'m healthy';

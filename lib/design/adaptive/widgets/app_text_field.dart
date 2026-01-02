@@ -7,8 +7,6 @@
 // All visual decisions must be expressed via semantic colors.
 // If a role is missing, add it to AppColors — do not read raw signals.
 
-import 'dart:async';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -47,6 +45,7 @@ class AppTextField extends StatelessWidget {
   const AppTextField({
     super.key,
     required this.controller,
+    this.focusNode,
     this.placeholder,
     this.leadingIcon,
     this.enabled = true,
@@ -59,25 +58,29 @@ class AppTextField extends StatelessWidget {
   });
 
   final TextEditingController controller;
+  final FocusNode? focusNode;
   final String? placeholder;
   final icons.AppIcon? leadingIcon;
   final bool enabled;
   final bool obscureText;
   final TextInputType keyboardType;
   final TextInputAction textInputAction;
+
+  /// Drives error visuals only.
+  ///
+  /// This value is used to toggle error styling (e.g., border color) but this
+  /// widget does NOT render error messages; error message rendering is owned by
+  /// feature layouts.
   final String? errorText;
 
   /// Called when the user submits from the keyboard.
-  ///
-  /// Uses [FutureOr] to allow async handlers without requiring wrappers.
-  final FutureOr<void> Function()? onSubmitted;
+  final VoidCallback? onSubmitted;
 
   final ValueChanged<String>? onChanged;
 
   bool get _hasError => (errorText != null && errorText!.isNotEmpty);
 
-  void _invokeSubmitted() {
-    // Intentionally not awaited; submission side-effects are owned by caller.
+  void _handleKeyboardSubmit() {
     onSubmitted?.call();
   }
 
@@ -88,6 +91,7 @@ class AppTextField extends StatelessWidget {
     if (platform == AppPlatform.ios) {
       return _CupertinoTextFieldImpl(
         controller: controller,
+        focusNode: focusNode,
         placeholder: placeholder,
         leadingIcon: leadingIcon,
         enabled: enabled,
@@ -96,12 +100,13 @@ class AppTextField extends StatelessWidget {
         textInputAction: textInputAction,
         hasError: _hasError,
         onChanged: onChanged,
-        onSubmitted: _invokeSubmitted,
+        onSubmitted: _handleKeyboardSubmit,
       );
     }
 
     return _MaterialTextFieldImpl(
       controller: controller,
+      focusNode: focusNode,
       placeholder: placeholder,
       leadingIcon: leadingIcon,
       enabled: enabled,
@@ -110,7 +115,7 @@ class AppTextField extends StatelessWidget {
       textInputAction: textInputAction,
       hasError: _hasError,
       onChanged: onChanged,
-      onSubmitted: _invokeSubmitted,
+      onSubmitted: _handleKeyboardSubmit,
     );
   }
 }
@@ -174,6 +179,7 @@ _FieldDecoration _resolveDecoration({
 class _CupertinoTextFieldImpl extends StatelessWidget {
   const _CupertinoTextFieldImpl({
     required this.controller,
+    required this.focusNode,
     required this.placeholder,
     required this.leadingIcon,
     required this.enabled,
@@ -186,6 +192,7 @@ class _CupertinoTextFieldImpl extends StatelessWidget {
   });
 
   final TextEditingController controller;
+  final FocusNode? focusNode;
   final String? placeholder;
   final icons.AppIcon? leadingIcon;
   final bool enabled;
@@ -223,6 +230,7 @@ class _CupertinoTextFieldImpl extends StatelessWidget {
         ),
         child: CupertinoTextField(
           controller: controller,
+          focusNode: focusNode,
           enabled: enabled,
           obscureText: obscureText,
           keyboardType: keyboardType,
@@ -258,6 +266,7 @@ class _CupertinoTextFieldImpl extends StatelessWidget {
 class _MaterialTextFieldImpl extends StatelessWidget {
   const _MaterialTextFieldImpl({
     required this.controller,
+    required this.focusNode,
     required this.placeholder,
     required this.leadingIcon,
     required this.enabled,
@@ -270,6 +279,7 @@ class _MaterialTextFieldImpl extends StatelessWidget {
   });
 
   final TextEditingController controller;
+  final FocusNode? focusNode;
   final String? placeholder;
   final icons.AppIcon? leadingIcon;
   final bool enabled;
@@ -320,6 +330,7 @@ class _MaterialTextFieldImpl extends StatelessWidget {
             Expanded(
               child: TextField(
                 controller: controller,
+                focusNode: focusNode,
                 enabled: enabled,
                 obscureText: obscureText,
                 keyboardType: keyboardType,

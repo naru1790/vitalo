@@ -1,10 +1,9 @@
 // @frozen
 // Tier-0 adaptive choice pill.
-// Owns: platform-correct tap feedback + selected visual state.
-// Must NOT: store internal state, navigate, branch on brightness.
+// Owns: platform-correct tap handling + selected visual state.
+// Must NOT: store internal state, navigate, trigger haptics, branch on brightness.
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' show HapticFeedback;
 
 import '../platform/app_color_scope.dart';
 import '../platform/app_platform_scope.dart';
@@ -19,13 +18,13 @@ class AppChoiceChip extends StatelessWidget {
     super.key,
     required this.label,
     required this.selected,
-    required this.onSelected,
+    this.onSelected,
     this.leadingIcon,
   });
 
   final String label;
   final bool selected;
-  final VoidCallback onSelected;
+  final VoidCallback? onSelected;
   final icons.AppIcon? leadingIcon;
 
   @override
@@ -73,18 +72,12 @@ class AppChoiceChip extends StatelessWidget {
     );
 
     return Semantics(
-      button: false,
+      button: true,
       selected: selected,
-      toggled: selected,
+      enabled: onSelected != null,
       label: label,
       child: switch (platform) {
-        AppPlatform.ios => GestureDetector(
-          onTap: () {
-            HapticFeedback.selectionClick();
-            onSelected();
-          },
-          child: content,
-        ),
+        AppPlatform.ios => GestureDetector(onTap: onSelected, child: content),
         AppPlatform.android => Material(
           color: Colors.transparent,
           shape: RoundedRectangleBorder(
