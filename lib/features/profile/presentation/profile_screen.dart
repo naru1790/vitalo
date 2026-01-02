@@ -8,16 +8,19 @@ import '../../../main.dart';
 import '../../../core/router.dart';
 import '../../../core/services/auth_service.dart';
 import '../../../core/theme.dart';
-import '../../../core/widgets/lifestyle_card.dart';
 import '../../../core/widgets/coaching_card.dart';
 import '../../../core/widgets/profile_row.dart';
+import '../../../core/widgets/lifestyle_card.dart' as legacy_lifestyle;
 import '../../../design/design.dart';
 import '../../../design/tokens/icons.dart' as icons;
 import '../flows/body_health_flows.dart';
 import '../flows/identity_flows.dart';
+import '../flows/lifestyle_flows.dart';
 import '../flows/personal_info_flows.dart';
 import '../models/body_health_data.dart';
+import '../models/lifestyle_data.dart';
 import 'widgets/profile_body_health_section.dart';
+import 'widgets/profile_lifestyle_section.dart';
 import 'widgets/profile_personal_info_section.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -52,7 +55,51 @@ class _ProfileScreenState extends State<ProfileScreen> {
   AppUnitSystem _unitSystem = AppUnitSystem.metric;
 
   // Lifestyle data (activity, sleep, diet)
-  LifestyleData _lifestyleData = const LifestyleData();
+  //
+  // NOTE: During hot reload, a previous ProfileScreen state may still hold the
+  // legacy `core/widgets/lifestyle_card.dart` LifestyleData instance.
+  // Store as Object and coerce when reading to avoid runtime type crashes.
+  Object _lifestyleDataRaw = const LifestyleData();
+
+  LifestyleData get _lifestyleData {
+    final value = _lifestyleDataRaw;
+    if (value is LifestyleData) return value;
+
+    if (value is legacy_lifestyle.LifestyleData) {
+      return LifestyleData(
+        activityLevel: _mapLegacyActivity(value.activityLevel),
+        sleepDuration: value.sleepDurationMinutes == null
+            ? null
+            : Duration(minutes: value.sleepDurationMinutes!),
+        bedTime: value.bedTime == null
+            ? null
+            : Duration(
+                hours: value.bedTime!.hour,
+                minutes: value.bedTime!.minute,
+              ),
+        // Legacy dietary preferences does not map 1:1. Leave unset.
+        dietPreference: null,
+      );
+    }
+
+    return const LifestyleData();
+  }
+
+  LifestyleActivityLevel? _mapLegacyActivity(
+    legacy_lifestyle.ActivityLevel? value,
+  ) {
+    return switch (value) {
+      null => null,
+      legacy_lifestyle.ActivityLevel.deskBound =>
+        LifestyleActivityLevel.sedentary,
+      legacy_lifestyle.ActivityLevel.lightlyActive =>
+        LifestyleActivityLevel.lightlyActive,
+      legacy_lifestyle.ActivityLevel.activeLifestyle =>
+        LifestyleActivityLevel.active,
+      legacy_lifestyle.ActivityLevel.veryActive =>
+        LifestyleActivityLevel.veryActive,
+    };
+  }
 
   // Coaching data (goal, coach style)
   CoachingData _coachingData = const CoachingData();
@@ -147,6 +194,59 @@ class _ProfileScreenState extends State<ProfileScreen> {
     talker.info('Unit system updated');
   }
 
+  String _activityLabel() {
+    final level = _lifestyleData.activityLevel;
+    if (level == null) return 'Not Set';
+
+    return switch (level) {
+      LifestyleActivityLevel.sedentary => 'Sedentary',
+      LifestyleActivityLevel.lightlyActive => 'Lightly active',
+      LifestyleActivityLevel.active => 'Active',
+      LifestyleActivityLevel.veryActive => 'Very active',
+    };
+  }
+
+  String _dietLabel() {
+    final pref = _lifestyleData.dietPreference;
+    if (pref == null) return 'Not Set';
+
+    return switch (pref) {
+      DietPreference.omnivore => 'Omnivore',
+      DietPreference.vegetarian => 'Vegetarian',
+      DietPreference.vegan => 'Vegan',
+      DietPreference.pescatarian => 'Pescatarian',
+    };
+  }
+
+  String _formatBedTime(Duration bedTime) {
+    final totalMinutes = bedTime.inMinutes % (24 * 60);
+    final hour24 = totalMinutes ~/ 60;
+    final minute = totalMinutes % 60;
+
+    final isPm = hour24 >= 12;
+    final hour12 = (hour24 % 12 == 0) ? 12 : hour24 % 12;
+    final mm = minute.toString().padLeft(2, '0');
+    final suffix = isPm ? 'PM' : 'AM';
+
+    return '$hour12:$mm $suffix';
+  }
+
+  String _sleepLabel() {
+    final duration = _lifestyleData.sleepDuration;
+    final bedTime = _lifestyleData.bedTime;
+
+    if (duration == null && bedTime == null) return 'Not Set';
+
+    final parts = <String>[];
+    if (duration != null) {
+      parts.add('${duration.inHours}h');
+    }
+    if (bedTime != null) {
+      parts.add(_formatBedTime(bedTime));
+    }
+    return parts.join(', ');
+  }
+
   Future<void> _editWeight() async {
     final result = await BodyHealthFlows.editWeight(
       context: context,
@@ -204,6 +304,48 @@ class _ProfileScreenState extends State<ProfileScreen> {
         _bodyHealthData = result;
       });
       talker.info('Health conditions updated');
+    }
+  }
+
+  Future<void> _editLifestyleActivity() async {
+    final result = await LifestyleFlows.editLifestyleActivity(
+      context: context,
+      initialData: _lifestyleData,
+    );
+
+    if (result != null && mounted) {
+      setState(() {
+        _lifestyleDataRaw = result;
+      });
+      talker.info('Lifestyle activity updated');
+    }
+  }
+
+  Future<void> _editLifestyleSleep() async {
+    final result = await LifestyleFlows.editLifestyleSleep(
+      context: context,
+      initialData: _lifestyleData,
+    );
+
+    if (result != null && mounted) {
+      setState(() {
+        _lifestyleDataRaw = result;
+      });
+      talker.info('Lifestyle sleep updated');
+    }
+  }
+
+  Future<void> _editLifestyleDiet() async {
+    final result = await LifestyleFlows.editLifestyleDiet(
+      context: context,
+      initialData: _lifestyleData,
+    );
+
+    if (result != null && mounted) {
+      setState(() {
+        _lifestyleDataRaw = result;
+      });
+      talker.info('Lifestyle diet updated');
     }
   }
 
@@ -392,13 +534,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
 
-          // Lifestyle - activity, sleep, diet
-          LifestyleCard(
-            data: _lifestyleData,
-            onDataChanged: (data) {
-              setState(() => _lifestyleData = data);
-              talker.info('Lifestyle data updated');
-            },
+          AppSection(
+            title: 'Lifestyle',
+            child: ProfileLifestyleSection(
+              activityLabel: _activityLabel(),
+              isActivityPlaceholder: _lifestyleData.activityLevel == null,
+              onActivityTap: _editLifestyleActivity,
+              sleepLabel: _sleepLabel(),
+              isSleepPlaceholder:
+                  _lifestyleData.sleepDuration == null &&
+                  _lifestyleData.bedTime == null,
+              onSleepTap: _editLifestyleSleep,
+              dietLabel: _dietLabel(),
+              isDietPlaceholder: _lifestyleData.dietPreference == null,
+              onDietTap: _editLifestyleDiet,
+            ),
           ),
 
           const SizedBox(height: AppSpacing.xl),
