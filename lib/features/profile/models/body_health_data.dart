@@ -26,10 +26,9 @@ enum HealthCondition {
   pregnant('Pregnant', HealthConditionIcon.female),
   lactating('Breastfeeding', HealthConditionIcon.female);
 
-  const HealthCondition(this.label, this.icon, {this.selectable = true});
+  const HealthCondition(this.label, this.icon);
   final String label;
   final HealthConditionIcon? icon;
-  final bool selectable;
 
   bool get isFemaleOnly => this == pregnant || this == lactating;
 }
@@ -40,7 +39,6 @@ extension HealthConditionAvailability on HealthCondition {
   /// Domain rules live here; sheets must not infer availability.
   static List<HealthCondition> availableFor(AppGender gender) {
     return HealthCondition.values
-        .where((c) => c.selectable)
         .where((c) => !c.isFemaleOnly || gender == AppGender.female)
         .toList(growable: false);
   }

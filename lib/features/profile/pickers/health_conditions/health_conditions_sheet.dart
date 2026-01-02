@@ -277,11 +277,20 @@ class _HealthConditionsSheetState extends State<HealthConditionsSheet> {
             readOnlyCustomSurface,
           ],
           SizedBox(height: spacing.lg),
-          AppButton(
-            label: 'Other',
-            variant: AppButtonVariant.secondary,
-            onPressed: _enterCustomEditMode,
-            leadingIcon: icons.AppIcon.actionAdd,
+          // Semantics: mode transition into explicit edit mode.
+          Semantics(
+            button: true,
+            label: 'Edit health conditions',
+            onTapHint: 'Opens edit mode',
+            onTap: _enterCustomEditMode,
+            child: ExcludeSemantics(
+              child: AppButton(
+                label: 'Edit',
+                variant: AppButtonVariant.secondary,
+                onPressed: _enterCustomEditMode,
+                leadingIcon: icons.AppIcon.actionEdit,
+              ),
+            ),
           ),
           SizedBox(height: spacing.lg),
           AppButton(
