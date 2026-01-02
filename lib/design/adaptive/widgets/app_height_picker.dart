@@ -164,8 +164,8 @@ class _AppHeightPickerState extends State<AppHeightPicker> {
   }
 
   (int feet, int inches) _cmToFeetInches(double cm) {
-    final minTotalInches = (AppHeightPicker._minFeet * 12);
-    final maxTotalInches = (AppHeightPicker._maxFeet * 12) + 11;
+    const minTotalInches = (AppHeightPicker._minFeet * 12);
+    const maxTotalInches = (AppHeightPicker._maxFeet * 12) + 11;
 
     final totalInches = (cm / AppHeightPicker._kInchesToCm).round().clamp(
       minTotalInches,

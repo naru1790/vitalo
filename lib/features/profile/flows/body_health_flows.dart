@@ -1,6 +1,8 @@
 import 'package:flutter/widgets.dart';
 
 import '../../../design/design.dart';
+import '../models/body_health_data.dart';
+import '../pickers/health_conditions/health_conditions_sheet.dart';
 import '../pickers/height/height_picker_sheet.dart';
 import '../pickers/waist/waist_picker_sheet.dart';
 import '../pickers/weight/weight_picker_sheet.dart';
@@ -49,6 +51,19 @@ abstract final class BodyHealthFlows {
       sheet: WaistPickerSheet.page(
         initialCm: initialCm,
         unitSystem: unitSystem,
+      ),
+    );
+  }
+
+  static Future<BodyHealthData?> editHealthConditions({
+    required BuildContext context,
+    required BodyHealthData initialData,
+    required AppGender gender,
+  }) {
+    return AppBottomSheet.show<BodyHealthData>(
+      context,
+      sheet: SheetPage(
+        child: HealthConditionsSheet(initialData: initialData, gender: gender),
       ),
     );
   }
