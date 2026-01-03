@@ -2,7 +2,7 @@ import 'package:flutter/widgets.dart';
 
 import '../../../../design/design.dart';
 
-/// Body & Health → Weight picker sheet.
+/// Body Measurements → Weight picker sheet.
 ///
 /// Sheet content only.
 /// - Uses [SheetPage] for structure.

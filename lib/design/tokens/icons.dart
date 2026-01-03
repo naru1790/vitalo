@@ -136,7 +136,6 @@ enum AppIcon {
   healthWeight,
   healthHeight,
   healthWaist,
-  healthConditions,
 
   // ──────────────────────────────────────────────────────────
   // Auth Identity
@@ -323,8 +322,6 @@ abstract final class AppIcons {
         return CupertinoIcons.arrow_up_arrow_down;
       case AppIcon.healthWaist:
         return CupertinoIcons.resize;
-      case AppIcon.healthConditions:
-        return CupertinoIcons.heart;
 
       // Auth Identity
       case AppIcon.authGoogle:
@@ -483,8 +480,6 @@ abstract final class AppIcons {
         return Icons.height;
       case AppIcon.healthWaist:
         return Icons.straighten;
-      case AppIcon.healthConditions:
-        return Icons.favorite;
 
       // Auth Identity
       case AppIcon.authGoogle:

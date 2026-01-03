@@ -13,7 +13,6 @@ import '../theme.dart';
 ///
 /// Use for rows that navigate or open pickers:
 /// - Weight, Height, Waist (with value)
-/// - Health Conditions (with subtitle showing selected items)
 /// - Privacy Policy, Terms (no value, just navigation)
 class ProfileTappableRow extends StatelessWidget {
   const ProfileTappableRow({

@@ -13,13 +13,14 @@ import '../../../core/widgets/profile_row.dart';
 import '../../../core/widgets/lifestyle_card.dart' as legacy_lifestyle;
 import '../../../design/design.dart';
 import '../../../design/tokens/icons.dart' as icons;
-import '../flows/body_health_flows.dart';
+import '../flows/body_measurements_flows.dart';
 import '../flows/identity_flows.dart';
 import '../flows/lifestyle_flows.dart';
 import '../flows/personal_info_flows.dart';
-import '../models/body_health_data.dart';
+import '../models/body_measurements_data.dart';
+import '../models/body_measurements_formatter.dart';
 import '../models/lifestyle_data.dart';
-import 'widgets/profile_body_health_section.dart';
+import 'widgets/profile_body_measurements_section.dart';
 import 'widgets/profile_lifestyle_section.dart';
 import 'widgets/profile_personal_info_section.dart';
 
@@ -43,11 +44,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
   AppGender _gender = AppGender.male;
   int? _birthYear;
 
-  // Body & Health data
-  BodyHealthData _bodyHealthData = const BodyHealthData();
+  // Body Measurements data
+  BodyMeasurementsData _bodyMeasurementsData = const BodyMeasurementsData();
 
   // Measurement unit system is a global user preference.
-  // Body & Health consumes this value but does not own it.
+  // Body Measurements consumes this value but does not own it.
   AppUnitSystem _unitSystem = AppUnitSystem.metric;
 
   // Lifestyle data (activity, sleep, diet)
@@ -238,62 +239,51 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _editWeight() async {
-    final result = await BodyHealthFlows.editWeight(
+    final result = await BodyMeasurementsFlows.editWeight(
       context: context,
-      initialKg: _bodyHealthData.weightKg,
+      initialKg: _bodyMeasurementsData.weightKg,
       unitSystem: _unitSystem,
     );
 
     if (result != null && mounted) {
       setState(() {
-        _bodyHealthData = _bodyHealthData.copyWith(weightKg: result);
+        _bodyMeasurementsData = _bodyMeasurementsData.copyWith(
+          weightKg: result,
+        );
       });
       talker.info('Weight updated');
     }
   }
 
   Future<void> _editHeight() async {
-    final result = await BodyHealthFlows.editHeight(
+    final result = await BodyMeasurementsFlows.editHeight(
       context: context,
-      initialCm: _bodyHealthData.heightCm,
+      initialCm: _bodyMeasurementsData.heightCm,
       unitSystem: _unitSystem,
     );
 
     if (result != null && mounted) {
       setState(() {
-        _bodyHealthData = _bodyHealthData.copyWith(heightCm: result);
+        _bodyMeasurementsData = _bodyMeasurementsData.copyWith(
+          heightCm: result,
+        );
       });
       talker.info('Height updated');
     }
   }
 
   Future<void> _editWaist() async {
-    final result = await BodyHealthFlows.editWaist(
+    final result = await BodyMeasurementsFlows.editWaist(
       context: context,
-      initialCm: _bodyHealthData.waistCm,
+      initialCm: _bodyMeasurementsData.waistCm,
       unitSystem: _unitSystem,
     );
 
     if (result != null && mounted) {
       setState(() {
-        _bodyHealthData = _bodyHealthData.copyWith(waistCm: result);
+        _bodyMeasurementsData = _bodyMeasurementsData.copyWith(waistCm: result);
       });
       talker.info('Waist updated');
-    }
-  }
-
-  Future<void> _editHealthConditions() async {
-    final result = await BodyHealthFlows.editHealthConditions(
-      context: context,
-      initialData: _bodyHealthData,
-      gender: _gender,
-    );
-
-    if (result != null && mounted) {
-      setState(() {
-        _bodyHealthData = result;
-      });
-      talker.info('Health conditions updated');
     }
   }
 
@@ -473,21 +463,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
 
           AppSection(
-            title: 'Body & Health',
-            child: ProfileBodyHealthSection(
-              heightLabel: _bodyHealthData.heightLabel(_unitSystem),
-              weightLabel: _bodyHealthData.weightLabel(_unitSystem),
-              waistLabel: _bodyHealthData.waistLabel(_unitSystem),
-              healthConditionsValue: _bodyHealthData.hasNoConditions
-                  ? 'I\'m healthy'
-                  : null,
-              healthConditionsSubtitle: _bodyHealthData.hasNoConditions
-                  ? null
-                  : _bodyHealthData.conditionsSummary,
+            title: 'Body Measurements',
+            child: ProfileBodyMeasurementsSection(
+              heightLabel: BodyMeasurementsFormatter.heightLabel(
+                heightCm: _bodyMeasurementsData.heightCm,
+                unitSystem: _unitSystem,
+              ),
+              weightLabel: BodyMeasurementsFormatter.weightLabel(
+                weightKg: _bodyMeasurementsData.weightKg,
+                unitSystem: _unitSystem,
+              ),
+              waistLabel: BodyMeasurementsFormatter.waistLabel(
+                waistCm: _bodyMeasurementsData.waistCm,
+                unitSystem: _unitSystem,
+              ),
               onHeightTap: _editHeight,
               onWeightTap: _editWeight,
               onWaistTap: _editWaist,
-              onHealthConditionsTap: _editHealthConditions,
             ),
           ),
 
