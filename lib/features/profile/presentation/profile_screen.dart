@@ -42,10 +42,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   // Personal info
   AppGender _gender = AppGender.male;
   int? _birthYear;
-  String? _country;
-  String? _countryCode;
-  String? _state;
-  String? _stateCode;
 
   // Body & Health data
   BodyHealthData _bodyHealthData = const BodyHealthData();
@@ -181,12 +177,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final currentYear = DateTime.now().year;
     final age = currentYear - _birthYear!;
     return '$_birthYear ($age years)';
-  }
-
-  String _locationLabel() {
-    if (_country == null) return 'Not Set';
-    if (_state != null) return '$_state, $_country';
-    return _country!;
   }
 
   void _setUnitSystem(AppUnitSystem value) {
@@ -361,36 +351,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  Future<void> _selectLocation() async {
-    final initialValue = (_countryCode == null || _country == null)
-        ? null
-        : LocationResult(
-            country: LocationCountry(name: _country!, isoCode: _countryCode!),
-            state: (_stateCode == null || _state == null)
-                ? null
-                : LocationState(
-                    name: _state!,
-                    isoCode: _stateCode!,
-                    countryCode: _countryCode!,
-                  ),
-          );
-
-    final result = await PersonalInfoFlows.selectLocation(
-      context: context,
-      initialValue: initialValue,
-    );
-
-    if (result != null && mounted) {
-      setState(() {
-        _country = result.countryName;
-        _countryCode = result.countryCode;
-        _state = result.stateName;
-        _stateCode = result.stateCode;
-      });
-      talker.info('Location set: ${result.displayWithFlag}');
-    }
-  }
-
   Future<void> _handleSignOut() async {
     talker.info('Sign out initiated');
 
@@ -509,9 +469,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               birthYearLabel: _birthYearLabel(),
               isBirthYearPlaceholder: _birthYear == null,
               onBirthYearTap: _selectBirthYear,
-              locationLabel: _locationLabel(),
-              isLocationPlaceholder: _country == null,
-              onLocationTap: _selectLocation,
             ),
           ),
 

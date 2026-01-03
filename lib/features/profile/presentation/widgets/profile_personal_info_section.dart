@@ -11,9 +11,6 @@ class ProfilePersonalInfoSection extends StatelessWidget {
     required this.birthYearLabel,
     required this.isBirthYearPlaceholder,
     required this.onBirthYearTap,
-    required this.locationLabel,
-    required this.isLocationPlaceholder,
-    required this.onLocationTap,
   });
 
   final AppGender gender;
@@ -22,10 +19,6 @@ class ProfilePersonalInfoSection extends StatelessWidget {
   final String birthYearLabel;
   final bool isBirthYearPlaceholder;
   final VoidCallback onBirthYearTap;
-
-  final String locationLabel;
-  final bool isLocationPlaceholder;
-  final VoidCallback onLocationTap;
 
   @override
   Widget build(BuildContext context) {
@@ -68,21 +61,6 @@ class ProfilePersonalInfoSection extends StatelessWidget {
             isValuePlaceholder: isBirthYearPlaceholder,
             showsChevron: true,
             onTap: onBirthYearTap,
-          ),
-
-          const AppDivider(inset: AppDividerInset.leading),
-
-          AppListTile(
-            leading: const AppIcon(
-              icons.AppIcon.systemLocation,
-              size: AppIconSize.small,
-              color: AppIconColor.brand,
-            ),
-            title: 'Location',
-            value: locationLabel,
-            isValuePlaceholder: isLocationPlaceholder,
-            showsChevron: true,
-            onTap: onLocationTap,
           ),
         ],
       ),
