@@ -993,29 +993,6 @@ abstract class GoalColors {
   static const Color gainWeight = Color(0xFFAB47BC);
 }
 
-/// AI coach personality semantic colors
-abstract class CoachColors {
-  CoachColors._();
-
-  /// Supportive Friend - Warm Pink
-  static const Color supportiveFriend = Color(0xFFEC407A);
-
-  /// Tough Coach - Deep Red
-  static const Color toughCoach = Color(0xFFD32F2F);
-
-  /// Calm Mentor - Sage Green
-  static const Color calmMentor = Color(0xFF66BB6A);
-
-  /// Energetic Hype - Bright Orange
-  static const Color energeticHype = Color(0xFFFF9800);
-
-  /// Data Analyst - Cool Blue
-  static const Color dataAnalyst = Color(0xFF42A5F5);
-
-  /// Mindful Guide - Soft Purple
-  static const Color mindfulGuide = Color(0xFF9575CD);
-}
-
 /// Third-party brand colors
 abstract class BrandColors {
   BrandColors._();

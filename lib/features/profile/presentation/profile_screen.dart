@@ -8,7 +8,6 @@ import '../../../main.dart';
 import '../../../core/router.dart';
 import '../../../core/services/auth_service.dart';
 import '../../../core/theme.dart';
-import '../../../core/widgets/coaching_card.dart';
 import '../../../core/widgets/profile_row.dart';
 import '../../../design/design.dart';
 import '../../../design/tokens/icons.dart' as icons;
@@ -46,9 +45,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   // Measurement unit system is a global user preference.
   // Body Measurements consumes this value but does not own it.
   AppUnitSystem _unitSystem = AppUnitSystem.metric;
-
-  // Coaching data (goal, coach style)
-  CoachingData _coachingData = const CoachingData();
 
   // Health integrations
   bool _healthConnected = false;
@@ -335,17 +331,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               onWeightTap: _editWeight,
               onWaistTap: _editWaist,
             ),
-          ),
-
-          const SizedBox(height: AppSpacing.xl),
-
-          // Coaching - goal and coach personality
-          CoachingCard(
-            data: _coachingData,
-            onDataChanged: (data) {
-              setState(() => _coachingData = data);
-              talker.info('Coaching data updated');
-            },
           ),
 
           const SizedBox(height: AppSpacing.xl),
