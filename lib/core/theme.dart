@@ -967,61 +967,6 @@ abstract class FluxColors {
   static const Color darkShine = Color(0xFFFDBA74);
 }
 
-/// Activity level semantic colors (cool to warm intensity)
-abstract class ActivityColors {
-  ActivityColors._();
-
-  /// Desk Bound - Indigo (calm, focused)
-  static const Color deskBound = Color(0xFF5C6BC0);
-
-  /// Lightly Active - Teal (balanced)
-  static const Color lightlyActive = Color(0xFF26A69A);
-
-  /// Active Lifestyle - Deep Orange (energetic)
-  static const Color activeLifestyle = Color(0xFFFF8A65);
-
-  /// Very Active - Red (high intensity)
-  static const Color veryActive = Color(0xFFEF5350);
-}
-
-/// Dietary identity semantic colors
-abstract class DietColors {
-  DietColors._();
-
-  /// Vegan - Green
-  static const Color vegan = Color(0xFF4CAF50);
-
-  /// Vegetarian - Light Green
-  static const Color vegetarian = Color(0xFF8BC34A);
-
-  /// Eggetarian - Orange
-  static const Color eggetarian = Color(0xFFFF9800);
-
-  /// Omnivore - Pink
-  static const Color omnivore = Color(0xFFE91E63);
-
-  /// Veg day indicator
-  static const Color vegDay = Color(0xFF4CAF50);
-
-  /// Lifestyle choice background
-  static const Color lifestyle = Color(0xFFB2DFDB);
-
-  /// Lifestyle choice border
-  static const Color lifestyleBorder = Color(0xFF009688);
-
-  /// Allergy background
-  static const Color allergy = Color(0xFFFFCDD2);
-
-  /// Allergy border
-  static const Color allergyBorder = Color(0xFFD32F2F);
-
-  /// Goal background
-  static const Color goal = Color(0xFFE1BEE7);
-
-  /// Goal border
-  static const Color goalBorder = Color(0xFF7B1FA2);
-}
-
 /// Health goal semantic colors
 abstract class GoalColors {
   GoalColors._();
