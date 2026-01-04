@@ -1,4 +1,3 @@
-import 'dart:io' show Platform;
 import 'dart:ui';
 
 import 'package:flutter/cupertino.dart';
@@ -16,6 +15,7 @@ import '../flows/personal_info_flows.dart';
 import '../models/body_measurements_data.dart';
 import '../models/body_measurements_formatter.dart';
 import 'widgets/profile_body_measurements_section.dart';
+import 'widgets/profile_integrations_section.dart';
 import 'widgets/profile_personal_info_section.dart';
 import 'widgets/profile_preferences_section.dart';
 
@@ -346,11 +346,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
 
-          const SizedBox(height: AppSpacing.xl),
-
-          _buildSectionTitle('Integrations'),
-          const SizedBox(height: AppSpacing.sm),
-          _buildIntegrationsCard(),
+          AppSection(
+            title: 'Integrations',
+            child: ProfileIntegrationsSection(
+              healthConnected: _healthConnected,
+              onHealthChanged: (value) {
+                setState(() => _healthConnected = value);
+                talker.info(
+                  'Health Sync: ${value ? 'Connected' : 'Disconnected'}',
+                );
+              },
+            ),
+          ),
 
           const SizedBox(height: AppSpacing.xl),
 
@@ -381,69 +388,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Padding(
       padding: const EdgeInsets.only(left: AppSpacing.xxs),
       child: Text(title, style: AppleTextStyles.headline(context)),
-    );
-  }
-
-  Widget _buildIntegrationsCard() {
-    final isIOS = Platform.isIOS;
-    final healthAppName = isIOS ? 'Apple Health' : 'Health Connect';
-    const healthIcon = CupertinoIcons.heart_fill;
-    final healthIconColor = isIOS
-        ? BrandColors.appleHealth
-        : BrandColors.healthConnect;
-
-    return ProfileCard(
-      child: ProfileSwitchRow(
-        icon: healthIcon,
-        iconColor: healthIconColor,
-        label: healthAppName,
-        subtitle: 'Recommended • Syncs with 100+ apps',
-        value: _healthConnected,
-        onChanged: (value) {
-          setState(() => _healthConnected = value);
-          talker.info(
-            '$healthAppName: ${value ? 'Connected' : 'Disconnected'}',
-          );
-          if (value) {
-            _showHealthPermissionsInfo(healthAppName);
-          }
-        },
-      ),
-    );
-  }
-
-  void _showHealthPermissionsInfo(String healthAppName) {
-    final primaryColor = CupertinoTheme.of(context).primaryColor;
-    showCupertinoDialog(
-      context: context,
-      builder: (context) => CupertinoAlertDialog(
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(CupertinoIcons.info, color: primaryColor, size: 20),
-            const SizedBox(width: AppSpacing.xs),
-            Text('$healthAppName Integration'),
-          ],
-        ),
-        content: const Padding(
-          padding: EdgeInsets.only(top: AppSpacing.sm),
-          child: Text(
-            'Vitalo will request permission to read and write:\n\n'
-            '• Weight\n'
-            '• Height\n'
-            '• Steps\n'
-            '• Active calories\n\n'
-            'You can manage these permissions anytime in your device settings.',
-          ),
-        ),
-        actions: [
-          CupertinoDialogAction(
-            isDefaultAction: true,
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Got it'),
-          ),
-        ],
-      ),
     );
   }
 
