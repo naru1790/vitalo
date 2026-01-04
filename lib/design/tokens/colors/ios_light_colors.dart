@@ -117,6 +117,18 @@ class IosLightColors extends AppColors {
       const Color(0xFFFDBA74);
 
   @override
+  Color get controlActive =>
+      // Mechanical control "on" color.
+      // Must not be referenced via stateSelected/text* at call sites.
+      const Color(0xFFF97316);
+
+  @override
+  Color get controlOnInverse =>
+      // Mechanical control thumb/icon color when control is active.
+      // Must not be referenced via textInverse at call sites.
+      const Color(0xFFFFFFFF);
+
+  @override
   Color get overlayDark => const Color(0x66000000);
 
   @override

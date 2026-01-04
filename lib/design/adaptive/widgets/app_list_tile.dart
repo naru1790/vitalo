@@ -19,6 +19,7 @@ import '../../tokens/spacing.dart';
 import 'app_text.dart';
 import 'app_icon.dart';
 import 'app_icon_button.dart';
+import 'app_toggle.dart';
 import 'app_divider.dart';
 
 enum AppListTileDivider { none, full, inset }
@@ -51,8 +52,11 @@ class AppListTile extends StatelessWidget {
          'leading must be AppIcon or AppIconButton',
        ),
        assert(
-         trailing == null || trailing is AppIcon || trailing is AppIconButton,
-         'trailing must be AppIcon or AppIconButton',
+         trailing == null ||
+             trailing is AppIcon ||
+             trailing is AppIconButton ||
+             trailing is AppToggle,
+         'trailing must be AppIcon, AppIconButton, or AppToggle',
        ),
        assert(
          value == null || trailing == null,
@@ -133,7 +137,9 @@ class AppListTile extends StatelessWidget {
                     if (trailing != null) ...[
                       if (value != null || (showsChevron && _isInteractive))
                         SizedBox(width: spacing.md),
-                      ExcludeSemantics(child: trailing!),
+                      trailing is AppToggle
+                          ? trailing!
+                          : ExcludeSemantics(child: trailing!),
                     ],
                   ],
                 )

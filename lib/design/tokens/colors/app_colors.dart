@@ -56,6 +56,12 @@ abstract class AppColors {
   Color get stateFocus;
   Color get stateSelected;
 
+  // Controls (mechanical)
+  // These roles are for control mechanics (switches, checkboxes, sliders).
+  // They MUST NOT reuse text* or state* semantics at call sites.
+  Color get controlActive;
+  Color get controlOnInverse;
+
   // Overlays
   Color get overlayDark;
   Color get overlayLight;

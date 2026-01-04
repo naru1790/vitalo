@@ -115,6 +115,18 @@ class AndroidDarkColors extends AppColors {
       const Color(0xFFFDBA74);
 
   @override
+  Color get controlActive =>
+      // Mechanical control "on" color.
+      // Must not be referenced via stateSelected/text* at call sites.
+      const Color(0xFFFB923C);
+
+  @override
+  Color get controlOnInverse =>
+      // Mechanical control thumb/icon color when control is active.
+      // Must not be referenced via textInverse at call sites.
+      const Color(0xFFFFFFFF);
+
+  @override
   Color get overlayDark => const Color(0x7A000000);
 
   @override

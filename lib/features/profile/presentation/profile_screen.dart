@@ -10,7 +10,6 @@ import '../../../core/services/auth_service.dart';
 import '../../../core/theme.dart';
 import '../../../core/widgets/profile_row.dart';
 import '../../../design/design.dart';
-import '../../../design/tokens/icons.dart' as icons;
 import '../flows/body_measurements_flows.dart';
 import '../flows/identity_flows.dart';
 import '../flows/personal_info_flows.dart';
@@ -18,6 +17,7 @@ import '../models/body_measurements_data.dart';
 import '../models/body_measurements_formatter.dart';
 import 'widgets/profile_body_measurements_section.dart';
 import 'widgets/profile_personal_info_section.dart';
+import 'widgets/profile_preferences_section.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -333,11 +333,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
 
-          const SizedBox(height: AppSpacing.xl),
-
-          _buildSectionTitle('Preferences'),
-          const SizedBox(height: AppSpacing.sm),
-          _buildPreferencesCard(),
+          AppSection(
+            title: 'Preferences',
+            child: ProfilePreferencesSection(
+              unitSystem: _unitSystem,
+              onUnitSystemChanged: _setUnitSystem,
+              notificationsEnabled: _notificationsEnabled,
+              onNotificationsChanged: (value) {
+                setState(() => _notificationsEnabled = value);
+                talker.info('Notifications: $value');
+              },
+            ),
+          ),
 
           const SizedBox(height: AppSpacing.xl),
 
@@ -374,48 +381,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Padding(
       padding: const EdgeInsets.only(left: AppSpacing.xxs),
       child: Text(title, style: AppleTextStyles.headline(context)),
-    );
-  }
-
-  Widget _buildPreferencesCard() {
-    return ProfileCard(
-      child: Column(
-        children: [
-          // Measurement unit system is a global user preference.
-          // Body & Health consumes this value but does not own it.
-          AppUnitSystemSelector(
-            value: _unitSystem,
-            onChanged: _setUnitSystem,
-            label: Row(
-              children: [
-                const AppIcon(
-                  icons.AppIcon.systemUnits,
-                  size: AppIconSize.small,
-                  color: AppIconColor.brand,
-                ),
-                SizedBox(width: Spacing.of.md),
-                const AppText(
-                  'Unit System',
-                  variant: AppTextVariant.body,
-                  color: AppTextColor.primary,
-                ),
-              ],
-            ),
-            metricLabel: 'Metric',
-            imperialLabel: 'Imperial',
-          ),
-          const ProfileRowDivider(),
-          ProfileSwitchRow(
-            icon: CupertinoIcons.bell,
-            label: 'Notifications',
-            value: _notificationsEnabled,
-            onChanged: (value) {
-              setState(() => _notificationsEnabled = value);
-              talker.info('Notifications: $value');
-            },
-          ),
-        ],
-      ),
     );
   }
 

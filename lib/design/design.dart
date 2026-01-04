@@ -63,6 +63,7 @@ export 'adaptive/widgets/app_scaffold.dart';
 export 'adaptive/widgets/app_text.dart';
 export 'adaptive/widgets/app_text_field.dart';
 export 'adaptive/widgets/app_tappable.dart';
+export 'adaptive/widgets/app_toggle.dart';
 export 'adaptive/widgets/app_waist_picker.dart';
 export 'adaptive/widgets/app_weight_picker.dart';
 export 'adaptive/widgets/app_wheel_picker.dart';
