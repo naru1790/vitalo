@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 
@@ -13,6 +11,7 @@ import '../flows/identity_flows.dart';
 import '../flows/personal_info_flows.dart';
 import '../models/body_measurements_data.dart';
 import '../models/body_measurements_formatter.dart';
+import 'sheets/delete_account_confirmation_sheet.dart';
 import 'sheets/sign_out_confirmation_sheet.dart';
 import 'widgets/profile_body_measurements_section.dart';
 import 'widgets/profile_account_section.dart';
@@ -214,47 +213,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _handleDeleteAccount() async {
     talker.info('Delete account initiated');
-    final isDark = CupertinoTheme.of(context).brightness == Brightness.dark;
 
-    // Single confirmation with DELETE typing - Liquid Glass style
-    final confirmed = await showCupertinoModalPopup<bool>(
-      context: context,
-      builder: (context) => ClipRRect(
-        borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(AppSpacing.cardRadiusLarge),
-        ),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-          child: Container(
-            decoration: BoxDecoration(
-              // Glass tint - more transparent in dark mode
-              color: isDark
-                  ? CupertinoColors.systemBackground
-                        .resolveFrom(context)
-                        .withValues(alpha: 0.7)
-                  : CupertinoColors.systemBackground
-                        .resolveFrom(context)
-                        .withValues(alpha: 0.85),
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(AppSpacing.cardRadiusLarge),
-              ),
-              // Subtle glass edge
-              border: Border(
-                top: BorderSide(
-                  color: CupertinoColors.separator
-                      .resolveFrom(context)
-                      .withValues(alpha: 0.3),
-                  width: 0.5,
-                ),
-              ),
-            ),
-            child: const SafeArea(
-              top: false,
-              child: _DeleteConfirmationSheet(),
-            ),
-          ),
-        ),
-      ),
+    final confirmed = await AppBottomSheet.show<bool>(
+      context,
+      sheet: const SheetPage(child: DeleteAccountConfirmationSheet()),
     );
 
     if (confirmed == true && mounted) {
@@ -355,201 +317,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
           const SizedBox(height: AppSpacing.xxl),
 
           Center(
-            child: CupertinoButton(
-              padding: EdgeInsets.zero,
+            child: AppTappable(
+              semanticLabel: 'Delete My Account',
               onPressed: _handleDeleteAccount,
-              child: Text(
-                'Delete My Account',
-                style: AppleTextStyles.footnoteSecondary(context),
-              ),
-            ),
-          ),
-
-          const SizedBox(height: AppSpacing.xxxl),
-        ],
-      ),
-    );
-  }
-}
-
-/// Bottom sheet for DELETE confirmation with real-time validation
-class _DeleteConfirmationSheet extends StatefulWidget {
-  const _DeleteConfirmationSheet();
-
-  @override
-  State<_DeleteConfirmationSheet> createState() =>
-      _DeleteConfirmationSheetState();
-}
-
-class _DeleteConfirmationSheetState extends State<_DeleteConfirmationSheet> {
-  final _controller = TextEditingController();
-  final _focusNode = FocusNode();
-  bool _isValid = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller.addListener(_validateInput);
-  }
-
-  void _validateInput() {
-    final isValid = _controller.text.trim().toUpperCase() == 'DELETE';
-    if (isValid != _isValid) {
-      setState(() => _isValid = isValid);
-    }
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    _focusNode.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final primaryColor = CupertinoTheme.of(context).primaryColor;
-    final errorColor = CupertinoColors.systemRed.resolveFrom(context);
-    final secondaryLabel = CupertinoColors.secondaryLabel.resolveFrom(context);
-    final tertiaryLabel = CupertinoColors.tertiaryLabel.resolveFrom(context);
-    final separatorColor = CupertinoColors.separator.resolveFrom(context);
-    final isDark = CupertinoTheme.of(context).brightness == Brightness.dark;
-
-    return Padding(
-      padding: EdgeInsets.fromLTRB(
-        AppSpacing.xl,
-        AppSpacing.md,
-        AppSpacing.xl,
-        MediaQuery.viewInsetsOf(context).bottom + AppSpacing.xl,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Drag handle
-          Container(
-            width: 36,
-            height: 5,
-            decoration: BoxDecoration(
-              color: separatorColor.withValues(alpha: 0.5),
-              borderRadius: BorderRadius.circular(2.5),
-            ),
-          ),
-          const SizedBox(height: AppSpacing.xl),
-          // Warning icon in a subtle container
-          Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              color: errorColor.withValues(alpha: 0.12),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              CupertinoIcons.exclamationmark_triangle_fill,
-              color: errorColor,
-              size: 28,
-            ),
-          ),
-          const SizedBox(height: AppSpacing.md),
-          Text('Delete Account', style: AppleTextStyles.title3(context)),
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            'This will permanently delete your account and all data. This action cannot be undone.',
-            style: AppleTextStyles.subhead(
-              context,
-            ).copyWith(color: secondaryLabel),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: AppSpacing.xl),
-          // Input section with glass styling
-          Container(
-            padding: const EdgeInsets.all(AppSpacing.md),
-            decoration: BoxDecoration(
-              color: isDark
-                  ? CupertinoColors.systemGrey6
-                        .resolveFrom(context)
-                        .withValues(alpha: 0.5)
-                  : CupertinoColors.systemGrey6.resolveFrom(context),
-              borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-              border: Border.all(
-                color: separatorColor.withValues(alpha: 0.3),
-                width: 0.5,
-              ),
-            ),
-            child: Column(
-              children: [
-                Text(
-                  'Type DELETE to confirm',
-                  style: AppleTextStyles.footnote(context).copyWith(
-                    color: secondaryLabel,
-                    fontWeight: FontWeight.w500,
+              child: SizedBox(
+                height: Spacing.of.inputHeight,
+                child: const Center(
+                  child: AppText(
+                    'Delete My Account',
+                    variant: AppTextVariant.label,
+                    color: AppTextColor.destructive,
                   ),
                 ),
-                const SizedBox(height: AppSpacing.sm),
-                CupertinoTextField(
-                  controller: _controller,
-                  focusNode: _focusNode,
-                  textCapitalization: TextCapitalization.characters,
-                  textAlign: TextAlign.center,
-                  style: AppleTextStyles.headline(context).copyWith(
-                    letterSpacing: 4,
-                    color: _isValid ? errorColor : null,
-                  ),
-                  placeholder: 'DELETE',
-                  placeholderStyle: AppleTextStyles.headline(
-                    context,
-                  ).copyWith(color: tertiaryLabel, letterSpacing: 4),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.md,
-                    vertical: AppSpacing.sm,
-                  ),
-                  decoration: BoxDecoration(
-                    color: CupertinoColors.systemBackground.resolveFrom(
-                      context,
-                    ),
-                    borderRadius: BorderRadius.circular(AppSpacing.inputRadius),
-                    border: Border.all(
-                      color: _isValid
-                          ? errorColor.withValues(alpha: 0.6)
-                          : separatorColor,
-                      width: 0.5,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: AppSpacing.xl),
-          // Action buttons - Apple HIG style (stacked for destructive actions)
-          SizedBox(
-            width: double.infinity,
-            child: CupertinoButton(
-              padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-              color: _isValid ? errorColor : errorColor.withValues(alpha: 0.3),
-              borderRadius: BorderRadius.circular(AppSpacing.buttonRadius),
-              onPressed: _isValid ? () => Navigator.pop(context, true) : null,
-              child: Text(
-                'Delete Account',
-                style: TextStyle(
-                  color: _isValid
-                      ? CupertinoColors.white
-                      : CupertinoColors.white.withValues(alpha: 0.5),
-                  fontWeight: FontWeight.w600,
-                  fontSize: 17,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          SizedBox(
-            width: double.infinity,
-            child: CupertinoButton(
-              padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-              onPressed: () => Navigator.pop(context, false),
-              child: Text(
-                'Cancel',
-                style: AppleTextStyles.body(
-                  context,
-                ).copyWith(color: primaryColor, fontWeight: FontWeight.w600),
               ),
             ),
           ),

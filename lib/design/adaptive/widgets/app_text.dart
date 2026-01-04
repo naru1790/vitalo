@@ -55,6 +55,12 @@ enum AppTextColor {
   /// Inverse text for use on dark/colored backgrounds.
   inverse,
 
+  /// Destructive action text.
+  ///
+  /// Used for intentional destructive intents (e.g., delete account) where
+  /// text must communicate destructive meaning without using error styling.
+  destructive,
+
   /// Link text using brand primary color.
   link,
 }
@@ -150,6 +156,7 @@ class AppText extends StatelessWidget {
       AppTextColor.secondary => colors.textSecondary,
       AppTextColor.disabled => colors.textTertiary,
       AppTextColor.inverse => colors.textInverse,
+      AppTextColor.destructive => colors.actionDestructive,
       AppTextColor.link => colors.brandPrimary,
     };
   }
