@@ -1,10 +1,9 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../main.dart';
 import '../../../core/router.dart';
 import '../../../core/services/auth_service.dart';
-import '../../../core/theme.dart';
 import '../../../design/design.dart';
 import '../flows/body_measurements_flows.dart';
 import '../flows/identity_flows.dart';
@@ -314,19 +313,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
 
-          const SizedBox(height: AppSpacing.xxl),
-
-          Center(
-            child: AppTappable(
-              semanticLabel: 'Delete My Account',
-              onPressed: _handleDeleteAccount,
-              child: SizedBox(
-                height: Spacing.of.inputHeight,
-                child: const Center(
-                  child: AppText(
-                    'Delete My Account',
-                    variant: AppTextVariant.label,
-                    color: AppTextColor.destructive,
+          AppSection(
+            child: Center(
+              child: AppTappable(
+                semanticLabel: 'Delete My Account',
+                onPressed: _handleDeleteAccount,
+                child: SizedBox(
+                  height: Spacing.of.inputHeight,
+                  child: const Center(
+                    child: AppText(
+                      'Delete My Account',
+                      variant: AppTextVariant.label,
+                      color: AppTextColor.destructive,
+                    ),
                   ),
                 ),
               ),
