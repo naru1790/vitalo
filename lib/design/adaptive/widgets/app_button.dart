@@ -170,7 +170,7 @@ _ButtonColors _resolveButtonColors(AppButtonVariant variant, AppColors colors) {
       textColor: AppTextColor.primary,
     ),
     AppButtonVariant.destructive => _ButtonColors(
-      background: colors.feedbackError,
+      background: colors.actionDestructive,
       foreground: colors.textInverse,
       textColor: AppTextColor.inverse,
     ),

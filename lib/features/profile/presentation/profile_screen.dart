@@ -13,6 +13,7 @@ import '../flows/identity_flows.dart';
 import '../flows/personal_info_flows.dart';
 import '../models/body_measurements_data.dart';
 import '../models/body_measurements_formatter.dart';
+import 'sheets/sign_out_confirmation_sheet.dart';
 import 'widgets/profile_body_measurements_section.dart';
 import 'widgets/profile_account_section.dart';
 import 'widgets/profile_integrations_section.dart';
@@ -194,26 +195,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<void> _handleSignOut() async {
     talker.info('Sign out initiated');
 
-    final confirmed = await showCupertinoModalPopup<bool>(
-      context: context,
-      builder: (context) => CupertinoActionSheet(
-        title: const Text('Sign Out'),
-        message: const Text(
-          'Are you sure you want to sign out of your account?',
-        ),
-        actions: [
-          CupertinoActionSheetAction(
-            isDestructiveAction: true,
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Sign Out'),
-          ),
-        ],
-        cancelButton: CupertinoActionSheetAction(
-          isDefaultAction: true,
-          onPressed: () => Navigator.pop(context, false),
-          child: const Text('Cancel'),
-        ),
-      ),
+    final confirmed = await AppBottomSheet.show<bool>(
+      context,
+      sheet: const SheetPage(child: SignOutConfirmationSheet()),
     );
 
     if (confirmed == true && mounted) {
