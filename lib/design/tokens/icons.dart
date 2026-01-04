@@ -130,6 +130,20 @@ enum AppIcon {
   systemBirthday,
 
   // ──────────────────────────────────────────────────────────
+  // Account & Session
+  // ──────────────────────────────────────────────────────────
+
+  /// End the current user session (sign out).
+  ///
+  /// Meaning:
+  /// - Leaves authenticated state
+  /// - Not external navigation
+  /// - Not an error state
+  ///
+  /// Do not substitute navigation or feedback icons.
+  accountSignOut,
+
+  // ──────────────────────────────────────────────────────────
   // Health & Body
   // ──────────────────────────────────────────────────────────
   systemUnits,
@@ -311,6 +325,11 @@ abstract final class AppIcons {
       case AppIcon.systemBirthday:
         return CupertinoIcons.gift;
 
+      // Account & Session
+      case AppIcon.accountSignOut:
+        // Session exit (sign out), not external navigation.
+        return CupertinoIcons.square_arrow_right;
+
       // Health & Body
       case AppIcon.systemUnits:
         // Use sliders as the stable, universal metaphor for changing units.
@@ -471,6 +490,11 @@ abstract final class AppIcons {
         return Icons.accessibility;
       case AppIcon.systemBirthday:
         return Icons.cake;
+
+      // Account & Session
+      case AppIcon.accountSignOut:
+        // Session exit (sign out), not external navigation.
+        return Icons.logout;
 
       case AppIcon.systemUnits:
         return Icons.straighten;

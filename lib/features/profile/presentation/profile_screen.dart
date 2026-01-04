@@ -7,7 +7,6 @@ import '../../../main.dart';
 import '../../../core/router.dart';
 import '../../../core/services/auth_service.dart';
 import '../../../core/theme.dart';
-import '../../../core/widgets/profile_row.dart';
 import '../../../design/design.dart';
 import '../flows/body_measurements_flows.dart';
 import '../flows/identity_flows.dart';
@@ -15,6 +14,7 @@ import '../flows/personal_info_flows.dart';
 import '../models/body_measurements_data.dart';
 import '../models/body_measurements_formatter.dart';
 import 'widgets/profile_body_measurements_section.dart';
+import 'widgets/profile_account_section.dart';
 import 'widgets/profile_integrations_section.dart';
 import 'widgets/profile_personal_info_section.dart';
 import 'widgets/profile_preferences_section.dart';
@@ -359,11 +359,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
 
-          const SizedBox(height: AppSpacing.xl),
-
-          _buildSectionTitle('Account'),
-          const SizedBox(height: AppSpacing.sm),
-          _buildAccountCard(),
+          AppSection(
+            title: 'Account',
+            child: ProfileAccountSection(
+              onPrivacyPolicyTap: () => context.push(AppRoutes.privacy),
+              onTermsTap: () => context.push(AppRoutes.terms),
+              onSignOutTap: _handleSignOut,
+            ),
+          ),
 
           const SizedBox(height: AppSpacing.xxl),
 
@@ -379,43 +382,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
 
           const SizedBox(height: AppSpacing.xxxl),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.only(left: AppSpacing.xxs),
-      child: Text(title, style: AppleTextStyles.headline(context)),
-    );
-  }
-
-  Widget _buildAccountCard() {
-    final errorColor = CupertinoColors.systemRed.resolveFrom(context);
-
-    return ProfileCard(
-      child: Column(
-        children: [
-          ProfileTappableRow(
-            icon: CupertinoIcons.shield,
-            label: 'Privacy Policy',
-            onTap: () => context.push(AppRoutes.privacy),
-          ),
-          const ProfileRowDivider(),
-          ProfileTappableRow(
-            icon: CupertinoIcons.doc_text,
-            label: 'Terms of Service',
-            onTap: () => context.push(AppRoutes.terms),
-          ),
-          const ProfileRowDivider(),
-          ProfileTappableRow(
-            icon: CupertinoIcons.square_arrow_right,
-            label: 'Sign Out',
-            iconColor: errorColor,
-            labelColor: errorColor,
-            onTap: _handleSignOut,
-          ),
         ],
       ),
     );

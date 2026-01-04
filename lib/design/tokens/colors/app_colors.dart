@@ -44,10 +44,31 @@ abstract class AppColors {
   Color get textInverse;
 
   // Feedback
+  // Feedback roles are reserved for system/validation outcomes.
+  // Use these when something failed or needs attention (e.g., form errors,
+  // network failures, denied permissions).
   Color get feedbackSuccess;
   Color get feedbackWarning;
+
+  // Reserved for system or validation failures.
+  // MUST NOT be used to style intentional user actions.
   Color get feedbackError;
   Color get feedbackInfo;
+
+  // Actions
+  // Action roles are reserved for intentional, user-triggered intents.
+  // They are not error states; they describe what the user is choosing to do.
+
+  /// Intentional destructive action (e.g., sign out, delete).
+  ///
+  /// Semantics:
+  /// - User-triggered
+  /// - Potentially destructive
+  /// - Not a system/validation error
+  ///
+  /// Must not reuse [feedbackError]. Palettes may derive from their red family,
+  /// but the resulting color should be visually calmer than error states.
+  Color get actionDestructive;
 
   // Interactive States
   Color get stateActive;

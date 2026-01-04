@@ -85,6 +85,11 @@ class IosDarkColors extends AppColors {
   Color get feedbackInfo => const Color(0xFF818CF8);
 
   @override
+  Color get actionDestructive =>
+      // Calmer than feedbackError; still clearly destructive.
+      const Color(0xFFEF4444);
+
+  @override
   Color get stateActive =>
       // Intentionally aligned with brandPrimary dark value.
       // Semantic independence: stateActive communicates interaction feedback,
