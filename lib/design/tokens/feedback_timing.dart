@@ -11,6 +11,8 @@
 // - This abstraction may map to motion tokens internally today, but the
 //   semantic boundary stays future-proof.
 
+import 'dart:core';
+
 import 'motion.dart';
 
 abstract final class AppFeedbackTiming {
