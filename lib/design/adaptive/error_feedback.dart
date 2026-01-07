@@ -1,9 +1,9 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 
 import '../tokens/icons.dart' as icons;
-import '../tokens/motion.dart';
+import '../tokens/feedback_timing.dart';
 import '../tokens/shape.dart';
 import '../tokens/spacing.dart';
 import '../tokens/typography.dart';
@@ -19,7 +19,7 @@ abstract final class AppErrorFeedback {
   AppErrorFeedback._();
 
   static void show(BuildContext context, String message) {
-    ErrorFeedbackScope.of(context).show(context, message);
+    ErrorFeedbackScope.of(context).show(message);
   }
 }
 
@@ -29,7 +29,7 @@ abstract final class AppErrorFeedback {
 abstract class ErrorFeedbackDelegate {
   const ErrorFeedbackDelegate();
 
-  void show(BuildContext context, String message);
+  void show(String message);
 }
 
 /// Delegate injection point.
@@ -90,10 +90,7 @@ class ErrorFeedbackHost extends StatelessWidget {
       return _IosErrorFeedbackHost(child: child);
     }
 
-    return ErrorFeedbackScope(
-      delegate: const AndroidErrorFeedbackDelegate(),
-      child: child,
-    );
+    return _AndroidErrorFeedbackHost(child: child);
   }
 }
 
@@ -110,7 +107,7 @@ class IosErrorFeedbackDelegate extends ErrorFeedbackDelegate {
   final IosErrorFeedbackController _controller;
 
   @override
-  void show(BuildContext context, String message) {
+  void show(String message) {
     _controller.show(message);
   }
 }
@@ -120,37 +117,113 @@ class IosErrorFeedbackDelegate extends ErrorFeedbackDelegate {
 /// Uses Material SnackBar semantics.
 /// Feature code never touches Theme; delegate resolves semantic tokens.
 class AndroidErrorFeedbackDelegate extends ErrorFeedbackDelegate {
-  const AndroidErrorFeedbackDelegate();
+  const AndroidErrorFeedbackDelegate(this._controller);
+
+  final AndroidErrorFeedbackController _controller;
 
   @override
-  void show(BuildContext context, String message) {
+  void show(String message) {
+    _controller.show(message);
+  }
+}
+
+class _AndroidErrorFeedbackHost extends StatefulWidget {
+  const _AndroidErrorFeedbackHost({required this.child});
+
+  final Widget child;
+
+  @override
+  State<_AndroidErrorFeedbackHost> createState() =>
+      _AndroidErrorFeedbackHostState();
+}
+
+class _AndroidErrorFeedbackHostState extends State<_AndroidErrorFeedbackHost>
+    implements AndroidErrorFeedbackController {
+  Timer? _timer;
+  String? _message;
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _timer = null;
+    super.dispose();
+  }
+
+  @override
+  void show(String message) {
+    // No queue: replace the previous message silently.
+    _timer?.cancel();
+    _timer = null;
+
+    if (!mounted) return;
+    setState(() => _message = message);
+
+    // Duration from feedback timing tokens — semantic, centrally tunable.
+    _timer = Timer(AppFeedbackTiming.errorDisplay, () {
+      if (!mounted) return;
+      setState(() => _message = null);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final colors = AppColorScope.of(context).colors;
     final typography = AppTextStyles.of;
     final spacing = Spacing.of;
+    final shape = AppShapeTokens.of;
 
-    final messenger = ScaffoldMessenger.maybeOf(context);
-    if (messenger == null) return;
+    return ErrorFeedbackScope(
+      delegate: AndroidErrorFeedbackDelegate(this),
+      child: Stack(
+        children: [
+          widget.child,
 
-    // No queue: replace any currently visible feedback silently.
-    messenger.hideCurrentSnackBar();
-
-    // Duration from motion tokens — semantic, centrally tunable.
-    final motion = AppMotionTokens.of;
-
-    messenger.showSnackBar(
-      SnackBar(
-        behavior: SnackBarBehavior.floating,
-        duration: motion.normal,
-        backgroundColor: colors.feedbackError,
-        content: Padding(
-          padding: EdgeInsets.symmetric(vertical: spacing.xs),
-          child: Text(
-            message,
-            style: typography.body.copyWith(color: colors.textInverse),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
+          // Intentionally NO animation.
+          // Error feedback must remain visually quiet and page-scoped.
+          if (_message != null)
+            Positioned(
+              left: spacing.lg,
+              right: spacing.lg,
+              bottom: spacing.lg + MediaQuery.paddingOf(context).bottom,
+              child: Semantics(
+                liveRegion: true,
+                label: 'Error',
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: colors.feedbackError,
+                    borderRadius: BorderRadius.circular(shape.md),
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: spacing.md,
+                      vertical: spacing.sm,
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        AppIcon(
+                          icons.AppIcon.feedbackError,
+                          size: AppIconSize.small,
+                          colorOverride: colors.textInverse,
+                        ),
+                        SizedBox(width: spacing.sm),
+                        Expanded(
+                          child: Text(
+                            _message!,
+                            style: typography.body.copyWith(
+                              color: colors.textInverse,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -186,8 +259,8 @@ class _IosErrorFeedbackHostState extends State<_IosErrorFeedbackHost>
     if (!mounted) return;
     setState(() => _message = message);
 
-    // Duration from motion tokens — semantic, centrally tunable.
-    _timer = Timer(AppMotionTokens.of.normal, () {
+    // Duration from feedback timing tokens — semantic, centrally tunable.
+    _timer = Timer(AppFeedbackTiming.errorDisplay, () {
       if (!mounted) return;
       setState(() => _message = null);
     });
@@ -260,5 +333,9 @@ class _IosErrorFeedbackHostState extends State<_IosErrorFeedbackHost>
 }
 
 abstract class IosErrorFeedbackController {
+  void show(String message);
+}
+
+abstract class AndroidErrorFeedbackController {
   void show(String message);
 }

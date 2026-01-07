@@ -73,7 +73,7 @@ class AppRoot extends StatelessWidget {
     return WidgetsApp.router(
       title: 'Vitalo',
       debugShowCheckedModeBanner: false,
-      color: const Color(0xFFFFFFFF),
+      color: const Color(0x00000000),
       routerConfig: router,
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
